@@ -1,0 +1,19 @@
+{
+  "impresora": {
+    "puerto": "/dev/usb/lp0",
+    "comando": "lp",
+    "ancho_papel": 80,
+    "tipo_papel": "termico",
+    "nombre_impresora": "POS_Printer"
+  },
+  "terminal": {
+    "id": 1,
+    "nombre": "Terminal Principal",
+    "ubicacion": "Caja 1"
+  },
+  "empresa": {
+    "nombre": "Mi Empresa",
+    "ruc": "12345678901",
+    "direccion": "Av. Principal 123"
+  }
+}

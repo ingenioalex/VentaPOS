@@ -1,0 +1,67 @@
+{
+  "HOLD-0001": {
+    "comprobante_id": 66,
+    "tipo": "BOLETA",
+    "serie": "B06",
+    "numero": "00000049",
+    "items": [
+      {
+        "producto_id": 4,
+        "sku": "20200002",
+        "descripcion": "SIXPACK LECHE GLORIA NINOS X 390GR",
+        "unidad": "UND",
+        "afecto_igv": true,
+        "cantidad": 1.0,
+        "valor_unit": 24.0,
+        "igv_unit": 4.32,
+        "precio_unit": 28.32,
+        "importe": 28.32
+      }
+    ],
+    "total": 28.32
+  },
+  "HOLD-0002": {
+    "comprobante_id": 67,
+    "tipo": "BOLETA",
+    "serie": "B06",
+    "numero": "00000050",
+    "items": [
+      {
+        "producto_id": 4,
+        "sku": "20200002",
+        "descripcion": "SIXPACK LECHE GLORIA NINOS X 390GR",
+        "unidad": "UND",
+        "afecto_igv": true,
+        "cantidad": 1.0,
+        "valor_unit": 24.0,
+        "igv_unit": 4.32,
+        "precio_unit": 28.32,
+        "importe": 28.32
+      }
+    ],
+    "total": 28.32
+  },
+  "1110000000001": {
+    "comprobante_id": 71,
+    "tipo": "BOLETA",
+    "serie": "B06",
+    "numero": "00000054",
+    "items": [
+      {
+        "producto_id": 4,
+        "sku": "20200002",
+        "descripcion": "SIXPACK LECHE GLORIA NINOS X 390GR",
+        "unidad": "UND",
+        "afecto_igv": true,
+        "cantidad": 1.0,
+        "valor_unit": 24.0,
+        "igv_unit": 4.32,
+        "precio_unit": 28.32,
+        "importe": 28.32
+      }
+    ],
+    "total": 28.32,
+    "fecha_suspension": "2025-08-18 02:56:19",
+    "usuario": "admin"
+  }
+}

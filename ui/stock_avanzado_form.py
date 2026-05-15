@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 """
-Módulo de Gestión de Stock Avanzada
+Módulo de Gestión de inventario avanzada
 Sistema de gestión de inventario con movimientos de entrada, salida y ajustes
 """
 
@@ -27,7 +27,7 @@ class StockAvanzadoForm(QMainWindow):
         
     def init_ui(self):
         """Inicializar la interfaz de usuario"""
-        self.setWindowTitle("📦 Gestión de Stock Avanzada")
+        self.setWindowTitle("📦 Gestión de inventario avanzada")
         self.setGeometry(100, 100, 1400, 900)
         
         # Widget central
@@ -40,7 +40,7 @@ class StockAvanzadoForm(QMainWindow):
         main_layout.setContentsMargins(15, 15, 15, 15)
         
         # Título
-        titulo = QLabel("📦 Gestión de Stock Avanzada")
+        titulo = QLabel("📦 Gestión de inventario avanzada")
         titulo.setStyleSheet("""
             font-size: 18px;
             font-weight: bold;
@@ -77,13 +77,13 @@ class StockAvanzadoForm(QMainWindow):
             }
         """)
         
-        # Tab 1: Vista General de Stock
+        # Tab 1: Vista general de inventario
         self.crear_tab_vista_general()
         
-        # Tab 2: Movimientos de Stock
+        # Tab 2: Movimientos de inventario
         self.crear_tab_movimientos()
         
-        # Tab 3: Alertas de Stock
+        # Tab 3: Alertas de inventario
         self.crear_tab_alertas()
         
         # Tab 4: Estadísticas
@@ -95,7 +95,7 @@ class StockAvanzadoForm(QMainWindow):
         self.aplicar_estilos()
         
     def crear_tab_vista_general(self):
-        """Crear tab de vista general de stock"""
+        """Crear tab de vista general de inventario"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         layout.setSpacing(15)
@@ -127,8 +127,8 @@ class StockAvanzadoForm(QMainWindow):
         self.tabla_productos = QTableWidget()
         self.tabla_productos.setColumnCount(8)
         self.tabla_productos.setHorizontalHeaderLabels([
-            "ID", "Descripción Larga", "SKU", "Stock Actual", "Stock Mínimo", 
-            "Precio Venta", "Costo Promedio", "Estado"
+            "ID", "Descripción Larga", "SKU", "Inventario actual", "Inventario mínimo", 
+            "Precio de venta", "Costo promedio", "Estado"
         ])
         
         # Configurar tabla
@@ -151,7 +151,7 @@ class StockAvanzadoForm(QMainWindow):
         self.tab_widget.addTab(tab, "📊 Vista General")
         
     def crear_tab_movimientos(self):
-        """Crear tab de movimientos de stock"""
+        """Crear tab de movimientos de inventario"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         layout.setSpacing(15)
@@ -215,7 +215,7 @@ class StockAvanzadoForm(QMainWindow):
         self.tab_widget.addTab(tab, "📋 Movimientos")
         
     def crear_tab_alertas(self):
-        """Crear tab de alertas de stock"""
+        """Crear tab de alertas de inventario"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         layout.setSpacing(15)
@@ -223,7 +223,7 @@ class StockAvanzadoForm(QMainWindow):
         # Panel de configuración
         config_layout = QHBoxLayout()
         
-        config_layout.addWidget(QLabel("Límite de stock:"))
+        config_layout.addWidget(QLabel("Límite de inventario:"))
         self.limite_stock = QSpinBox()
         self.limite_stock.setRange(0, 1000)
         self.limite_stock.setValue(10)
@@ -240,8 +240,8 @@ class StockAvanzadoForm(QMainWindow):
         self.tabla_alertas = QTableWidget()
         self.tabla_alertas.setColumnCount(7)
         self.tabla_alertas.setHorizontalHeaderLabels([
-            "Producto", "SKU", "Stock Actual", "Stock Mínimo", 
-            "Diferencia", "Precio Venta", "Acción"
+            "Producto", "SKU", "Inventario actual", "Inventario mínimo", 
+            "Diferencia", "Precio de venta", "Acción"
         ])
         
         # Configurar tabla
@@ -262,7 +262,7 @@ class StockAvanzadoForm(QMainWindow):
         self.tab_widget.addTab(tab, "⚠️ Alertas")
         
     def crear_tab_estadisticas(self):
-        """Crear tab de estadísticas de stock"""
+        """Crear tab de estadísticas de inventario"""
         tab = QWidget()
         layout = QVBoxLayout(tab)
         layout.setSpacing(15)
@@ -273,12 +273,12 @@ class StockAvanzadoForm(QMainWindow):
         # Crear tarjetas de métricas
         self.metricas = {}
         metricas_info = [
-            ("total_productos", "Total Productos", "📦"),
-            ("stock_total", "Stock Total", "📊"),
-            ("valor_inventario", "Valor Inventario", "💰"),
-            ("productos_stock_bajo", "Stock Bajo", "⚠️"),
-            ("productos_sin_stock", "Sin Stock", "❌"),
-            ("promedio_stock", "Promedio Stock", "📈")
+            ("total_productos", "Total de productos", "📦"),
+            ("stock_total", "Inventario total", "📊"),
+            ("valor_inventario", "Valor del inventario", "💰"),
+            ("productos_stock_bajo", "Inventario bajo", "⚠️"),
+            ("productos_sin_stock", "Sin inventario", "❌"),
+            ("promedio_stock", "Inventario promedio", "📈")
         ]
         
         for i, (key, label, icon) in enumerate(metricas_info):
@@ -291,10 +291,10 @@ class StockAvanzadoForm(QMainWindow):
         layout.addLayout(metrics_layout)
         
         # Gráfico de distribución de stock (placeholder)
-        chart_group = QGroupBox("Distribución de Stock")
+        chart_group = QGroupBox("Distribución del inventario")
         chart_layout = QVBoxLayout(chart_group)
         
-        chart_placeholder = QLabel("📊 Gráfico de distribución de stock\n(Implementar con matplotlib)")
+        chart_placeholder = QLabel("📊 Gráfico de distribución del inventario\n(Pendiente de implementar)")
         chart_placeholder.setAlignment(Qt.AlignCenter)
         chart_placeholder.setStyleSheet("""
             background: #f8f9fa;
@@ -592,7 +592,7 @@ class StockAvanzadoForm(QMainWindow):
             QMessageBox.critical(self, "Error", f"Error cargando movimientos: {str(e)}")
             
     def cargar_alertas(self):
-        """Cargar alertas de stock"""
+        """Cargar alertas de inventario"""
         try:
             limite = self.limite_stock.value()
             alertas = self.db.get_productos_stock_bajo_avanzado(limite)
@@ -643,7 +643,7 @@ class StockAvanzadoForm(QMainWindow):
             QMessageBox.critical(self, "Error", f"Error cargando alertas: {str(e)}")
             
     def cargar_estadisticas(self):
-        """Cargar estadísticas de stock"""
+        """Cargar estadísticas de inventario"""
         try:
             stats = self.db.get_estadisticas_stock()
             
@@ -673,7 +673,7 @@ class StockAvanzadoForm(QMainWindow):
         self.cargar_movimientos()
         
     def actualizar_alertas(self):
-        """Actualizar alertas de stock"""
+        """Actualizar alertas de inventario"""
         self.cargar_alertas()
         
     def abrir_movimiento_rapido(self):
@@ -691,7 +691,7 @@ class StockAvanzadoForm(QMainWindow):
         row = item.row()
         producto_id = self.tabla_productos.item(row, 0).text()
         # Implementar edición de stock
-        QMessageBox.information(self, "Editar Stock", f"Editar stock del producto ID: {producto_id}")
+        QMessageBox.information(self, "Editar inventario", f"Editar inventario del producto ID: {producto_id}")
         
     def ver_movimiento(self, row):
         """Ver detalles de un movimiento"""
@@ -701,7 +701,7 @@ class StockAvanzadoForm(QMainWindow):
     def reponer_stock(self, row):
         """Reponer stock de un producto"""
         # Implementar reposición de stock
-        QMessageBox.information(self, "Reponer Stock", f"Reponer stock de la fila: {row}")
+        QMessageBox.information(self, "Reponer inventario", f"Reponer inventario de la fila: {row}")
         
     def closeEvent(self, event):
         """Manejar cierre de la ventana"""

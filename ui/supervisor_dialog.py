@@ -41,7 +41,7 @@ class SupervisorDialog(QDialog):
         info_layout = QGridLayout(info_group)
         
         info_layout.addWidget(QLabel("Cajero:"), 0, 0)
-        self.lbl_cajero = QLabel("Usuario Actual")
+        self.lbl_cajero = QLabel("Usuario actual")
         info_layout.addWidget(self.lbl_cajero, 0, 1)
         
         info_layout.addWidget(QLabel("Fecha:"), 1, 0)
@@ -82,7 +82,7 @@ class SupervisorDialog(QDialog):
         # Tabla de resumen
         self.tbl_resumen = QTableWidget(0, 4)
         self.tbl_resumen.setHorizontalHeaderLabels([
-            "Hora", "Tipo", "Total", "Medio Pago"
+            "Hora", "Tipo", "Total", "Medio de pago"
         ])
         self.tbl_resumen.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
         self.tbl_resumen.verticalHeader().setVisible(False)

@@ -313,7 +313,7 @@ class ClientesAdmin(QWidget):
             clientes = self.db.get_clientes(filtro)
             self.table.setRowCount(len(clientes))
             self.table.setColumnCount(8)
-            self.table.setHorizontalHeaderLabels(["ID", "Tipo Doc", "Número Doc", "Nombre", "Dirección", "Teléfono", "Email", "Registro"])
+            self.table.setHorizontalHeaderLabels(["ID", "Tipo Doc", "Número Doc", "Nombre", "Dirección", "Teléfono", "Correo electrónico", "Registro"])
 
             # Configurar anchos específicos de columnas
             self.table.setColumnWidth(0, 50)   # ID - estrecho
@@ -561,7 +561,7 @@ class ClienteDetallesDialog(QDialog):
         info_form.addRow("Nombre:", self.lbl_nombre)
         info_form.addRow("Dirección:", self.lbl_direccion)
         info_form.addRow("Teléfono:", self.lbl_telefono)
-        info_form.addRow("Email:", self.lbl_email)
+        info_form.addRow("Correo electrónico:", self.lbl_email)
         info_form.addRow("Registrado:", self.lbl_registro)
         
         info_group.setLayout(info_form)
@@ -663,7 +663,7 @@ class ClienteDetallesDialog(QDialog):
         compras = self.db.get_historial_compras_cliente_por_documento(documento_numero)
         self.compras_table.setRowCount(len(compras))
         self.compras_table.setColumnCount(7)
-        self.compras_table.setHorizontalHeaderLabels(["ID", "Tipo", "Serie", "Número", "Fecha", "Total", "Medio Pago", "Cajero"])
+        self.compras_table.setHorizontalHeaderLabels(["ID", "Tipo", "Serie", "Número", "Fecha", "Total", "Medio de pago", "Cajero"])
         
         for row_idx, compra in enumerate(compras):
             for col_idx, value in enumerate(compra):

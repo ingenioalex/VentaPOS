@@ -182,7 +182,7 @@ class ProveedoresAdmin(QMainWindow):
         self.tbl_proveedores.setColumnCount(12)
         self.tbl_proveedores.setHorizontalHeaderLabels([
             "ID", "Razón Social", "Nombre Comercial", "RUC", "Teléfono",
-            "Email", "Tipo", "Categoría", "Condición Pago", "Estado",
+            "Correo electrónico", "Tipo", "Categoría", "Condición Pago", "Estado",
             "Calificación", "Total Compras"
         ])
         
@@ -383,13 +383,13 @@ class ProveedoresAdmin(QMainWindow):
             <p><b>Dirección:</b> {proveedor_data[4] or 'N/A'}</p>
             <p><b>Teléfono:</b> {proveedor_data[5] or 'N/A'}</p>
             <p><b>Celular:</b> {proveedor_data[6] or 'N/A'}</p>
-            <p><b>Email:</b> {proveedor_data[7] or 'N/A'}</p>
+            <p><b>Correo electrónico:</b> {proveedor_data[7] or 'N/A'}</p>
             <p><b>Web:</b> {proveedor_data[8] or 'N/A'}</p>
             <hr>
             <p><b>Persona de Contacto:</b> {proveedor_data[9] or 'N/A'}</p>
             <p><b>Cargo:</b> {proveedor_data[10] or 'N/A'}</p>
             <p><b>Teléfono Contacto:</b> {proveedor_data[11] or 'N/A'}</p>
-            <p><b>Email Contacto:</b> {proveedor_data[12] or 'N/A'}</p>
+            <p><b>Correo de contacto:</b> {proveedor_data[12] or 'N/A'}</p>
             <hr>
             <p><b>Tipo:</b> {proveedor_data[13]}</p>
             <p><b>Categoría:</b> {proveedor_data[14] or 'N/A'}</p>

@@ -8,7 +8,7 @@ class LoginWindow(QWidget):
         super().__init__()
         self.sesion_id = None  # Guardará el ID de la sesión activa
         self.db = DBClient()
-        self.setWindowTitle("Login RMS")
+        self.setWindowTitle("Inicio de sesión RMS")
         self.setGeometry(100, 100, 300, 150)
 
         # Cargamos la configuración al iniciar
@@ -97,7 +97,7 @@ class LoginWindow(QWidget):
                 datos = json.load(file)
             return datos
         except json.JSONDecodeError as e:
-            QMessageBox.critical(self, "Error JSON", f"El archivo no tiene formato JSON válido: {e}")
+            QMessageBox.critical(self, "Error de JSON", f"El archivo no tiene formato JSON válido: {e}")
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo leer el archivo JSON:\n{str(e)}")
         return None

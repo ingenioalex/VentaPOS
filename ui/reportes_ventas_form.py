@@ -116,7 +116,7 @@ class GraficosCanvas(FigureCanvas):
         self.fig.tight_layout()
         self.draw()
         
-    def grafico_torta(self, datos, titulo="Gráfico de Torta"):
+    def grafico_torta(self, datos, titulo="Gráfico circular"):
         """Crear gráfico de torta"""
         self.fig.clear()
         ax = self.fig.add_subplot(111)
@@ -238,8 +238,8 @@ class ReportesVentasForm(QMainWindow):
         toolbar_layout = QHBoxLayout()
         
         # Botones de acción
-        self.btn_exportar_pdf = QPushButton("📄 Exportar PDF")
-        self.btn_exportar_excel = QPushButton("📊 Exportar Excel")
+        self.btn_exportar_pdf = QPushButton("📄 Exportar a PDF")
+        self.btn_exportar_excel = QPushButton("📊 Exportar a Excel")
         self.btn_imprimir = QPushButton("🖨️ Imprimir")
         self.btn_limpiar = QPushButton("🗑️ Limpiar")
         
@@ -346,7 +346,7 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_periodo = QTableWidget()
         self.tabla_periodo.setColumnCount(6)
         self.tabla_periodo.setHorizontalHeaderLabels([
-            "Período", "Ventas (S/)", "Tickets", "Promedio", "Crecimiento %", "Tendencia"
+            "Período", "Ventas (S/)", "Comprobantes", "Promedio", "Crecimiento %", "Tendencia"
         ])
         
         # Configurar tabla
@@ -434,7 +434,7 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_jerarquia = QTableWidget()
         self.tabla_jerarquia.setColumnCount(5)
         self.tabla_jerarquia.setHorizontalHeaderLabels([
-            "Jerarquía", "Ventas (S/)", "Productos", "Participación %", "Ranking"
+            "Jerarquía", "Ventas (S/)", "Productos", "Participación %", "Puesto"
         ])
         
         # Configurar tabla
@@ -472,7 +472,7 @@ class ReportesVentasForm(QMainWindow):
         filtros_layout.addWidget(self.combo_periodo_marca, 0, 3)
         
         # Top N
-        filtros_layout.addWidget(QLabel("Mostrar Top:"), 1, 0)
+        filtros_layout.addWidget(QLabel("Mostrar primeros:"), 1, 0)
         self.spin_top_marca = QSpinBox()
         self.spin_top_marca.setRange(5, 50)
         self.spin_top_marca.setValue(10)
@@ -513,7 +513,7 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_marca = QTableWidget()
         self.tabla_marca.setColumnCount(6)
         self.tabla_marca.setHorizontalHeaderLabels([
-            "Marca", "Ventas (S/)", "Productos", "Participación %", "Crecimiento %", "Ranking"
+            "Marca", "Ventas (S/)", "Productos", "Participación %", "Crecimiento %", "Puesto"
         ])
         
         # Configurar tabla
@@ -555,7 +555,7 @@ class ReportesVentasForm(QMainWindow):
         filtros_layout.addWidget(self.combo_tipo_comparacion, 0, 1)
         
         # Período base
-        filtros_layout.addWidget(QLabel("Período Base:"), 0, 2)
+        filtros_layout.addWidget(QLabel("Período de referencia:"), 0, 2)
         self.date_periodo_base = QDateEdit()
         self.date_periodo_base.setDate(QDate.currentDate())
         self.date_periodo_base.setCalendarPopup(True)
@@ -590,7 +590,7 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_comparacion = QTableWidget()
         self.tabla_comparacion.setColumnCount(5)
         self.tabla_comparacion.setHorizontalHeaderLabels([
-            "Período", "Ventas (S/)", "Tickets", "Promedio", "Variación %"
+            "Período", "Ventas (S/)", "Comprobantes", "Promedio", "Variación %"
         ])
         
         # Configurar tabla
@@ -667,7 +667,7 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_avanzado = QTableWidget()
         self.tabla_avanzado.setColumnCount(8)
         self.tabla_avanzado.setHorizontalHeaderLabels([
-            "Fecha", "Usuario", "Cliente", "Productos", "Ventas (S/)", "Tickets", "Promedio", "Tendencia"
+            "Fecha", "Usuario", "Cliente", "Productos", "Ventas (S/)", "Comprobantes", "Promedio", "Tendencia"
         ])
         
         # Configurar tabla
@@ -848,7 +848,7 @@ class ReportesVentasForm(QMainWindow):
             datos = self.db.get_ventas_por_periodo(fecha_desde, fecha_hasta, tipo_periodo)
             
             if not datos:
-                QMessageBox.information(self, "Sin Datos", "No se encontraron ventas para el período seleccionado")
+                QMessageBox.information(self, "Sin datos", "No se encontraron ventas para el período seleccionado")
                 return
             
             # Configurar tabla
@@ -881,10 +881,10 @@ class ReportesVentasForm(QMainWindow):
                         crecimiento_str = f"{crecimiento:+.1f}%"
                         tendencia = "📈" if crecimiento > 0 else "📉" if crecimiento < 0 else "➡️"
                     else:
-                        crecimiento_str = "N/A"
+                        crecimiento_str = "N/D"
                         tendencia = "➡️"
                 else:
-                    crecimiento_str = "Base"
+                    crecimiento_str = "Referencia"
                     tendencia = "➡️"
                 
                 # Crear items de la tabla
@@ -948,7 +948,7 @@ class ReportesVentasForm(QMainWindow):
             datos = self.db.get_ventas_por_jerarquia(fecha_desde, fecha_hasta, departamento_id, subdepartamento_id, clase_id)
             
             if not datos:
-                QMessageBox.information(self, "Sin Datos", "No se encontraron ventas para la jerarquía seleccionada")
+                QMessageBox.information(self, "Sin datos", "No se encontraron ventas para la jerarquía seleccionada")
                 return
             
             # Configurar tabla
@@ -1013,7 +1013,7 @@ class ReportesVentasForm(QMainWindow):
             datos = self.db.get_ventas_por_marca(fecha_desde, fecha_hasta, top_n)
             
             if not datos:
-                QMessageBox.information(self, "Sin Datos", "No se encontraron ventas para las marcas seleccionadas")
+                QMessageBox.information(self, "Sin datos", "No se encontraron ventas para las marcas seleccionadas")
                 return
             
             # Configurar tabla
@@ -1080,7 +1080,7 @@ class ReportesVentasForm(QMainWindow):
             datos = self.db.get_comparacion_ventas(fecha_desde, fecha_hasta, tipo_db)
             
             if not datos:
-                QMessageBox.information(self, "Sin Datos", "No se encontraron ventas para la comparación seleccionada")
+                QMessageBox.information(self, "Sin datos", "No se encontraron ventas para la comparación seleccionada")
                 return
             
             # Configurar tabla
@@ -1108,9 +1108,9 @@ class ReportesVentasForm(QMainWindow):
                         variacion = ((ventas_actual - ventas_anterior) / ventas_anterior) * 100
                         variacion_str = f"{variacion:+.1f}%"
                     else:
-                        variacion_str = "N/A"
+                        variacion_str = "N/D"
                 else:
-                    variacion_str = "Base"
+                    variacion_str = "Referencia"
                 
                 # Crear items de la tabla
                 items = [
@@ -1151,7 +1151,7 @@ class ReportesVentasForm(QMainWindow):
             datos = self.db.get_ventas_avanzado(fecha_desde, fecha_hasta, usuario_id, cliente_id, venta_min, venta_max)
             
             if not datos:
-                QMessageBox.information(self, "Sin Datos", "No se encontraron ventas para los filtros seleccionados")
+                QMessageBox.information(self, "Sin datos", "No se encontraron ventas para los filtros seleccionados")
                 return
             
             # Configurar tabla
@@ -1164,8 +1164,8 @@ class ReportesVentasForm(QMainWindow):
                 # Crear items de la tabla
                 items = [
                     str(fila[0]),  # fecha
-                    fila[1] or "N/A",  # usuario
-                    fila[2] or "N/A",  # cliente
+                    fila[1] or "N/D",  # usuario
+                    fila[2] or "N/D",  # cliente
                     str(fila[3]),  # num_productos
                     f"S/ {float(fila[4]):,.2f}",  # ventas_totales
                     str(fila[5]),  # num_tickets
@@ -1190,11 +1190,11 @@ class ReportesVentasForm(QMainWindow):
     # Métodos de exportación
     def exportar_pdf(self):
         """Exportar reporte a PDF"""
-        QMessageBox.information(self, "Exportar PDF", "Funcionalidad de exportación PDF en desarrollo")
+        QMessageBox.information(self, "Exportar a PDF", "Funcionalidad de exportación a PDF en desarrollo")
     
     def exportar_excel(self):
         """Exportar reporte a Excel"""
-        QMessageBox.information(self, "Exportar Excel", "Funcionalidad de exportación Excel en desarrollo")
+        QMessageBox.information(self, "Exportar a Excel", "Funcionalidad de exportación a Excel en desarrollo")
     
     def imprimir_reporte(self):
         """Imprimir reporte"""
@@ -1214,4 +1214,4 @@ class ReportesVentasForm(QMainWindow):
         self.tabla_comparacion.setRowCount(0)
         self.tabla_avanzado.setRowCount(0)
         
-        QMessageBox.information(self, "Limpiar", "Filtros limpiados correctamente")
+        QMessageBox.information(self, "Filtros limpiados", "Filtros limpiados correctamente")

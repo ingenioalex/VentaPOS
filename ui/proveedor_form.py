@@ -67,7 +67,7 @@ class ProveedorForm(QDialog):
         
         self.email = QLineEdit()
         self.email.setMaxLength(100)
-        contacto_layout.addRow("Email:", self.email)
+        contacto_layout.addRow("Correo electrónico:", self.email)
         
         self.web = QLineEdit()
         self.web.setMaxLength(150)
@@ -94,7 +94,7 @@ class ProveedorForm(QDialog):
         
         self.contacto_email = QLineEdit()
         self.contacto_email.setMaxLength(100)
-        persona_layout.addRow("Email:", self.contacto_email)
+        persona_layout.addRow("Correo electrónico:", self.contacto_email)
         
         persona_group.setLayout(persona_layout)
         layout.addWidget(persona_group)

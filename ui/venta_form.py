@@ -44,7 +44,7 @@ class VentaForm(QWidget):
         self.db = db
         self.usuario = usuario_actual
         self.config = config or self._leer_config_json("config.json")
-        self.setWindowTitle("POS - Venta")
+        self.setWindowTitle("Punto de venta - Venta")
         self.setGeometry(200, 120, 1050, 720)
 
         # Estado
@@ -235,7 +235,7 @@ class VentaForm(QWidget):
         cliente_layout = QVBoxLayout(cliente_group)
         
         # Marca de agua POS VENTA
-        marca_agua = QLabel("POS VISOR CLIENTE")
+        marca_agua = QLabel("VISOR DEL CLIENTE")
         marca_agua.setStyleSheet("font-size: 18px; color: #ecf0f1; font-weight: bold; text-align: center; margin: 10px; background: #2c3e50; border-radius: 5px; padding: 5px;")
         marca_agua.setAlignment(Qt.AlignmentFlag.AlignCenter)
         cliente_layout.addWidget(marca_agua)
@@ -305,7 +305,7 @@ class VentaForm(QWidget):
         lbl_hora_header.setStyleSheet("font-size: 12px; color: #2c3e50; font-weight: bold;")
         header_cliente.addWidget(lbl_hora_header)
         
-        lbl_terminal = QLabel("Terminal")
+        lbl_terminal = QLabel("Caja")
         lbl_terminal.setStyleSheet("font-size: 12px; color: #2c3e50; font-weight: bold;")
         header_cliente.addWidget(lbl_terminal)
         
@@ -752,7 +752,7 @@ class VentaForm(QWidget):
 
             terminal_nombre = (self.config or {}).get("terminal", "").strip()
             if not terminal_nombre:
-                QMessageBox.critical(self, "Config", "Falta 'terminal' en config.json.")
+                QMessageBox.critical(self, "Configuración", "Falta 'terminal' en config.json.")
                 return
 
             # Verificar que la terminal existe antes de crear el comprobante
@@ -814,7 +814,7 @@ class VentaForm(QWidget):
             else:
                 self.lbl_tipo_documento.setText("Tipo: BOLETA")
                 
-            QMessageBox.information(self, "OK", f"Comprobante {tipo_bd}-{res['serie']}-{res['numero']} listo.")
+            QMessageBox.information(self, "Listo", f"Comprobante {tipo_bd}-{res['serie']}-{res['numero']} listo.")
             
             # Mostrar botón para cambiar tipo de documento
             self.btn_cambiar_tipo.setVisible(True)
@@ -823,7 +823,7 @@ class VentaForm(QWidget):
         except Exception as e:
             import traceback
             error_details = traceback.format_exc()
-            QMessageBox.critical(self, "Error Detallado", 
+            QMessageBox.critical(self, "Detalle del error", 
                 f"No se pudo iniciar el comprobante:\n\n"
                 f"Error: {str(e)}\n\n"
                 f"Detalles técnicos:\n{error_details}")
@@ -842,7 +842,7 @@ class VentaForm(QWidget):
             prod = self._buscar_por_sku(code)
 
         if not prod:
-            QMessageBox.warning(self, "No encontrado", "No se encontró producto.")
+            QMessageBox.warning(self, "Producto no encontrado", "No se encontró producto.")
             self.input_codigo.selectAll()
             return
 
@@ -1677,7 +1677,7 @@ class VentaForm(QWidget):
         codigo, ok = QInputDialog.getText(self, "Consultar Precio", "Ingrese código/SKU del producto:")
         if ok and codigo:
             # Aquí iría la lógica para consultar precio
-            QMessageBox.information(self, "Consulta", f"Consultando precio para: {codigo}")
+            QMessageBox.information(self, "Consulta de precio", f"Consultando precio para: {codigo}")
     
     def recobrar_anulado(self):
         """Recobra una venta anulada"""
@@ -1916,7 +1916,7 @@ class VentaForm(QWidget):
         supervisor_id = self.db.get_usuario_id_por_login(user)
         try:
             self.db.anular_comprobante(self.comprobante_id, supervisor_id, motivo)
-            QMessageBox.information(self, "Ok", "Comprobante anulado.")
+            QMessageBox.information(self, "Listo", "Comprobante anulado.")
             self.close()
         except Exception as e:
             QMessageBox.critical(self, "Error", f"No se pudo anular: {e}")
@@ -2104,7 +2104,7 @@ class VentaForm(QWidget):
         try:
             # Placeholder: ajusta a tu entorno (python-escpos / lp / puertos)
             # os.system("echo -e '\x1B\x70\x00\x50\x50' > /dev/usb/lp0")
-            QMessageBox.information(self, "Gaveta", "Comando de apertura enviado (placeholder).")
+            QMessageBox.information(self, "Gaveta", "Comando de apertura enviado (simulado).")
             
             # Solicitar conteo de fondo
             self.solicitar_conteo_fondo()
@@ -2216,7 +2216,7 @@ class VentaForm(QWidget):
                 igv_unit = float(self.tbl.item(r, 5).text())
                 precio_unit = float(self.tbl.item(r, 6).text())
                 importe = float(self.tbl.item(r, 7).text())
-                tipo_afect = "GRAVADO" if afecto else "INAFECTO"
+                tipo_afect = "Afecto" if afecto else "Inafecto"
 
                 
                 self._agregar_detalle_backend(
@@ -2258,7 +2258,7 @@ class VentaForm(QWidget):
                 efectivo=eff, tarjeta=tar, otros=otr, total=total
             )
 
-            QMessageBox.information(self, "OK", "Venta finalizada.")
+            QMessageBox.information(self, "Listo", "Venta finalizada.")
             
             # Preguntar si desea iniciar otra venta
             reply = QMessageBox.question(
@@ -2345,7 +2345,7 @@ class VentaForm(QWidget):
                 comprobante_id, efectivo, tarjeta, otros, total
             )
         else:
-            # placeholder amable
+            # simulado amable
             pass
 
     # === NUEVAS FUNCIONES PARA MENÚS DESPLEGABLES ===
@@ -2469,7 +2469,7 @@ class VentaForm(QWidget):
                 vuelto = resultado['total_pagado'] - total_venta
                 
                 # Mostrar mensaje de éxito mejorado con vuelto
-                mensaje = f"PAGO PROCESADO EXITOSAMENTE\n\n"
+                mensaje = f"PAGO REGISTRADO CORRECTAMENTE\n\n"
                 mensaje += f"Total de la Venta: S/. {total_venta:.2f}\n"
                 mensaje += f"Efectivo: S/. {resultado['efectivo']:.2f}\n"
                 mensaje += f"Tarjeta: S/. {resultado['tarjeta']:.2f}\n"
@@ -2480,7 +2480,7 @@ class VentaForm(QWidget):
                 else:
                     mensaje += "Vuelto: S/. 0.00"
                 
-                QMessageBox.information(self, "Pago Exitoso", mensaje)
+                QMessageBox.information(self, "Cobro correcto", mensaje)
                 
                 # Finalizar comprobante (ya incluye la pregunta de nueva venta)
                 self.finalizar_comprobante()

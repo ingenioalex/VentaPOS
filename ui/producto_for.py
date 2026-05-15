@@ -64,7 +64,7 @@ class ProductoForm(QWidget):
         self.unidad_medida.currentTextChanged.connect(self.activar_plu)
 
         self.tipo_producto = QComboBox()
-        self.tipo_producto.addItems(["Mercaderia", "Insumo", "Clase100"])
+        self.tipo_producto.addItems(["Mercadería", "Insumo", "Clase100"])
         self.tipo_producto.editTextChanged.connect(lambda: self.mover_cursor(5))
 
         self.stock = QSpinBox()
@@ -180,7 +180,7 @@ class ProductoForm(QWidget):
         basica_layout.addWidget(self.unidad_medida, 4, 1)
         basica_layout.addWidget(QLabel("PLU:"), 4, 2)
         basica_layout.addWidget(self.plu, 4, 3)
-        basica_layout.addWidget(QLabel("Stock Inicial:"), 4, 4)
+        basica_layout.addWidget(QLabel("Inventario inicial:"), 4, 4)
         basica_layout.addWidget(self.stock, 4, 5)
         
         basica_group.setLayout(basica_layout)
@@ -215,7 +215,7 @@ class ProductoForm(QWidget):
         campos_avanzados_layout.addWidget(self.marca, 0, 1)
         campos_avanzados_layout.addWidget(QLabel("Reg. Sanitario:"), 0, 2)
         campos_avanzados_layout.addWidget(self.registro_sanitario, 0, 3)
-        campos_avanzados_layout.addWidget(QLabel("Stock Mínimo:"), 0, 4)
+        campos_avanzados_layout.addWidget(QLabel("Inventario mínimo:"), 0, 4)
         campos_avanzados_layout.addWidget(self.stock_minimo, 0, 5)
         
         # Fila 2
@@ -236,7 +236,7 @@ class ProductoForm(QWidget):
         # Fila 5
         campos_avanzados_layout.addWidget(QLabel("Días de Retiro:"), 4, 0)
         campos_avanzados_layout.addWidget(self.dias_retiro, 4, 1)
-        campos_avanzados_layout.addWidget(QLabel("Case Pack:"), 4, 2)
+        campos_avanzados_layout.addWidget(QLabel("Unid. por empaque:"), 4, 2)
         campos_avanzados_layout.addWidget(self.case_pack, 4, 3)
         
         self.extra_frame.setLayout(campos_avanzados_layout)

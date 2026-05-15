@@ -111,7 +111,7 @@ class GraficosCanvas(FigureCanvas):
         ax.plot(horas, sesiones, marker='o', linewidth=2, markersize=6, 
                color='#2c3e50', label='Total Sesiones')
         ax.plot(horas, usuarios, marker='s', linewidth=2, markersize=6, 
-               color='#e74c3c', label='Usuarios Únicos')
+               color='#e74c3c', label='Usuarios distintos')
         
         ax.set_title(titulo, fontsize=12, fontweight='bold')
         ax.set_xlabel('Hora del Día', fontsize=10)
@@ -211,7 +211,7 @@ class ReportesUsuariosForm(QMainWindow):
         self.tbl_actividad = QTableWidget()
         self.tbl_actividad.setColumnCount(8)
         self.tbl_actividad.setHorizontalHeaderLabels([
-            "ID", "Nombre", "Usuario", "Rol", "Sesiones", "Logins", "Logouts", "Estado"
+            "ID", "Nombre", "Usuario", "Rol", "Sesiones", "Inicios de sesión", "Cierres de sesión", "Estado"
         ])
         
         # Configurar tabla
@@ -275,7 +275,7 @@ class ReportesUsuariosForm(QMainWindow):
         self.tbl_ventas = QTableWidget()
         self.tbl_ventas.setColumnCount(7)
         self.tbl_ventas.setHorizontalHeaderLabels([
-            "ID", "Nombre", "Usuario", "Rol", "Ventas", "Monto Total", "Promedio"
+            "ID", "Nombre", "Usuario", "Rol", "Ventas", "Monto total", "Promedio"
         ])
         
         # Configurar tabla
@@ -333,7 +333,7 @@ class ReportesUsuariosForm(QMainWindow):
         self.tbl_sesiones = QTableWidget()
         self.tbl_sesiones.setColumnCount(9)
         self.tbl_sesiones.setHorizontalHeaderLabels([
-            "ID", "Usuario", "Nombre", "Rol", "Terminal", "Tipo", "Inicio", "Fin", "Estado"
+            "ID", "Usuario", "Nombre", "Rol", "Caja", "Tipo", "Inicio", "Fin", "Estado"
         ])
         
         # Configurar tabla
@@ -391,7 +391,7 @@ class ReportesUsuariosForm(QMainWindow):
         self.tbl_horarios = QTableWidget()
         self.tbl_horarios.setColumnCount(5)
         self.tbl_horarios.setHorizontalHeaderLabels([
-            "Hora", "Sesiones", "Usuarios Únicos", "Logins", "Logouts"
+            "Hora", "Sesiones", "Usuarios distintos", "Inicios de sesión", "Cierres de sesión"
         ])
         
         # Configurar tabla
@@ -447,7 +447,7 @@ class ReportesUsuariosForm(QMainWindow):
         self.tbl_inactivos = QTableWidget()
         self.tbl_inactivos.setColumnCount(7)
         self.tbl_inactivos.setHorizontalHeaderLabels([
-            "ID", "Nombre", "Usuario", "Rol", "Estado", "Última Sesión", "Días Inactivo"
+            "ID", "Nombre", "Usuario", "Rol", "Estado", "Última Sesión", "Días de inactividad"
         ])
         
         # Configurar tabla

@@ -64,7 +64,7 @@ class ProductoForm(QWidget):
         self.unidad_medida.currentTextChanged.connect(self.activar_plu)
 
         self.tipo_producto = QComboBox()
-        self.tipo_producto.addItems(["Mercaderia", "Insumo", "Clase100"])
+        self.tipo_producto.addItems(["Mercadería", "Insumo", "Clase100"])
         self.tipo_producto.editTextChanged.connect(lambda: self.mover_cursor(5))
 
         self.stock = QSpinBox()
@@ -106,11 +106,11 @@ class ProductoForm(QWidget):
         self.form.addRow("Unidad de Medida:", self.unidad_medida)
         self.form.addRow("PLU (opcional):", self.plu)
         self.form.addRow("Tipo de Producto:", self.tipo_producto)
-        self.form.addRow("Stock Inicial:", self.stock)
-        self.form.addRow("Costo Compra:", self.costo)
-        self.form.addRow("Precio Venta:", self.precio)
+        self.form.addRow("Inventario inicial:", self.stock)
+        self.form.addRow("Costo de compra:", self.costo)
+        self.form.addRow("Precio de venta:", self.precio)
         self.form.addRow("IGV:", self.igv)
-        self.form.addRow("Valor Venta:", self.valor_venta)
+        self.form.addRow("Valor de venta:", self.valor_venta)
         self.form.addRow("% Margen de Ganancia:", self.ganancia)
         self.form.addRow("", self.afecto_igv)
         self.form.addRow("Mostrar Campos Avanzados:", self.activar_extra)
@@ -151,15 +151,15 @@ class ProductoForm(QWidget):
 
         self.extra_layout.addRow("Marca:", self.marca)
         self.extra_layout.addRow("Registro Sanitario:", self.registro_sanitario)
-        self.extra_layout.addRow("Stock Mínimo:", self.stock_minimo)
+        self.extra_layout.addRow("Inventario mínimo:", self.stock_minimo)
         self.extra_layout.addRow("Precio Regular:", self.precio_regular)
         self.extra_layout.addRow("", self.check_promocion)
         self.extra_layout.addRow("Precio Promoción:", self.precio_promocion)
 
         self.extra_layout.addRow("Descuento:", self.descuento)
-        self.extra_layout.addRow("Costo Reposición:", self.costo_reposicion)
+        self.extra_layout.addRow("Costo de reposición:", self.costo_reposicion)
         self.extra_layout.addRow("Días de Retiro:", self.dias_retiro)
-        self.extra_layout.addRow("Case Pack:", self.case_pack)
+        self.extra_layout.addRow("Unid. por empaque:", self.case_pack)
 
         layout.addLayout(self.form)
         layout.addWidget(self.extra_frame)

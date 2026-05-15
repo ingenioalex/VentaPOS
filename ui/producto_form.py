@@ -68,7 +68,7 @@ class ProductoForm(QWidget):
         self.unidad_medida.currentTextChanged.connect(self.activar_plu)
 
         self.tipo_producto = QComboBox()
-        self.tipo_producto.addItems(["Mercaderia", "Insumo", "Clase100"])
+        self.tipo_producto.addItems(["Mercadería", "Insumo", "Clase100"])
         self.tipo_producto.editTextChanged.connect(lambda: self.mover_cursor(5))
 
         self.stock = QSpinBox()
@@ -248,7 +248,7 @@ class ProductoForm(QWidget):
         stock_layout.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
         stock_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         stock_layout.setSpacing(12)
-        stock_layout.addRow("Stock Inicial:", self.stock)
+        stock_layout.addRow("Inventario inicial:", self.stock)
         fila4.addLayout(unidad_layout)
         fila4.addLayout(plu_layout)
         fila4.addLayout(stock_layout)
@@ -363,7 +363,7 @@ class ProductoForm(QWidget):
         stock_min_layout.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
         stock_min_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         stock_min_layout.setSpacing(12)
-        stock_min_layout.addRow("Stock Min:", self.stock_minimo)
+        stock_min_layout.addRow("Inventario mín.:", self.stock_minimo)
         fila_av1.addLayout(marca_layout, 3)        # Proporción 3 para marca
         fila_av1.addLayout(reg_sanitario_layout, 3) # Proporción 3 para registro sanitario
         fila_av1.addLayout(stock_min_layout, 1)     # Proporción 1 para stock mínimo
@@ -426,7 +426,7 @@ class ProductoForm(QWidget):
         case_layout.setLabelAlignment(Qt.AlignRight | Qt.AlignVCenter)
         case_layout.setFormAlignment(Qt.AlignLeft | Qt.AlignTop)
         case_layout.setSpacing(8)
-        case_layout.addRow("Case Pack:", self.case_pack)
+        case_layout.addRow("Unid. por empaque:", self.case_pack)
         fila_av5.addLayout(dias_layout)
         fila_av5.addLayout(case_layout)
         fila_av5.addStretch()

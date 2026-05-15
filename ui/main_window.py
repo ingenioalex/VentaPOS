@@ -48,7 +48,7 @@ class MainWindow(QMainWindow):
         self.precio_btn.clicked.connect(self.abrir_formulario_precio)
         self.precio_btn.setVisible(False)
 
-        self.venta_btn=QPushButton("POS Venta")
+        self.venta_btn=QPushButton("Punto de venta")
         self.venta_btn.clicked.connect(self.abrir_pos)
         self.venta_btn.setVisible(False)
 
@@ -94,7 +94,7 @@ class MainWindow(QMainWindow):
             }
         """)
         
-        self.dashboard_btn = QPushButton("📊 Dashboard")
+        self.dashboard_btn = QPushButton("📊 Panel principal")
         self.dashboard_btn.clicked.connect(self.abrir_dashboard)
         self.dashboard_btn.setVisible(False)
         self.dashboard_btn.setStyleSheet("""
@@ -201,7 +201,7 @@ class MainWindow(QMainWindow):
             }
         """)
         
-        self.stock_btn = QPushButton("📦 Stock Avanzado")
+        self.stock_btn = QPushButton("📦 Inventario avanzado")
         self.stock_btn.clicked.connect(self.abrir_stock_avanzado)
         self.stock_btn.setVisible(False)
 
@@ -317,13 +317,13 @@ class MainWindow(QMainWindow):
             self.flejes_btn.setVisible(True)
             self.flejes_v2_btn.setVisible(True)
         elif rol == 'cajero':
-            # Solo POS Venta
+            # Solo punto de venta
             self.venta_btn.setVisible(True)
         elif rol == 'supervisor':
             # Solo módulos de cajas y cierre de cajas
             self.cierres_btn.setVisible(True)
         elif rol == 'jefe':
-            # Reportes, Dashboard, POS ventas y (si existiera) flejes
+            # Reportes, panel principal, punto de venta y (si existiera) flejes
             self.venta_btn.setVisible(True)
             self.dashboard_btn.setVisible(True)
             self.reportes_btn.setVisible(True)
@@ -512,12 +512,12 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "❌ Error", f"Error al abrir gestión de cierres: {str(e)}")
     
     def abrir_dashboard(self):
-        """Abre el Dashboard principal"""
+        """Abre el panel principal"""
         try:
             self.dashboard = DashboardForm(self.db, self.usuario)
             self.dashboard.show()
         except Exception as e:
-            QMessageBox.critical(self, "❌ Error", f"Error al abrir Dashboard: {str(e)}")
+            QMessageBox.critical(self, "❌ Error", f"Error al abrir el panel principal: {str(e)}")
     
     def abrir_reportes_ventas(self):
         """Abre el módulo de Reportes de Ventas"""
@@ -550,19 +550,19 @@ class MainWindow(QMainWindow):
             QMessageBox.critical(self, "❌ Error", f"Error al abrir Reportes de Productos: {str(e)}")
     
     def abrir_stock_avanzado(self):
-        """Abre el módulo de Gestión de Stock Avanzada"""
+        """Abre el módulo de Gestión de inventario avanzada"""
         try:
             # Verificar permisos (solo admin y jefe)
             rol = self.db.get_rol_usuario(self.usuario)
             if rol not in ['admin', 'jefe']:
                 QMessageBox.warning(self, "⚠️ Acceso Denegado", 
-                                  "Solo administradores y jefes pueden acceder a la gestión de stock avanzada.")
+                                  "Solo administradores y jefes pueden acceder a la gestión de inventario avanzada.")
                 return
             
             self.stock_avanzado_form = StockAvanzadoForm(self.db, self.usuario)
             self.stock_avanzado_form.show()
         except Exception as e:
-            QMessageBox.critical(self, "❌ Error", f"Error al abrir gestión de stock: {str(e)}")
+            QMessageBox.critical(self, "❌ Error", f"Error al abrir gestión de inventario: {str(e)}")
     
     def abrir_reportes_usuarios(self):
         """Abre el módulo de Reportes de Usuarios"""

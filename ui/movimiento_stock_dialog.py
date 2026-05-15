@@ -24,7 +24,7 @@ class MovimientoStockDialog(QDialog):
         
     def init_ui(self):
         """Inicializar la interfaz de usuario"""
-        self.setWindowTitle("📦 Movimiento de Stock")
+        self.setWindowTitle("📦 Movimiento de inventario")
         self.setModal(True)
         self.resize(500, 600)
         
@@ -34,7 +34,7 @@ class MovimientoStockDialog(QDialog):
         layout.setContentsMargins(20, 20, 20, 20)
         
         # Título
-        titulo = QLabel("📦 Movimiento de Stock")
+        titulo = QLabel("📦 Movimiento de inventario")
         titulo.setStyleSheet("""
             font-size: 20px;
             font-weight: bold;
@@ -78,7 +78,7 @@ class MovimientoStockDialog(QDialog):
             font-weight: bold;
             color: #27ae60;
         """)
-        producto_layout.addRow("Stock Actual:", self.stock_actual_label)
+        producto_layout.addRow("Inventario actual:", self.stock_actual_label)
         
         layout.addWidget(producto_group)
         
@@ -88,7 +88,7 @@ class MovimientoStockDialog(QDialog):
         
         # Tipo de movimiento
         self.tipo_movimiento = QComboBox()
-        self.tipo_movimiento.addItems(["entrada", "salida", "ajuste"])
+        self.tipo_movimiento.addItems(["Entrada", "Salida", "Ajuste"])
         self.tipo_movimiento.currentTextChanged.connect(self.cambiar_tipo_movimiento)
         movimiento_layout.addRow("Tipo de Movimiento:", self.tipo_movimiento)
         
@@ -103,7 +103,7 @@ class MovimientoStockDialog(QDialog):
         self.nuevo_stock_spin.setRange(0, 999999)
         self.nuevo_stock_spin.setValue(0)
         self.nuevo_stock_spin.setVisible(False)
-        movimiento_layout.addRow("Nuevo Stock:", self.nuevo_stock_spin)
+        movimiento_layout.addRow("Nuevo inventario:", self.nuevo_stock_spin)
         
         # Fecha del movimiento
         self.fecha_movimiento = QDateEdit()
@@ -119,7 +119,7 @@ class MovimientoStockDialog(QDialog):
         # Documento de referencia
         self.documento_ref = QLineEdit()
         self.documento_ref.setPlaceholderText("Número de factura, orden de compra, etc.")
-        movimiento_layout.addRow("Documento Ref:", self.documento_ref)
+        movimiento_layout.addRow("Doc. referencia:", self.documento_ref)
         
         # Checkbox para confirmar
         self.confirmar_check = QCheckBox("Confirmo que la información es correcta")
@@ -283,7 +283,7 @@ class MovimientoStockDialog(QDialog):
         
     def cambiar_tipo_movimiento(self, tipo):
         """Cambiar tipo de movimiento"""
-        if tipo == "ajuste":
+        if tipo.lower() == "ajuste":
             self.nuevo_stock_spin.setVisible(True)
             self.cantidad_spin.setVisible(False)
         else:
@@ -313,7 +313,7 @@ class MovimientoStockDialog(QDialog):
             documento_ref = self.documento_ref.text().strip()
             usuario_id = self.usuario_actual.get('id', 1)
             
-            if tipo_movimiento == "ajuste":
+            if tipo_movimiento.lower() == "ajuste":
                 nuevo_stock = self.nuevo_stock_spin.value()
                 cantidad = 0  # Se calculará automáticamente
             else:
@@ -322,7 +322,7 @@ class MovimientoStockDialog(QDialog):
                 
             # Realizar movimiento
             success, message = self.db.actualizar_stock_producto(
-                self.producto_id, nuevo_stock, tipo_movimiento, 
+                self.producto_id, nuevo_stock, tipo_movimiento.lower(), 
                 cantidad, motivo, usuario_id, documento_ref
             )
             
@@ -339,19 +339,19 @@ class MovimientoStockDialog(QDialog):
         """Validar movimiento antes de guardar"""
         tipo_movimiento = self.tipo_movimiento.currentText()
         
-        if tipo_movimiento == "salida":
+        if tipo_movimiento.lower() == "salida":
             stock_actual = int(self.stock_actual_label.text())
             cantidad = self.cantidad_spin.value()
             
             if cantidad > stock_actual:
                 QMessageBox.warning(self, "Error de Validación", 
-                                  f"No hay suficiente stock.\nStock disponible: {stock_actual}\nCantidad solicitada: {cantidad}")
+                                  f"No hay suficiente stock.\nInventario disponible: {stock_actual}\nCantidad solicitada: {cantidad}")
                 return False
                 
-        elif tipo_movimiento == "ajuste":
+        elif tipo_movimiento.lower() == "ajuste":
             nuevo_stock = self.nuevo_stock_spin.value()
             if nuevo_stock < 0:
-                QMessageBox.warning(self, "Error de Validación", "El stock no puede ser negativo.")
+                QMessageBox.warning(self, "Error de Validación", "El inventario no puede ser negativo.")
                 return False
                 
         return True

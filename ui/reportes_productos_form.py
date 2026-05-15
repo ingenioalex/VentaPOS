@@ -29,7 +29,7 @@ class GraficosCanvas(FigureCanvas):
         self.fig.clear()
         self.draw()
     
-    def grafico_barras_top_productos(self, productos, titulo="Top Productos"):
+    def grafico_barras_top_productos(self, productos, titulo="Productos principales"):
         """Crear gráfico de barras para top productos"""
         self.fig.clear()
         ax = self.fig.add_subplot(111)
@@ -57,7 +57,7 @@ class GraficosCanvas(FigureCanvas):
         self.fig.clear()
         ax = self.fig.add_subplot(111)
         
-        labels = ['Stock Normal', 'Stock Bajo', 'Sin Stock']
+        labels = ['Inventario normal', 'Inventario bajo', 'Sin inventario']
         sizes = [
             estadisticas.get('productos_stock_normal', 0),
             estadisticas.get('productos_stock_bajo', 0),
@@ -72,7 +72,7 @@ class GraficosCanvas(FigureCanvas):
             
             wedges, texts, autotexts = ax.pie(sizes, labels=labels, colors=colors, autopct='%1.1f%%',
                                             startangle=90, textprops={'fontsize': 9})
-            ax.set_title('Distribución de Stock', fontsize=12, fontweight='bold')
+            ax.set_title('Distribución del inventario', fontsize=12, fontweight='bold')
         
         self.fig.tight_layout()
         self.draw()
@@ -271,7 +271,7 @@ class ReportesProductosForm(QMainWindow):
         filtros_layout.addWidget(self.fecha_hasta_mv, 0, 3)
         
         # Top N
-        filtros_layout.addWidget(QLabel("Top:"), 1, 0)
+        filtros_layout.addWidget(QLabel("Primeros:"), 1, 0)
         self.top_n_mv = QSpinBox()
         self.top_n_mv.setRange(5, 100)
         self.top_n_mv.setValue(10)
@@ -298,7 +298,7 @@ class ReportesProductosForm(QMainWindow):
         self.tabla_mv.setColumnCount(8)
         self.tabla_mv.setHorizontalHeaderLabels([
             "Producto", "Marca", "Código Barra", "Cantidad", 
-            "Ingresos", "Ventas", "Precio Prom.", "Stock"
+            "Ingresos", "Ventas", "Precio prom.", "Inventario"
         ])
         self.tabla_mv.horizontalHeader().setSectionResizeMode(1, QHeaderView.Stretch)
         splitter.addWidget(self.tabla_mv)
@@ -343,8 +343,8 @@ class ReportesProductosForm(QMainWindow):
         self.tabla_sb = QTableWidget()
         self.tabla_sb.setColumnCount(8)
         self.tabla_sb.setHorizontalHeaderLabels([
-            "Producto", "Marca", "Stock Actual", "Stock Mín.", 
-            "Estado", "Precio Venta", "Costo", "Diferencia"
+            "Producto", "Marca", "Inventario actual", "Inventario mín.", 
+            "Estado", "Precio de venta", "Costo", "Diferencia"
         ])
         self.tabla_sb.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         splitter.addWidget(self.tabla_sb)
@@ -379,7 +379,7 @@ class ReportesProductosForm(QMainWindow):
         filtros_layout.addWidget(self.fecha_hasta_rt, 0, 3)
         
         # Top N
-        filtros_layout.addWidget(QLabel("Top:"), 1, 0)
+        filtros_layout.addWidget(QLabel("Primeros:"), 1, 0)
         self.top_n_rt = QSpinBox()
         self.top_n_rt.setRange(5, 50)
         self.top_n_rt.setValue(10)
@@ -400,7 +400,7 @@ class ReportesProductosForm(QMainWindow):
         self.tabla_rt.setColumnCount(9)
         self.tabla_rt.setHorizontalHeaderLabels([
             "Producto", "Marca", "Cantidad", "Ingresos", 
-            "Costos", "Ganancia", "Margen %", "Precio Prom.", "Costo Prom."
+            "Costos", "Ganancia", "Margen %", "Precio prom.", "Costo prom."
         ])
         self.tabla_rt.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         splitter.addWidget(self.tabla_rt)
@@ -445,8 +445,8 @@ class ReportesProductosForm(QMainWindow):
         self.tabla_ro = QTableWidget()
         self.tabla_ro.setColumnCount(10)
         self.tabla_ro.setHorizontalHeaderLabels([
-            "Producto", "Marca", "Stock", "Vendido", 
-            "Días Venta", "Prom. Diario", "Días Inv.", "Rotación", "Estado", "Prioridad"
+            "Producto", "Marca", "Inventario", "Vendido (unid.)", 
+            "Días con venta", "Prom. diario", "Días en inventario", "Rotación", "Estado", "Prioridad"
         ])
         self.tabla_ro.horizontalHeader().setSectionResizeMode(0, QHeaderView.Stretch)
         layout.addWidget(self.tabla_ro)
@@ -473,14 +473,14 @@ class ReportesProductosForm(QMainWindow):
         # Crear labels para estadísticas
         self.labels_stats = {}
         stats_labels = [
-            ("Total Productos", "total_productos"),
-            ("Productos Activos", "productos_activos"),
-            ("Sin Stock", "productos_sin_stock"),
-            ("Stock Bajo", "productos_stock_bajo"),
-            ("Stock Normal", "productos_stock_normal"),
-            ("Stock Promedio", "stock_promedio"),
-            ("Valor Inventario", "valor_inventario_total"),
-            ("Valor Venta Total", "valor_venta_total")
+            ("Total de productos", "total_productos"),
+            ("Productos activos", "productos_activos"),
+            ("Sin inventario", "productos_sin_stock"),
+            ("Inventario bajo", "productos_stock_bajo"),
+            ("Inventario normal", "productos_stock_normal"),
+            ("Inventario promedio", "stock_promedio"),
+            ("Valor del inventario", "valor_inventario_total"),
+            ("Valor total de venta", "valor_venta_total")
         ]
         
         for i, (label_text, key) in enumerate(stats_labels):
@@ -540,7 +540,7 @@ class ReportesProductosForm(QMainWindow):
             
             # Crear gráfico
             if productos:
-                self.grafico_mv.grafico_barras_top_productos(productos, f"Top {top_n} Productos Más Vendidos")
+                self.grafico_mv.grafico_barras_top_productos(productos, f"Primeros {top_n} productos más vendidos")
             
             QMessageBox.information(self, "Éxito", f"Reporte generado con {len(productos)} productos")
             
@@ -562,7 +562,12 @@ class ReportesProductosForm(QMainWindow):
                 self.tabla_sb.setItem(row, 1, QTableWidgetItem(producto[3] or "Sin Marca"))  # marca
                 self.tabla_sb.setItem(row, 2, QTableWidgetItem(f"{producto[6]:.0f}"))  # stock_disponible
                 self.tabla_sb.setItem(row, 3, QTableWidgetItem(f"{producto[7]:.0f}"))  # stock_minimo
-                self.tabla_sb.setItem(row, 4, QTableWidgetItem(producto[10]))  # estado_stock
+                estado_stock = {
+                    "Sin Stock": "Sin inventario",
+                    "Stock Bajo": "Inventario bajo",
+                    "Stock Normal": "Inventario normal",
+                }.get(producto[10], producto[10])
+                self.tabla_sb.setItem(row, 4, QTableWidgetItem(estado_stock))  # estado_stock
                 self.tabla_sb.setItem(row, 5, QTableWidgetItem(f"S/. {producto[8]:.2f}"))  # precio_venta
                 self.tabla_sb.setItem(row, 6, QTableWidgetItem(f"S/. {producto[9]:.2f}"))  # costo_promedio
                 self.tabla_sb.setItem(row, 7, QTableWidgetItem(f"S/. {producto[8] - producto[9]:.2f}"))  # diferencia
@@ -570,13 +575,13 @@ class ReportesProductosForm(QMainWindow):
                 # Colorear según estado
                 estado_item = self.tabla_sb.item(row, 4)
                 if estado_item:
-                    if estado_item.text() == "Sin Stock":
+                    if estado_item.text() == "Sin inventario":
                         for col in range(8):
                             item = self.tabla_sb.item(row, col)
                             if item:
                                 item.setBackground(Qt.GlobalColor.darkRed)
                                 item.setForeground(Qt.GlobalColor.white)
-                    elif estado_item.text() == "Stock Bajo":
+                    elif estado_item.text() == "Inventario bajo":
                         for col in range(8):
                             item = self.tabla_sb.item(row, col)
                             if item:

@@ -9,7 +9,7 @@ from datetime import datetime, timedelta
 import json
 
 class DashboardWorker(QThread):
-    """Worker thread para actualizar datos del dashboard sin bloquear la UI"""
+    """Worker thread para actualizar datos del panel principal sin bloquear la UI"""
     data_updated = Signal(dict)
     
     def __init__(self, db):
@@ -20,7 +20,7 @@ class DashboardWorker(QThread):
     def run(self):
         while self.running:
             try:
-                # Obtener datos del dashboard
+                # Obtener datos del panel principal
                 data = self.get_dashboard_data()
                 self.data_updated.emit(data)
                 
@@ -37,7 +37,7 @@ class DashboardWorker(QThread):
                 self.msleep(10000)  # Esperar más tiempo en caso de error
     
     def get_dashboard_data(self):
-        """Obtener todos los datos necesarios para el dashboard"""
+        """Obtener todos los datos necesarios para el panel principal"""
         try:
             # Datos del día actual
             hoy = datetime.now().date()
@@ -77,7 +77,7 @@ class DashboardWorker(QThread):
                 'cambio_ventas': total_ventas - total_ayer
             }
         except Exception as e:
-            print(f"Error obteniendo datos del dashboard: {e}")
+            print(f"Error obteniendo datos del panel principal: {e}")
             return {}
 
 class DashboardForm(QMainWindow):
@@ -93,8 +93,8 @@ class DashboardForm(QMainWindow):
         self.load_initial_data()
     
     def init_ui(self):
-        """Inicializar la interfaz del dashboard"""
-        self.setWindowTitle("Dashboard Principal - RMS")
+        """Inicializar la interfaz del panel principal"""
+        self.setWindowTitle("Panel principal - RMS")
         self.setMinimumSize(1200, 800)
         self.resize(1400, 900)
         
@@ -114,7 +114,7 @@ class DashboardForm(QMainWindow):
         header_layout = QHBoxLayout()
         
         # Título
-        title = QLabel("📊 DASHBOARD PRINCIPAL")
+        title = QLabel("📊 PANEL PRINCIPAL")
         title.setObjectName("dashboard_title")
         title.setAlignment(Qt.AlignCenter)
         header_layout.addWidget(title)
@@ -255,7 +255,7 @@ class DashboardForm(QMainWindow):
             QMessageBox.warning(self, "Error", f"Error actualizando datos: {str(e)}")
     
     def get_dashboard_data(self):
-        """Obtener datos del dashboard para la fecha seleccionada"""
+        """Obtener datos del panel principal para la fecha seleccionada"""
         try:
             fecha_str = self.fecha_seleccionada.strftime("%Y-%m-%d")
             
@@ -296,7 +296,7 @@ class DashboardForm(QMainWindow):
                 'fecha_seleccionada': fecha_str
             }
         except Exception as e:
-            print(f"Error obteniendo datos del dashboard: {e}")
+            print(f"Error obteniendo datos del panel principal: {e}")
             return {}
     
     def create_metrics_row(self):
@@ -315,9 +315,9 @@ class DashboardForm(QMainWindow):
         
         # Métrica 2: Número de tickets
         tickets_card, self.tickets_label = self.create_metric_card(
-            "🎫 TICKETS",
+            "🎫 COMPROBANTES",
             "0",
-            "tickets",
+            "comprobantes",
             "tickets_metric"
         )
         layout.addWidget(tickets_card)
@@ -379,7 +379,7 @@ class DashboardForm(QMainWindow):
         layout = QVBoxLayout(group)
         
         # Placeholder para el gráfico
-        chart_label = QLabel("Gráfico de ventas por hora\n(Implementar con matplotlib)")
+        chart_label = QLabel("Gráfico de ventas por hora\n(Pendiente de implementar)")
         chart_label.setObjectName("chart_placeholder")
         chart_label.setAlignment(Qt.AlignCenter)
         chart_label.setMinimumHeight(200)
@@ -403,7 +403,7 @@ class DashboardForm(QMainWindow):
         layout.addWidget(self.caja_status)
         
         # Stock bajo
-        stock_label = QLabel("📦 STOCK BAJO")
+        stock_label = QLabel("📦 INVENTARIO BAJO")
         stock_label.setObjectName("alert_section_title")
         layout.addWidget(stock_label)
         
@@ -421,7 +421,7 @@ class DashboardForm(QMainWindow):
     
     def create_top_products_widget(self):
         """Crear widget de top productos"""
-        group = QGroupBox("🏆 TOP PRODUCTOS DEL DÍA")
+        group = QGroupBox("🏆 PRODUCTOS MÁS VENDIDOS DEL DÍA")
         group.setObjectName("table_group")
         layout = QVBoxLayout(group)
         
@@ -429,7 +429,7 @@ class DashboardForm(QMainWindow):
         self.top_products_table = QTableWidget()
         self.top_products_table.setObjectName("dashboard_table")
         self.top_products_table.setColumnCount(4)
-        self.top_products_table.setHorizontalHeaderLabels(["Producto", "Cantidad", "Total", "Ranking"])
+        self.top_products_table.setHorizontalHeaderLabels(["Producto", "Cantidad", "Total", "Puesto"])
         
         # Configurar tabla
         header = self.top_products_table.horizontalHeader()
@@ -448,7 +448,7 @@ class DashboardForm(QMainWindow):
     
     def create_low_stock_widget(self):
         """Crear widget de stock bajo"""
-        group = QGroupBox("⚠️ PRODUCTOS CON STOCK BAJO")
+        group = QGroupBox("⚠️ PRODUCTOS CON INVENTARIO BAJO")
         group.setObjectName("table_group")
         layout = QVBoxLayout(group)
         
@@ -456,7 +456,7 @@ class DashboardForm(QMainWindow):
         self.low_stock_table = QTableWidget()
         self.low_stock_table.setObjectName("dashboard_table")
         self.low_stock_table.setColumnCount(3)
-        self.low_stock_table.setHorizontalHeaderLabels(["Producto", "Stock Actual", "Stock Mínimo"])
+        self.low_stock_table.setHorizontalHeaderLabels(["Producto", "Inventario actual", "Inventario mínimo"])
         
         # Configurar tabla
         header = self.low_stock_table.horizontalHeader()
@@ -501,7 +501,7 @@ class DashboardForm(QMainWindow):
         self.worker.start()
     
     def refresh_data(self):
-        """Actualizar todos los datos del dashboard"""
+        """Actualizar todos los datos del panel principal"""
         self.start_worker()
     
     def update_basic_data(self):
@@ -509,7 +509,7 @@ class DashboardForm(QMainWindow):
         try:
             # Datos básicos sin consultas complejas
             self.ventas_label.setText("0.00 S/")
-            self.tickets_label.setText("0 tickets")
+            self.tickets_label.setText("0 comprobantes")
             self.promedio_label.setText("0.00 S/")
             self.cambio_label.setText("0.00 S/")
             
@@ -534,7 +534,7 @@ class DashboardForm(QMainWindow):
             self.update_low_stock(data.get('stock_bajo', []))
             
         except Exception as e:
-            print(f"Error actualizando dashboard: {e}")
+            print(f"Error actualizando panel principal: {e}")
     
     def update_metrics(self, data):
         """Actualizar las métricas principales"""
@@ -584,9 +584,9 @@ class DashboardForm(QMainWindow):
         # Stock bajo
         stock_bajo = data.get('stock_bajo', [])
         if stock_bajo:
-            self.stock_status.setText(f"{len(stock_bajo)} productos con stock bajo")
+            self.stock_status.setText(f"{len(stock_bajo)} productos con inventario bajo")
         else:
-            self.stock_status.setText("Todo el stock está bien")
+            self.stock_status.setText("Todo el inventario está correcto")
     
     def update_top_products(self, productos):
         """Actualizar tabla de top productos"""
@@ -596,7 +596,7 @@ class DashboardForm(QMainWindow):
             self.top_products_table.setItem(i, 0, QTableWidgetItem(str(producto[0])))  # Nombre
             self.top_products_table.setItem(i, 1, QTableWidgetItem(str(producto[1])))  # Cantidad
             self.top_products_table.setItem(i, 2, QTableWidgetItem(f"S/ {producto[2]:.2f}"))  # Total
-            self.top_products_table.setItem(i, 3, QTableWidgetItem(f"#{i+1}"))  # Ranking
+            self.top_products_table.setItem(i, 3, QTableWidgetItem(f"#{i+1}"))  # Puesto
     
     def update_low_stock(self, productos):
         """Actualizar tabla de stock bajo"""
@@ -608,7 +608,7 @@ class DashboardForm(QMainWindow):
             self.low_stock_table.setItem(i, 2, QTableWidgetItem(str(producto[2])))  # Stock mínimo
     
     def apply_styles(self):
-        """Aplicar estilos al dashboard"""
+        """Aplicar estilos al panel principal"""
         # Usar colores nativos del sistema para mejor compatibilidad y contraste
         pass
     
@@ -629,6 +629,6 @@ class DashboardForm(QMainWindow):
                 
             event.accept()
         except Exception as e:
-            print(f"Error cerrando dashboard: {e}")
+            print(f"Error cerrando panel principal: {e}")
             event.accept()
 

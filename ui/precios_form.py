@@ -359,7 +359,7 @@ class PreciosForm(QWidget):
         self.tabla_resultados = QTableWidget(0, 8)
         self.tabla_resultados.setHorizontalHeaderLabels([
             "SKU", "Descripción", "Código Barra", "Costo", 
-            "Valor Venta", "Precio Venta", "Afecto IGV", "Stock"
+            "Valor de venta", "Precio de venta", "Afecto IGV", "Stock"
         ])
         
         # Configurar tabla
@@ -449,7 +449,7 @@ class PreciosForm(QWidget):
         update_layout.addWidget(self.label_igv_aplica, 4, 1)
         
         update_layout.addWidget(QLabel("Aplicar Cambios:"), 4, 2)
-        self.check_actualizar_stock = QCheckBox("Actualizar Stock")
+        self.check_actualizar_stock = QCheckBox("Actualizar inventario")
         self.check_actualizar_stock.setChecked(True)
         update_layout.addWidget(self.check_actualizar_stock, 4, 3)
         
@@ -859,7 +859,7 @@ class PreciosForm(QWidget):
             tabla_historial.setHorizontalHeaderLabels([
                 "Fecha", "Usuario", "Costo Anterior", "Costo Nuevo", 
                 "Valor Venta Anterior", "Valor Venta Nuevo",
-                "Precio Venta Anterior", "Precio Venta Nuevo"
+                "Precio de venta anterior", "Precio de venta nuevo"
             ])
             
             # Configurar tabla
@@ -870,8 +870,8 @@ class PreciosForm(QWidget):
             header.setSectionResizeMode(3, QHeaderView.ResizeMode.Fixed)  # Costo Nuevo
             header.setSectionResizeMode(4, QHeaderView.ResizeMode.Fixed)  # Valor Venta Anterior
             header.setSectionResizeMode(5, QHeaderView.ResizeMode.Fixed)  # Valor Venta Nuevo
-            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Precio Venta Anterior
-            header.setSectionResizeMode(7, QHeaderView.ResizeMode.Fixed)  # Precio Venta Nuevo
+            header.setSectionResizeMode(6, QHeaderView.ResizeMode.Fixed)  # Precio de venta anterior
+            header.setSectionResizeMode(7, QHeaderView.ResizeMode.Fixed)  # Precio de venta nuevo
             
             # Establecer anchos específicos
             tabla_historial.setColumnWidth(0, 120)  # Fecha
@@ -880,8 +880,8 @@ class PreciosForm(QWidget):
             tabla_historial.setColumnWidth(3, 100)  # Costo Nuevo
             tabla_historial.setColumnWidth(4, 120)  # Valor Venta Anterior
             tabla_historial.setColumnWidth(5, 120)  # Valor Venta Nuevo
-            tabla_historial.setColumnWidth(6, 120)  # Precio Venta Anterior
-            tabla_historial.setColumnWidth(7, 120)  # Precio Venta Nuevo
+            tabla_historial.setColumnWidth(6, 120)  # Precio de venta anterior
+            tabla_historial.setColumnWidth(7, 120)  # Precio de venta nuevo
             
             tabla_historial.verticalHeader().setVisible(False)
             tabla_historial.setSelectionBehavior(QTableWidget.SelectRows)
@@ -949,12 +949,12 @@ class PreciosForm(QWidget):
                 valor_nuevo_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 tabla.setItem(row, 5, valor_nuevo_item)
                 
-                # Precio Venta Anterior
+                # Precio de venta anterior
                 precio_ant_item = QTableWidgetItem(f"S/. {float(registro.get('precio_venta_anterior', 0)):.2f}")
                 precio_ant_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 tabla.setItem(row, 6, precio_ant_item)
                 
-                # Precio Venta Nuevo
+                # Precio de venta nuevo
                 precio_nuevo_item = QTableWidgetItem(f"S/. {float(registro.get('precio_venta_nuevo', 0)):.2f}")
                 precio_nuevo_item.setTextAlignment(Qt.AlignRight | Qt.AlignVCenter)
                 tabla.setItem(row, 7, precio_nuevo_item)

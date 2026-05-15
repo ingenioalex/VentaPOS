@@ -193,12 +193,12 @@ class PagosMixtosDialog(QDialog):
         acciones_group = QGroupBox("Acciones Rápidas")
         acciones_layout = QHBoxLayout(acciones_group)
         
-        self.btn_pagar_efectivo = QPushButton("Pagar Solo Efectivo")
+        self.btn_pagar_efectivo = QPushButton("Pagar solo en efectivo")
         self.btn_pagar_efectivo.clicked.connect(self.pagar_solo_efectivo)
         self.btn_pagar_efectivo.setStyleSheet(ESTILOS_CSS["boton_accion"])
         acciones_layout.addWidget(self.btn_pagar_efectivo)
         
-        self.btn_pagar_tarjeta = QPushButton("Pagar Solo Tarjeta")
+        self.btn_pagar_tarjeta = QPushButton("Pagar solo con tarjeta")
         self.btn_pagar_tarjeta.clicked.connect(self.pagar_solo_tarjeta)
         self.btn_pagar_tarjeta.setStyleSheet(ESTILOS_CSS["boton_tarjeta"])
         acciones_layout.addWidget(self.btn_pagar_tarjeta)
@@ -306,7 +306,7 @@ class PagosMixtosDialog(QDialog):
         else:
             self.btn_cobrar.setEnabled(False)
             self.btn_cobrar.setStyleSheet(ESTILOS_CSS["boton_deshabilitado"])
-            self.btn_cobrar.setText("COMPLETAR PAGO")
+            self.btn_cobrar.setText("COMPLETAR EL PAGO")
     
     def aplicar_redondeo_favor_cliente(self, total):
         """
@@ -428,14 +428,14 @@ class PagosMixtosDialog(QDialog):
     def mostrar_pago_exitoso(self):
         """Muestra el diálogo de pago exitoso simplificado"""
         # Crear mensaje simple y directo
-        mensaje = f"PAGO PROCESADO EXITOSAMENTE\n\n"
+        mensaje = f"PAGO REGISTRADO CORRECTAMENTE\n\n"
         mensaje += f"💰 VUELTO: S/. {self.vuelto:.2f} 💰\n\n"
-        mensaje += f"¿Desea realizar otra venta?"
+        mensaje += f"¿Desea iniciar otra venta?"
         
         # Mostrar diálogo con opciones
         reply = QMessageBox.question(
             self,
-            "Pago Exitoso",
+            "Cobro correcto",
             mensaje,
             QMessageBox.StandardButton.Yes | QMessageBox.StandardButton.No,
             QMessageBox.StandardButton.Yes
@@ -467,7 +467,7 @@ class PagosMixtosDialog(QDialog):
             self, 
             "Pago Incompleto", 
             f"El pago está incompleto. Falta S/. {falta:.2f}\n\n"
-            "Complete el pago antes de proceder."
+            "Complete el pago antes de continuar."
         )
     
     def get_resultado_pago(self):

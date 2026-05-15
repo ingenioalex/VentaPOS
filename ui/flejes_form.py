@@ -19,7 +19,7 @@ class FlejesForm(QMainWindow):
         self.usuario = usuario_actual
         self.main_window = main_window
         self.producto_seleccionado = None
-        self.setWindowTitle("IMPRESION DE CODIGO DE BARRAS")
+        self.setWindowTitle("IMPRESIÓN DE CÓDIGO DE BARRAS")
         self.setGeometry(100, 100, 1200, 800)
         self._init_ui()
         self._apply_styles()
@@ -69,8 +69,8 @@ class FlejesForm(QMainWindow):
         self.tbl_productos = QTableWidget()
         self.tbl_productos.setColumnCount(8)
         self.tbl_productos.setHorizontalHeaderLabels([
-            "Codigo", "Cód. de Barras", "Descripción Larga", "Descripcion Corta",
-            "UMed", "PVenta", "POferta", "Cos"
+            "Código", "Cód. de Barras", "Descripción Larga", "Descripción corta",
+            "U. med.", "P. venta", "P. oferta", "Costo"
         ])
         self.tbl_productos.setSelectionBehavior(QTableWidget.SelectRows)
         self.tbl_productos.setSelectionMode(QTableWidget.SingleSelection)
@@ -78,10 +78,10 @@ class FlejesForm(QMainWindow):
         self.tbl_productos.setAlternatingRowColors(True)
 
         h = self.tbl_productos.horizontalHeader()
-        h.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Codigo
+        h.setSectionResizeMode(0, QHeaderView.ResizeToContents)  # Código
         h.setSectionResizeMode(1, QHeaderView.ResizeToContents)  # Cód. de Barras
         h.setSectionResizeMode(2, QHeaderView.Stretch)  # Descripción Larga
-        h.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Descripcion Corta
+        h.setSectionResizeMode(3, QHeaderView.ResizeToContents)  # Descripción corta
         h.setSectionResizeMode(4, QHeaderView.ResizeToContents)  # UMed
         h.setSectionResizeMode(5, QHeaderView.ResizeToContents)  # PVenta
         h.setSectionResizeMode(6, QHeaderView.ResizeToContents)  # POferta
@@ -101,7 +101,7 @@ class FlejesForm(QMainWindow):
 
         self.label_codigo_interno = QLabel("")
         self.label_codigo_interno.setStyleSheet("color: #000000; font-weight: bold;")
-        detalles_layout.addRow("Codigo Interno:", self.label_codigo_interno)
+        detalles_layout.addRow("Código interno:", self.label_codigo_interno)
 
         # Código de barras con checkbox
         cod_barras_layout = QHBoxLayout()
@@ -116,15 +116,15 @@ class FlejesForm(QMainWindow):
 
         self.label_desc_larga = QLabel("")
         self.label_desc_larga.setStyleSheet("color: #000000;")
-        detalles_layout.addRow("Descripcion Larga:", self.label_desc_larga)
+        detalles_layout.addRow("Descripción larga:", self.label_desc_larga)
 
         self.label_desc_corta = QLabel("")
         self.label_desc_corta.setStyleSheet("color: #000000;")
-        detalles_layout.addRow("Descripcion Corta:", self.label_desc_corta)
+        detalles_layout.addRow("Descripción corta:", self.label_desc_corta)
 
         self.label_u_med = QLabel("")
         self.label_u_med.setStyleSheet("color: #000000;")
-        detalles_layout.addRow("U_Med:", self.label_u_med)
+        detalles_layout.addRow("U. med.:", self.label_u_med)
 
         self.label_precio = QLabel("")
         self.label_precio.setStyleSheet("color: #000000; font-weight: bold; font-size: 12px;")

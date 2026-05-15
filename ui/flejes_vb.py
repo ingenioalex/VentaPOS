@@ -24,7 +24,7 @@ class FlejesVBForm(QMainWindow):
         self.main_window = main_window
         self.producto_seleccionado = None
         
-        self.setWindowTitle("IMPRESION DE CODIGO DE BARRAS")
+        self.setWindowTitle("IMPRESIÓN DE CÓDIGO DE BARRAS")
         self.setGeometry(100, 100, 1200, 580)
         self._init_ui()
         self._apply_styles()
@@ -41,22 +41,22 @@ class FlejesVBForm(QMainWindow):
         toolbar_layout.setSpacing(3)
         toolbar_layout.setContentsMargins(0, 0, 0, 0)
         
-        self.btn_codigo = QPushButton("Codigo")
+        self.btn_codigo = QPushButton("Código")
         self.btn_codigo.clicked.connect(lambda: self._buscar_producto("codigo"))
         
-        self.btn_barras = QPushButton("Cod. &Barras")
+        self.btn_barras = QPushButton("Cód. de &barras")
         self.btn_barras.clicked.connect(lambda: self._buscar_producto("barras"))
         
-        self.btn_descripcion = QPushButton("&Descripcion larga")
+        self.btn_descripcion = QPushButton("&Descripción larga")
         self.btn_descripcion.clicked.connect(lambda: self._buscar_producto("descripcion"))
         
-        self.btn_descripcion_corta = QPushButton("Descripcion corta")
+        self.btn_descripcion_corta = QPushButton("Descripción corta")
         self.btn_descripcion_corta.clicked.connect(lambda: self._buscar_producto("descripcion_corta"))
         
-        self.btn_umed = QPushButton("Umed")
+        self.btn_umed = QPushButton("U. med.")
         self.btn_umed.clicked.connect(lambda: self._buscar_producto("umed"))
         
-        self.btn_pventa = QPushButton("P Venta")
+        self.btn_pventa = QPushButton("P. venta")
         self.btn_pventa.clicked.connect(lambda: self._buscar_producto("pventa"))
         
         self.btn_poferta = QPushButton("P. Oferta")
@@ -77,8 +77,8 @@ class FlejesVBForm(QMainWindow):
         self.tbl_productos = QTableWidget()
         self.tbl_productos.setColumnCount(11)
         self.tbl_productos.setHorizontalHeaderLabels([
-            "", "COD.INTERNO", "COD.BARRA", "DESCRIPCION DE PRODUCTO",
-            "DESCRIPCION CORTA", "U.MED", "P. VENTA", "P. OFERTA",
+            "", "COD.INTERNO", "COD.BARRA", "DESCRIPCIÓN DE PRODUCTO",
+            "DESCRIPCIÓN CORTA", "U. MED.", "P. VENTA", "P. OFERTA",
             "COSTO", "AF", "MSTOC"
         ])
         self.tbl_productos.setColumnWidth(0, 0)  # Columna oculta
@@ -118,7 +118,7 @@ class FlejesVBForm(QMainWindow):
         self.txt_codigo = QLineEdit()
         self.txt_codigo.setEnabled(False)
         self.txt_codigo.setAlignment(Qt.AlignCenter)
-        frame2_layout.addRow("Codigo Interno", self.txt_codigo)
+        frame2_layout.addRow("Código interno", self.txt_codigo)
         
         cod_barras_layout = QHBoxLayout()
         self.txt_barras = QLineEdit()
@@ -129,7 +129,7 @@ class FlejesVBForm(QMainWindow):
         
         self.txt_descripcion_larga = QLineEdit()
         self.txt_descripcion_larga.setEnabled(False)
-        frame2_layout.addRow("Descripcion Larga", self.txt_descripcion_larga)
+        frame2_layout.addRow("Descripción larga", self.txt_descripcion_larga)
         
         desc_envase_layout = QHBoxLayout()
         self.txt_descripcion_corta = QLineEdit()
@@ -140,9 +140,9 @@ class FlejesVBForm(QMainWindow):
         self.txt_envase.setEnabled(False)
         self.txt_envase.setAlignment(Qt.AlignCenter)
         self.txt_envase.setMaximumWidth(80)
-        desc_envase_layout.addWidget(QLabel("U_Med"))
+        desc_envase_layout.addWidget(QLabel("U. med."))
         desc_envase_layout.addWidget(self.txt_envase)
-        frame2_layout.addRow("Descripcion Corta", desc_envase_layout)
+        frame2_layout.addRow("Descripción corta", desc_envase_layout)
         
         peso_cant_layout = QHBoxLayout()
         self.txt_peso = QLineEdit()
@@ -736,7 +736,7 @@ class FlejesVBForm(QMainWindow):
         
         respuesta = QMessageBox.question(
             self, "Confirmar Impresión",
-            f"Esta seguro que desea imprimir : {cantidad} etiquetas de: {codigo_barras}\nPuerto:",
+            f"¿Está seguro que desea imprimir : {cantidad} etiquetas de: {codigo_barras}\nPuerto:",
             QMessageBox.Yes | QMessageBox.No
         )
         

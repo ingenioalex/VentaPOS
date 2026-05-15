@@ -80,7 +80,7 @@ class ClienteForm(QDialog):
         form.addRow("Nombre Completo:", self.nombre)
         form.addRow("Dirección:", self.direccion)
         form.addRow("Teléfono:", self.telefono)
-        form.addRow("Email:", self.email)
+        form.addRow("Correo electrónico:", self.email)
 
         main_group.setLayout(form)
         

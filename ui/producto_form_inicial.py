@@ -51,7 +51,7 @@ class ProductoForm(QWidget):
         self.unidad_medida.currentTextChanged.connect(self.activar_plu)
 
         self.tipo_producto = QComboBox()
-        self.tipo_producto.addItems(["Mercaderia", "Insumo", "Clase100"])
+        self.tipo_producto.addItems(["Mercadería", "Insumo", "Clase100"])
 
         self.stock = QSpinBox()
         self.stock.setRange(0, 99999)
@@ -84,9 +84,9 @@ class ProductoForm(QWidget):
         form.addRow("Unidad de Medida:", self.unidad_medida)
         form.addRow("PLU (opcional):", self.plu)
         form.addRow("Tipo de Producto:", self.tipo_producto)
-        form.addRow("Stock Inicial:", self.stock)
-        form.addRow("Costo Compra:", self.costo)
-        form.addRow("Precio Venta:", self.precio)
+        form.addRow("Inventario inicial:", self.stock)
+        form.addRow("Costo de compra:", self.costo)
+        form.addRow("Precio de venta:", self.precio)
         form.addRow("IGV:", self.igv)
         form.addRow("Valor Venta:", self.valor_venta)
         form.addRow("% Margen de Ganancia:", self.ganancia)

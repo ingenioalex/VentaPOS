@@ -1,0 +1,67 @@
+<?php
+
+return [
+
+    'accepted' => 'El campo :attribute debe ser aceptado.',
+    'active_url' => 'El campo :attribute no es una URL válida.',
+    'after' => 'El campo :attribute debe ser una fecha posterior a :date.',
+    'alpha' => 'El campo :attribute solo puede contener letras.',
+    'alpha_dash' => 'El campo :attribute solo puede contener letras, números, guiones y guiones bajos (sin espacios).',
+    'alpha_num' => 'El campo :attribute solo puede contener letras y números.',
+    'array' => 'El campo :attribute debe ser un arreglo.',
+    'before' => 'El campo :attribute debe ser una fecha anterior a :date.',
+    'between' => [
+        'array' => 'El campo :attribute debe tener entre :min y :max elementos.',
+        'file' => 'El campo :attribute debe pesar entre :min y :max kilobytes.',
+        'numeric' => 'El campo :attribute debe estar entre :min y :max.',
+        'string' => 'El campo :attribute debe tener entre :min y :max caracteres.',
+    ],
+    'boolean' => 'El campo :attribute debe ser verdadero o falso.',
+    'confirmed' => 'La confirmación de :attribute no coincide.',
+    'date' => 'El campo :attribute no es una fecha válida.',
+    'email' => 'El campo :attribute debe ser un correo válido.',
+    'exists' => 'El valor seleccionado en :attribute no es válido.',
+    'in' => 'El valor seleccionado en :attribute no es válido.',
+    'integer' => 'El campo :attribute debe ser un número entero.',
+    'max' => [
+        'array' => 'El campo :attribute no debe tener más de :max elementos.',
+        'file' => 'El campo :attribute no debe pesar más de :max kilobytes.',
+        'numeric' => 'El campo :attribute no debe ser mayor que :max.',
+        'string' => 'El campo :attribute no debe tener más de :max caracteres.',
+    ],
+    'min' => [
+        'array' => 'El campo :attribute debe tener al menos :min elementos.',
+        'file' => 'El campo :attribute debe pesar al menos :min kilobytes.',
+        'numeric' => 'El campo :attribute debe ser al menos :min.',
+        'string' => 'El campo :attribute debe tener al menos :min caracteres.',
+    ],
+    'numeric' => 'El campo :attribute debe ser un número.',
+    'regex' => 'El formato del campo :attribute no es válido.',
+    'required' => 'El campo :attribute es obligatorio.',
+    'size' => [
+        'array' => 'El campo :attribute debe contener :size elementos.',
+        'file' => 'El campo :attribute debe pesar :size kilobytes.',
+        'numeric' => 'El campo :attribute debe ser :size.',
+        'string' => 'El campo :attribute debe tener :size caracteres.',
+    ],
+    'string' => 'El campo :attribute debe ser texto.',
+    'unique' => 'El valor de :attribute ya está registrado.',
+
+    'attributes' => [
+        'nombre' => 'nombre',
+        'codigo' => 'código de acceso',
+        'tipo_negocio' => 'tipo de negocio',
+        'plan' => 'plan',
+        'ruc' => 'RUC',
+        'telefono' => 'teléfono',
+        'direccion' => 'dirección',
+        'prueba_hasta' => 'fecha de prueba',
+        'dueno_nombre' => 'nombre del administrador',
+        'dueno_usuario' => 'usuario del administrador',
+        'dueno_email' => 'correo del administrador',
+        'dueno_password' => 'contraseña del administrador',
+        'usuario' => 'usuario',
+        'password' => 'contraseña',
+    ],
+
+];

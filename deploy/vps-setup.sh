@@ -39,7 +39,8 @@ echo "=== Restaurar BD showcase ==="
 gunzip -c /root/ventapos-showcase-pro.sql.gz | mysql -u ventapos -p"${DB_PASS}" ventapos
 
 echo "=== Laravel ==="
-php artisan storage:link --force
+mkdir -p storage/framework/{sessions,views,cache/data} storage/logs bootstrap/cache
+php artisan storage:link --force 2>/dev/null || true
 chown -R www-data:www-data storage bootstrap/cache
 chmod -R 775 storage bootstrap/cache
 php artisan config:cache

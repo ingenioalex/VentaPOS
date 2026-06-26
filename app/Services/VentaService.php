@@ -105,8 +105,8 @@ class VentaService
                 $stockNuevo = $stockAnterior - $cantidad;
                 $producto->update(['stock_disponible' => $stockNuevo]);
 
-                if ($producto->control_lote) {
-                    $this->lotes->descontarVenta($producto, $cantidad, $numeroInterno);
+                if ($producto->control_lote && ! $producto->esPesable()) {
+                    $this->lotes->descontarVenta($producto, $cantidad, $numeroInterno, $stockAnterior);
                 }
 
                 InventarioMovimiento::create([
@@ -226,9 +226,7 @@ class VentaService
         }
 
         $mediosValidos = ['efectivo', 'yape', 'plin', 'tarjeta'];
-        $suma = 0.0;
-        $efectivoMonto = 0.0;
-        $pagos = [];
+        $montos = ['efectivo' => 0.0, 'yape' => 0.0, 'plin' => 0.0, 'tarjeta' => 0.0];
 
         foreach ($pagosMixtos as $pago) {
             $medio = $pago['medio'] ?? '';
@@ -236,33 +234,86 @@ class VentaService
             if (! in_array($medio, $mediosValidos, true) || $monto <= 0) {
                 continue;
             }
-            $suma += $monto;
-            if ($medio === 'efectivo') {
-                $efectivoMonto += $monto;
+            $montos[$medio] += $monto;
+        }
+
+        $efectivoEntregado = $montos['efectivo'];
+        $noEfectivo = $montos['yape'] + $montos['plin'] + $montos['tarjeta'];
+        $suma = $noEfectivo + $efectivoEntregado;
+
+        if ($suma <= 0) {
+            throw new RuntimeException('Indique al menos un monto de pago.');
+        }
+
+        foreach (['yape' => 'Yape', 'plin' => 'Plin', 'tarjeta' => 'Tarjeta'] as $medio => $etiqueta) {
+            if ($montos[$medio] > $total + 0.01) {
+                throw new RuntimeException(sprintf(
+                    '%s (S/ %.2f) no puede superar el total de la venta (S/ %.2f).',
+                    $etiqueta,
+                    $montos[$medio],
+                    $total
+                ));
             }
-            $pagos[] = ['medio' => $medio, 'monto' => $monto];
+        }
+
+        if ($noEfectivo > $total + 0.01) {
+            throw new RuntimeException(sprintf(
+                'Yape/Plin/Tarjeta suman S/ %.2f y superan el total (S/ %.2f). No hay vuelto en medios digitales.',
+                $noEfectivo,
+                $total
+            ));
+        }
+
+        $efectivoAplicado = round(max(0, $total - $noEfectivo), 2);
+
+        if ($suma < $total - 0.01) {
+            throw new RuntimeException(sprintf(
+                'Faltan S/ %.2f en el pago mixto (suma S/ %.2f de S/ %.2f).',
+                $total - $suma,
+                $suma,
+                $total
+            ));
+        }
+
+        $pagos = [];
+        if ($efectivoAplicado > 0) {
+            $pagos[] = ['medio' => 'efectivo', 'monto' => $efectivoAplicado];
+        }
+        foreach (['yape', 'plin', 'tarjeta'] as $medio) {
+            if ($montos[$medio] > 0) {
+                $pagos[] = ['medio' => $medio, 'monto' => $montos[$medio]];
+            }
         }
 
         if ($pagos === []) {
             throw new RuntimeException('Indique al menos un monto de pago.');
         }
 
-        if (abs($suma - $total) > 0.01) {
-            throw new RuntimeException(sprintf(
-                'Los pagos mixtos (S/ %.2f) deben sumar el total (S/ %.2f).',
-                $suma,
-                $total
-            ));
-        }
-
         $montoRecibidoEfectivo = null;
         $vuelto = null;
-        if ($efectivoMonto > 0) {
-            if ($montoRecibido === null || $montoRecibido < $efectivoMonto) {
+
+        if ($suma > $total + 0.01) {
+            if ($efectivoEntregado <= 0) {
+                throw new RuntimeException('El excedente solo puede devolverse en efectivo. Ajuste Yape/Plin/Tarjeta o indique efectivo entregado.');
+            }
+            $vuelto = round($suma - $total, 2);
+            if ($efectivoEntregado + 0.01 < $vuelto) {
+                throw new RuntimeException(sprintf(
+                    'El vuelto (S/ %.2f) debe salir del efectivo entregado (S/ %.2f).',
+                    $vuelto,
+                    $efectivoEntregado
+                ));
+            }
+            $montoRecibidoEfectivo = $efectivoEntregado;
+        } elseif ($efectivoEntregado > 0) {
+            if ($montoRecibido === null || $montoRecibido < $efectivoEntregado - 0.01) {
                 throw new RuntimeException('Monto en efectivo recibido insuficiente.');
             }
             $montoRecibidoEfectivo = $montoRecibido;
-            $vuelto = round($montoRecibido - $efectivoMonto, 2);
+            $vuelto = round($montoRecibido - $efectivoEntregado, 2);
+            if ($vuelto < 0.01) {
+                $vuelto = null;
+            }
         }
 
         return [

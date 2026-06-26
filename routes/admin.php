@@ -6,6 +6,7 @@ use App\Http\Controllers\Admin\AdminContratacionController;
 use App\Http\Controllers\Admin\AdminEmpresaLimiteUsuarioController;
 use App\Http\Controllers\Admin\AdminEmpresaController;
 use App\Http\Controllers\Admin\AdminEmpresaUsuarioController;
+use App\Http\Controllers\Admin\AdminProspectoController;
 use App\Http\Controllers\Admin\AdminSuperUsuarioController;
 use App\Http\Controllers\Admin\AdminTarifaController;
 use Illuminate\Support\Facades\Route;
@@ -60,6 +61,10 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::get('/tarifas', [AdminTarifaController::class, 'index'])->name('tarifas.index');
         Route::put('/tarifas', [AdminTarifaController::class, 'actualizar'])->name('tarifas.actualizar');
         Route::post('/tarifas/restaurar', [AdminTarifaController::class, 'restaurar'])->name('tarifas.restaurar');
+
+        Route::get('/prospectos', [AdminProspectoController::class, 'index'])->name('prospectos.index');
+        Route::patch('/prospectos/{prospecto}/estado', [AdminProspectoController::class, 'actualizarEstado'])
+            ->name('prospectos.estado');
 
         Route::get('/super-usuarios', [AdminSuperUsuarioController::class, 'index'])->name('super-usuarios.index');
         Route::get('/super-usuarios/nuevo', [AdminSuperUsuarioController::class, 'crear'])->name('super-usuarios.crear');

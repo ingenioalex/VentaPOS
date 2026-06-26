@@ -5,7 +5,7 @@
 @section('contenido')
 <section style="padding:3rem 0">
     <div class="container" style="max-width:400px">
-        <h1 style="text-align:center;margin-bottom:1.5rem">Acceso VentaPOS</h1>
+        <h1 style="text-align:center;margin-bottom:1.5rem">Acceso VentasÁgil</h1>
         @if($empresa ?? null)
         <p style="text-align:center;color:#64748b;font-size:.9rem;margin-bottom:1rem">
             Empresa: <strong>{{ $empresa->nombre }}</strong>
@@ -42,8 +42,8 @@
             </label>
             <button type="submit" class="btn btn-primary" style="width:100%">Ingresar</button>
         </form>
-        <p style="text-align:center;margin-top:1rem;font-size:.85rem">
-            <a href="{{ route('admin.login') }}" style="color:#64748b">Acceso super admin →</a>
+        <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:#64748b">
+            <a href="{{ route('inicio') }}" style="color:#0f766e">← Volver al inicio</a>
         </p>
     </div>
 </section>

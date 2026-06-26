@@ -32,7 +32,7 @@
 
 </head>
 
-<body onload="window.print()">
+<body>
 
     <div class="centro">
 
@@ -82,9 +82,15 @@
 
     <hr>
 
-    <div class="fila"><span>Tickets:</span><span>{{ $cierre->cantidad_ventas }}</span></div>
+    <div class="fila"><span>Tickets emitidos:</span><span>{{ $cierre->cantidad_ventas }}</span></div>
 
-    <div class="fila"><span>Total ventas:</span><span>S/ {{ number_format($cierre->total_ventas, 2) }}</span></div>
+    <div class="fila"><span>Efectivo:</span><span>S/ {{ number_format($cierre->total_efectivo, 2) }}</span></div>
+
+    <div class="fila"><span>Tarjeta:</span><span>S/ {{ number_format($cierre->total_tarjeta, 2) }}</span></div>
+
+    <div class="fila"><span>Yape/Plin/Otros:</span><span>S/ {{ number_format($cierre->total_otros, 2) }}</span></div>
+
+    <div class="fila grande"><span>Total ventas:</span><span>S/ {{ number_format($cierre->total_ventas, 2) }}</span></div>
 
     <div class="fila"><span>Ticket prom.:</span><span>S/ {{ number_format($cierre->ticket_promedio, 2) }}</span></div>
 
@@ -92,11 +98,9 @@
 
     <hr>
 
-    <div class="fila"><span>Efectivo sistema:</span><span>S/ {{ number_format($cierre->total_efectivo, 2) }}</span></div>
+    <div class="centro" style="font-weight:bold;margin:.15rem 0">ARQUEO DE EFECTIVO</div>
 
-    <div class="fila"><span>Tarjeta:</span><span>S/ {{ number_format($cierre->total_tarjeta, 2) }}</span></div>
-
-    <div class="fila"><span>Yape/Plin/Otros:</span><span>S/ {{ number_format($cierre->total_otros, 2) }}</span></div>
+    <div class="fila"><span>Según ventas (sistema):</span><span>S/ {{ number_format($cierre->total_efectivo, 2) }}</span></div>
 
 
 
@@ -148,7 +152,7 @@
 
     <hr>
 
-    <div class="fila grande"><span>Efectivo contado:</span><span>S/ {{ number_format($cierre->monto_efectivo_contado, 2) }}</span></div>
+    <div class="fila grande"><span>Efectivo contado (arqueo):</span><span>S/ {{ number_format($cierre->monto_efectivo_contado, 2) }}</span></div>
 
     <div class="fila"><span>Diferencia:</span><span>S/ {{ number_format($cierre->diferencia_efectivo, 2) }}</span></div>
 
@@ -172,11 +176,19 @@
 
     <p class="no-print centro" style="margin-top:1.5rem">
 
-        <button onclick="window.print()">Imprimir</button>
+        @if(session('ok'))
+        <span style="display:block;margin-bottom:.75rem;color:#166534;font-family:system-ui,sans-serif;font-size:.85rem">{{ session('ok') }}</span>
+        @endif
+
+        <button type="button" onclick="window.print()">Imprimir</button>
 
         <a href="{{ route('cierres.index') }}" style="margin-left:.5rem">Volver</a>
 
     </p>
+
+@if(!empty($autoImprimir))
+<script>window.addEventListener('load', function () { window.print(); });</script>
+@endif
 
 </body>
 

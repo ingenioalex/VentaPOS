@@ -14,6 +14,7 @@ use App\Http\Controllers\OnboardingController;
 use App\Http\Controllers\PermisoController;
 use App\Http\Controllers\PosController;
 use App\Http\Controllers\ProductoController;
+use App\Http\Controllers\ProspectoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteController;
@@ -98,6 +99,18 @@ Route::middleware(['auth', 'empresa'])->prefix('app')->group(function () {
         Route::get('/cierres', [CierreCajaController::class, 'index'])->name('cierres.index');
         Route::post('/cierres/x', [CierreCajaController::class, 'cerrarX'])->name('cierres.x');
         Route::post('/cierres/z', [CierreCajaController::class, 'cerrarZ'])->name('cierres.z');
+        Route::get('/cierres/jornada/{fecha}', [CierreCajaController::class, 'jornadaPendiente'])
+            ->where('fecha', '\d{4}-\d{2}-\d{2}')
+            ->name('cierres.jornada');
+        Route::post('/cierres/jornada/{fecha}/z', [CierreCajaController::class, 'cerrarZExcepcional'])
+            ->where('fecha', '\d{4}-\d{2}-\d{2}')
+            ->name('cierres.jornada.z');
+        Route::post('/cierres/jornada/{fecha}/cajero/{cajero}/x', [CierreCajaController::class, 'cerrarXExcepcional'])
+            ->where('fecha', '\d{4}-\d{2}-\d{2}')
+            ->name('cierres.jornada.x');
+        Route::post('/cierres/jornada/{fecha}/directo', [CierreCajaController::class, 'cerrarJornadaDirecta'])
+            ->where('fecha', '\d{4}-\d{2}-\d{2}')
+            ->name('cierres.jornada.directo');
         Route::get('/cierres/{cierre}/ticket', [CierreCajaController::class, 'ticket'])->name('cierres.ticket');
         Route::post('/cierres/cajero/{cajero}/cierre-x', [CierreCajaController::class, 'cierreXCajero'])
             ->name('cierres.cajero.cierre-x');

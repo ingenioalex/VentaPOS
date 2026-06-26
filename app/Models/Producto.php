@@ -76,4 +76,9 @@ class Producto extends Model
         return (float) $this->stock_minimo > 0
             && (float) $this->stock_disponible <= (float) $this->stock_minimo;
     }
+
+    public function esPesable(): bool
+    {
+        return strtoupper((string) $this->unidad_medida) === 'KG';
+    }
 }

@@ -28,13 +28,52 @@
         .filtros input, .filtros select { padding: .45rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
         .stats { display:flex; flex-wrap:wrap; gap:1rem; }
         .stats .card strong { color:#1e293b; }
+
+        .app-topbar {
+            display: none;
+            position: sticky; top: 0; z-index: 90;
+            align-items: center; gap: .75rem;
+            padding: .65rem 1rem;
+            padding-top: max(.65rem, env(safe-area-inset-top));
+            background: var(--sidebar); color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+        .app-topbar-title { font-weight: 700; font-size: .95rem; flex: 1; }
+        .btn-menu {
+            width: 44px; height: 44px; border: none; border-radius: .5rem;
+            background: #4c1d95; color: #fff; font-size: 1.35rem; cursor: pointer;
+        }
+        .sidebar-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15, 23, 42, .55); z-index: 199;
+            opacity: 0; transition: opacity .2s ease;
+        }
+        .layout-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        aside.sidebar { overflow-y: auto; -webkit-overflow-scrolling: touch; }
+
+        @media (max-width: 900px) {
+            .layout { flex-direction: column; }
+            .app-topbar { display: flex; }
+            aside.sidebar {
+                position: fixed; top: 0; left: 0; bottom: 0;
+                width: min(280px, 88vw); z-index: 200;
+                transform: translateX(-105%);
+                transition: transform .25s ease;
+                box-shadow: 4px 0 24px rgba(0,0,0,.2);
+            }
+            body.sidebar-open aside.sidebar { transform: translateX(0); }
+            body.sidebar-open .sidebar-backdrop { display: block; opacity: 1; }
+            body.sidebar-open { overflow: hidden; }
+            main { padding: 1rem; }
+        }
     </style>
     @stack('head')
 </head>
 <body>
 @php $u = auth()->user(); @endphp
+<div class="sidebar-backdrop" id="sidebar-backdrop"></div>
 <div class="layout">
-    <aside>
+    <aside class="sidebar" id="app-sidebar">
         <h2>VentaPOS Admin</h2>
         <p style="font-size:.85rem">{{ $u->nombre }}</p>
         <span class="badge">Super Admin</span>
@@ -44,6 +83,7 @@
 
         <div style="font-size:.7rem;text-transform:uppercase;color:#64748b;margin:1rem 0 .35rem;letter-spacing:.05em">Comercial</div>
         <a href="{{ route('admin.contratacion.index') }}" class="{{ request()->routeIs('admin.contratacion.*') ? 'activo' : '' }}">Contratación</a>
+        <a href="{{ route('admin.prospectos.index') }}" class="{{ request()->routeIs('admin.prospectos.*') ? 'activo' : '' }}">Prospectos</a>
         <a href="{{ route('admin.tarifas.index') }}" class="{{ request()->routeIs('admin.tarifas.*') ? 'activo' : '' }}">Tarifas y precios</a>
 
         <div style="font-size:.7rem;text-transform:uppercase;color:#64748b;margin:1rem 0 .35rem;letter-spacing:.05em">Sistema</div>
@@ -55,7 +95,12 @@
             <button type="submit" class="btn" style="background:#475569;color:#fff;width:100%">Salir</button>
         </form>
     </aside>
-    <main>
+    <div class="layout-main">
+        <header class="app-topbar">
+            <button type="button" class="btn-menu" id="btn-sidebar" aria-label="Abrir menú">☰</button>
+            <div class="app-topbar-title">VentaPOS Admin</div>
+        </header>
+        <main>
         @if(session('ok'))
             <div class="alert-ok">{{ session('ok') }}</div>
         @endif
@@ -65,8 +110,28 @@
             </div>
         @endif
         @yield('contenido')
-    </main>
+        </main>
+    </div>
 </div>
+<script>
+(function () {
+    const body = document.body;
+    const btn = document.getElementById('btn-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
+    if (!btn || !backdrop || !sidebar) return;
+    const mq = window.matchMedia('(max-width: 900px)');
+    function setOpen(open) {
+        body.classList.toggle('sidebar-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', () => { if (mq.matches) setOpen(!body.classList.contains('sidebar-open')); });
+    backdrop.addEventListener('click', () => setOpen(false));
+    sidebar.querySelectorAll('a').forEach(a => a.addEventListener('click', () => { if (mq.matches) setOpen(false); }));
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+    mq.addEventListener('change', e => { if (!e.matches) setOpen(false); });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

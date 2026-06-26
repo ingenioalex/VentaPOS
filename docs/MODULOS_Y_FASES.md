@@ -104,6 +104,10 @@ Precios editables en **Admin → Tarifas y precios** (`/admin/tarifas`). Se guar
 
 Afecta: landing de precios, alta/edición de empresas, módulos contratados, extras y estimados mensuales.
 
+## Prospectos (landing / beta)
+
+Solicitudes del formulario de contacto y beta se guardan en `prospectos`. El super admin las gestiona en **Admin → Prospectos** (`/admin/prospectos`): filtros por estado y origen, cambio de estado (nuevo → contactado → beta → cliente) y enlace directo a WhatsApp.
+
 ## Límites de usuarios por plan
 
 Cupo efectivo = **plan base** + **bonificados** (sin costo) + **extras de pago** (add-on).
@@ -129,7 +133,7 @@ El dueño ve el desglose en Usuarios; no puede modificar cupos. Validación al c
 | Vencimientos | `/app/inventario/vencimientos` (extra `lotes_vencimiento`) |
 | SUNAT | `/app/sunat` |
 | Compras | `/app/compras` |
-| Admin | `/admin/empresas`, `/admin/contratacion` |
+| Admin | `/admin/empresas`, `/admin/contratacion`, `/admin/prospectos` |
 | Reportes | `/app/reportes` |
 
 ## Middleware relevante

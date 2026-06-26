@@ -39,6 +39,12 @@ Actores y casos de uso principales de VentaPOS. Cada caso indica módulo y rol m
 | Postcondición | `comprobantes` emitido, stock descontado, CPE si SUNAT activo |
 | Implementación | `PosController::cobrar`, `VentaService`, `SunatService` |
 
+**Detalle venta:** panel derecho ampliado (~460px), montos alineados a la derecha, código de barra bajo el nombre del producto, columna **UM** (unidad de medida), precio unitario (P.U.). Productos con UM **KG** permiten cantidad decimal; el resto en unidades enteras. Al agregar productos solo se actualiza la línea afectada (mejor rendimiento).
+
+**Top 5 productos:** ranking de los últimos 90 días con caché de 15 min; se precarga al abrir el POS y las peticiones por categoría no bloquean la venta (caché cliente + cancelación de solicitudes anteriores).
+
+**Pago mixto:** Yape/Plin/Tarjeta no pueden superar el total (sin vuelto). Si la suma supera el total y hay efectivo, el excedente es vuelto (ej. total 93.21, pagos 100 → vuelto 6.79).
+
 ---
 
 ## CU-03 Suspender y recuperar venta
@@ -71,8 +77,10 @@ Actores y casos de uso principales de VentaPOS. Cada caso indica módulo y rol m
 |-------|-------|
 | Actor | Cajero (X), Supervisor/Dueño (Z) |
 | Módulo | `cierres` |
-| Flujo | Arqueo efectivo → registro cierre → ticket cierre |
+| Flujo | Cierre X: ventas del turno del cajero (desde último X o inicio de jornada). Cierre Z: suma de todos los X de la jornada; debe coincidir con las ventas del período. Varios X por cajero en el día son válidos si cada uno cubre solo su turno. |
 | Implementación | `CierreCajaService`, `CierreCajaController` |
+
+**Jornadas sin cerrar:** cada **Cierre Z cubre un solo día calendario** (00:00–23:59) y no puede solaparse con otro Z. Si olvidó cerrar, use **«Cerrar este día»** en orden (el más antiguo primero). El Z de hoy solo está disponible cuando no quedan días anteriores pendientes. El botón registra X (efectivo del sistema) + Z automáticamente.
 
 ---
 

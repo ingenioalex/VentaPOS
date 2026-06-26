@@ -31,7 +31,7 @@ return [
     'beta' => [
         'nombre' => 'Beta',
         'mensual' => 0,
-        'nota' => 'Gratis 2 meses · 3 usuarios · sin cargo de arranque',
+        'nota' => 'Gratis 1 mes · 3 usuarios · sin cargo de arranque',
         'limites' => [
             'usuarios_max' => 3,
             'productos_max' => 200,

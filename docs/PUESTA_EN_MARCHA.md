@@ -24,9 +24,9 @@ Checklist para llevar VentaPOS de desarrollo local a un entorno productivo. Deta
 - [ ] `php artisan migrate --force`
 - [ ] `php artisan storage:link`
 - [ ] Permisos `storage/` y `bootstrap/cache/` escribibles por www-data
-- [ ] SSL (Let's Encrypt) en dominio
-- [ ] Cron para scheduler Laravel (si se usa colas)
-- [ ] Backup automático MySQL diario
+- [ ] SSL (Let's Encrypt) en dominio **y subdominios** (`*.ventasagil.com` o expand por empresa)
+- [x] Cron `* * * * * php artisan schedule:run` (usuario `www-data`, ver `deploy/vps-cron-backup.sh`)
+- [x] Backup MySQL automático diario (`ventapos:backup-db` a las 03:00 America/Lima)
 
 ## 3. Variables `.env` críticas
 
@@ -44,7 +44,48 @@ SESSION_DRIVER=database
 VENTAPOS_WHATSAPP=51999999999
 ```
 
-## 4. Comandos de despliegue
+## 4. SSL y subdominios multi-empresa
+
+Cada empresa usa `codigo.ventasagil.com`. El certificado inicial de Certbot solo cubre `ventasagil.com` y `www`; los subdominios provocan **NET::ERR_CERT_COMMON_NAME_INVALID** si no se amplía.
+
+**Solución inmediata (sin API):** incluir cada subdominio activo en el certificado:
+
+```bash
+bash deploy/ventasagil-ssl-wildcard.sh expand
+```
+
+Ejecutar de nuevo al **dar de alta una empresa nueva** en producción.
+
+**Solución definitiva (wildcard `*.ventasagil.com`):** token API Hostinger (hPanel → Perfil → API):
+
+```bash
+export HOSTINGER_API_TOKEN="tu-token"
+bash deploy/ventasagil-ssl-wildcard.sh wildcard
+```
+
+Credenciales en el VPS: `/root/.secrets/hostinger.ini` (chmod 600). Certbot DNS en `/opt/certbot-dns/`. La renovación usa el plugin `dns-hostinger` automáticamente.
+
+## 5. Cron y backups automáticos
+
+En el VPS:
+
+```bash
+bash deploy/vps-cron-backup.sh
+```
+
+Instala `/etc/cron.d/ventapos` (cada minuto `schedule:run` como `www-data`).
+
+| Hora (Lima) | Tarea |
+|-------------|--------|
+| **03:00** | Backup MySQL → `storage/app/backups/` |
+| **20:00** | Resumen WhatsApp (si está configurado) |
+
+- Copias manuales: **Admin → Backups** (`/admin/backups`)
+- Retención: 30 días (configurable en admin)
+- Log scheduler: `storage/logs/scheduler.log`
+- Requiere `APP_TIMEZONE=America/Lima` en `.env`
+
+## 6. Comandos de despliegue
 
 ```bash
 cd /var/www/ventapos
@@ -58,7 +99,7 @@ php artisan view:cache
 sudo systemctl reload php8.3-fpm
 ```
 
-## 5. Post-deploy funcional
+## 7. Post-deploy funcional
 
 | Verificación | Cómo |
 |--------------|------|
@@ -68,7 +109,7 @@ sudo systemctl reload php8.3-fpm
 | Super admin | `/admin/login` |
 | HTTPS | Sin mixed content en ticket/logo |
 
-## 6. SUNAT en producción
+## 8. SUNAT en producción
 
 1. Contratar OSE/PSE homologado.
 2. Configurar `ose_url`, usuario y clave SOL.
@@ -78,20 +119,20 @@ sudo systemctl reload php8.3-fpm
 
 Ver [SUNAT.md](SUNAT.md).
 
-## 7. Monitoreo y mantenimiento
+## 9. Monitoreo y mantenimiento
 
 - Logs: `storage/logs/laravel.log`
 - Panel SUNAT: comprobantes con error/pendiente
 - Actualizar PHP y dependencias con ventana de mantenimiento
 - Probar migraciones primero en staging
 
-## 8. Desarrollo local en paralelo
+## 10. Desarrollo local en paralelo
 
 Mantener Laragon en Windows para desarrollo; producción en VPS. No compartir `.env` entre entornos.
 
 Guía local: [ARRANQUE_LOCAL.md](ARRANQUE_LOCAL.md).
 
-## 9. Rollback
+## 11. Rollback
 
 1. `git checkout` tag/commit anterior
 2. `composer install`

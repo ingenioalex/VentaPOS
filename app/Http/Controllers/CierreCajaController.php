@@ -7,36 +7,118 @@ use App\Models\Usuario;
 use App\Services\AnulacionService;
 use App\Services\CierreCajaService;
 use App\Services\SesionCajeroService;
+use Carbon\Carbon;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 
 class CierreCajaController extends Controller
 {
+    private const HISTORIAL_DIAS = 5;
+
     public function __construct(
         private CierreCajaService $cierreService,
         private AnulacionService $anulacionService,
         private SesionCajeroService $sesionCajero,
     ) {}
 
-    public function index()
+    public function index(Request $request)
     {
         $usuario = Auth::user();
+        $this->cierreService->prepararModuloCierres($usuario->empresa_id);
+
         $resumen = $this->cierreService->resumenActual($usuario);
         $resumenZ = $usuario->puedeGestionar()
             ? $this->cierreService->resumenZCierre($usuario->empresa_id)
             : null;
 
-        $historial = CierreCaja::where('empresa_id', $usuario->empresa_id)
-            ->with(['usuario:id,nombre', 'supervisor:id,nombre'])
-            ->orderByDesc('fecha_fin')
-            ->limit(15)
-            ->get();
+        $resumenTurno = $usuario->rol === 'cajero'
+            ? array_merge($resumen, [
+                'titulo' => 'Mi turno actual',
+                'subtitulo' => $resumen['es_hoy']
+                    ? 'Ventas de hoy desde las '.$resumen['periodo_desde']->format('H:i')
+                    : 'Ventas del '.$resumen['fecha_desde'].' al '.$resumen['fecha_hasta'],
+            ])
+            : null;
+
+        [$historialPorDia] = $this->historialPorDia($usuario->empresa_id);
 
         $cajerosConectados = $usuario->puedeGestionar()
             ? $this->sesionCajero->cajerosConectados($usuario->empresa_id)
             : collect();
 
-        return view('app.cierres.index', compact('resumen', 'resumenZ', 'historial', 'usuario', 'cajerosConectados'));
+        $jornadasPendientesPag = null;
+        if ($usuario->puedeGestionar()) {
+            $todas = $this->cierreService->jornadasPendientes($usuario->empresa_id);
+            $perPage = 5;
+            $total = count($todas);
+            $page = max(1, min((int) $request->query('jp', 1), max(1, (int) ceil($total / $perPage))));
+            $jornadasPendientesPag = [
+                'items' => array_slice($todas, ($page - 1) * $perPage, $perPage),
+                'page' => $page,
+                'per_page' => $perPage,
+                'total' => $total,
+                'last_page' => max(1, (int) ceil($total / $perPage)),
+                'proximo' => $todas[0]['fecha'] ?? null,
+            ];
+        }
+
+        return view('app.cierres.index', compact(
+            'resumen',
+            'resumenTurno',
+            'resumenZ',
+            'historialPorDia',
+            'usuario',
+            'cajerosConectados',
+            'jornadasPendientesPag',
+        ));
+    }
+
+    /** @return array{0: Collection} */
+    private function historialPorDia(int $empresaId): array
+    {
+        $tz = config('app.timezone', 'America/Lima');
+        $desde = now($tz)->subDays(self::HISTORIAL_DIAS - 1)->startOfDay();
+
+        $registros = CierreCaja::where('empresa_id', $empresaId)
+            ->where('fecha_fin', '>=', $desde)
+            ->with(['usuario:id,nombre,usuario', 'supervisor:id,nombre'])
+            ->orderBy('fecha_fin')
+            ->orderBy('id')
+            ->get();
+
+        $porDia = $registros
+            ->groupBy(fn (CierreCaja $c) => $c->fecha_fin->timezone($tz)->toDateString())
+            ->sortKeysDesc()
+            ->take(self::HISTORIAL_DIAS)
+            ->map(function (Collection $cierres, string $dia) use ($tz) {
+                $ordenados = $cierres->sortBy([
+                    fn (CierreCaja $c) => $c->fecha_fin->timestamp,
+                    fn (CierreCaja $c) => $c->id,
+                ])->values();
+                $fecha = Carbon::parse($dia, $tz)->locale('es');
+
+                return [
+                    'clave' => $dia,
+                    'etiqueta' => ucfirst($fecha->isoFormat('dddd D [de] MMMM [de] YYYY')),
+                    'es_hoy' => $dia === now($tz)->toDateString(),
+                    'cierres' => $ordenados,
+                    'totales' => [
+                        'registros' => $ordenados->count(),
+                        'tickets' => (int) $ordenados->sum('cantidad_ventas'),
+                        'efectivo' => round((float) $ordenados->sum('total_efectivo'), 2),
+                        'tarjeta' => round((float) $ordenados->sum('total_tarjeta'), 2),
+                        'otros' => round((float) $ordenados->sum('total_otros'), 2),
+                        'contado' => round((float) $ordenados->sum('monto_efectivo_contado'), 2),
+                        'diferencia' => round(
+                            (float) $ordenados->sum('monto_efectivo_contado') - (float) $ordenados->sum('total_efectivo'),
+                            2
+                        ),
+                    ],
+                ];
+            });
+
+        return [$porDia];
     }
 
     public function cierreXCajero(Request $request, Usuario $cajero)
@@ -55,7 +137,7 @@ class CierreCajaController extends Controller
         ]);
 
         try {
-            $cierre = $this->sesionCajero->cierreXDesdePos(
+            $cierre = $this->sesionCajero->cierreSupervisorYCerrarSesion(
                 $cajero,
                 Auth::user(),
                 (float) $datos['monto_efectivo_contado'],
@@ -63,8 +145,9 @@ class CierreCajaController extends Controller
             );
 
             return redirect()->route('cierres.index')
-                ->with('ok', "Cierre X de {$cajero->nombre} registrado.")
-                ->with('ticket_url', route('cierres.ticket', $cierre));
+                ->with('ok', "Cierre X de {$cajero->nombre} registrado y sesión cerrada.")
+                ->with('ticket_url', route('cierres.ticket', $cierre))
+                ->with('ultimo_cierre_id', $cierre->id);
         } catch (\Throwable $e) {
             return back()->withErrors(['cierre_x_cajero' => $e->getMessage()]);
         }
@@ -97,15 +180,17 @@ class CierreCajaController extends Controller
         ]);
 
         try {
+            $usuario = Auth::user();
             $cierre = $this->cierreService->cerrarX(
-                Auth::user(),
+                $usuario,
                 (float) $datos['monto_efectivo_contado'],
                 $datos['observaciones'] ?? null,
             );
 
-            return redirect()->route('cierres.index')
-                ->with('ok', 'Cierre X registrado.')
-                ->with('ticket_url', route('cierres.ticket', $cierre));
+            $this->sesionCajero->cerrarSesion($usuario);
+
+            return redirect()->route('cierres.ticket', $cierre)
+                ->with('ok', 'Cierre X registrado y sesión cerrada. Puede imprimir el ticket si lo desea.');
         } catch (\Throwable $e) {
             return back()->withErrors(['monto_efectivo_contado' => $e->getMessage()]);
         }
@@ -129,13 +214,14 @@ class CierreCajaController extends Controller
 
             return redirect()->route('cierres.index')
                 ->with('ok', 'Cierre Z registrado.')
-                ->with('ticket_url', route('cierres.ticket', $cierre));
+                ->with('ticket_url', route('cierres.ticket', $cierre))
+                ->with('ultimo_cierre_id', $cierre->id);
         } catch (\Throwable $e) {
             return back()->withErrors(['cierre_z' => $e->getMessage()]);
         }
     }
 
-    public function ticket(CierreCaja $cierre)
+    public function ticket(Request $request, CierreCaja $cierre)
     {
         if ($cierre->empresa_id !== Auth::user()->empresa_id) {
             abort(404);
@@ -158,6 +244,117 @@ class CierreCajaController extends Controller
                 ->values()
             : collect();
 
-        return view('app.cierres.ticket', compact('cierre', 'porCajero'));
+        return view('app.cierres.ticket', [
+            'cierre' => $cierre,
+            'porCajero' => $porCajero,
+            'autoImprimir' => $request->boolean('imprimir'),
+        ]);
+    }
+
+    public function jornadaPendiente(string $fecha)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        try {
+            $resumen = $this->cierreService->resumenJornadaPendiente(Auth::user()->empresa_id, $fecha);
+        } catch (\Throwable $e) {
+            return redirect()->route('cierres.index')->withErrors(['jornada' => $e->getMessage()]);
+        }
+
+        return view('app.cierres.jornada-pendiente', [
+            'resumen' => $resumen,
+            'usuario' => Auth::user(),
+            'esSiguiente' => $this->cierreService->proximoDiaPendiente(Auth::user()->empresa_id) === $fecha,
+        ]);
+    }
+
+    public function cerrarZExcepcional(Request $request, string $fecha)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        $datos = $request->validate([
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $cierre = $this->cierreService->cerrarZExcepcional(
+                Auth::user(),
+                $fecha,
+                $datos['observaciones'] ?? null,
+            );
+
+            return redirect()->route('cierres.index')
+                ->with('ok', 'Cierre Z excepcional del '.$fecha.' registrado.')
+                ->with('ticket_url', route('cierres.ticket', $cierre))
+                ->with('ultimo_cierre_id', $cierre->id);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['cierre_z' => $e->getMessage()]);
+        }
+    }
+
+    public function cerrarXExcepcional(Request $request, string $fecha, Usuario $cajero)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        if ($cajero->empresa_id !== Auth::user()->empresa_id) {
+            abort(404);
+        }
+
+        $datos = $request->validate([
+            'monto_efectivo_contado' => 'required|numeric|min:0',
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $cierre = $this->cierreService->cerrarXExcepcional(
+                $cajero,
+                Auth::user(),
+                $fecha,
+                (float) $datos['monto_efectivo_contado'],
+                $datos['observaciones'] ?? null,
+            );
+
+            return redirect()->route('cierres.jornada', $fecha)
+                ->with('ok', "Cierre X excepcional de {$cajero->nombre} registrado.")
+                ->with('ticket_url', route('cierres.ticket', $cierre))
+                ->with('ultimo_cierre_id', $cierre->id);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['cierre_x' => $e->getMessage()]);
+        }
+    }
+
+    public function cerrarJornadaDirecta(Request $request, string $fecha)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        $datos = $request->validate([
+            'observaciones' => 'nullable|string|max:500',
+        ]);
+
+        try {
+            $cierre = $this->cierreService->cerrarDiaPendiente(
+                Auth::user(),
+                $fecha,
+                $datos['observaciones'] ?? null,
+            );
+
+            return redirect()->route('cierres.index', ['jp' => $request->input('jp', 1)])
+                ->with('ok', 'Día '.$fecha.' cerrado correctamente (X + Z).')
+                ->with('ticket_url', route('cierres.ticket', $cierre))
+                ->with('ultimo_cierre_id', $cierre->id)
+                ->withFragment('jornadas-pendientes');
+        } catch (\Throwable $e) {
+            return redirect()->route('cierres.index', ['jp' => $request->input('jp', 1)])
+                ->withFragment('jornadas-pendientes')
+                ->withErrors(['jornada_directa' => $e->getMessage()]);
+        }
     }
 }

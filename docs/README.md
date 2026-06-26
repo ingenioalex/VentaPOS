@@ -64,6 +64,24 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-06-26 | Cierre Z de hoy: completa X automáticos; ya no exige X manuales por vendedor | CASOS_DE_USO.md |
+| 2026-06-21 | Cierres: Z por día calendario sin solapamiento; UI «Cerrar este día» en orden | CASOS_DE_USO.md |
+| 2026-06-21 | Fix cierre directo: X excepcional para supervisor/dueño con ventas; feedback en panel | CASOS_DE_USO.md |
+| 2026-06-21 | Cierres excepcionales: sección tras historial, paginación 5, orden reciente→antiguo, botón cierre directo (X+Z) | CASOS_DE_USO.md |
+| 2026-06-26 | Cierres: panel jornadas sin Z siempre visible + cierre excepcional por fecha manual | CASOS_DE_USO.md |
+| 2026-06-26 | POS: columna UM, cantidad decimal en KG y carrito incremental (sin recargar tabla entera) | CASOS_DE_USO.md |
+| 2026-06-26 | POS: panel detalle más ancho; montos alineados; código de barra bajo producto | CASOS_DE_USO.md |
+| 2026-06-26 | POS: columna P.U. en detalle; descuento % y efectivo recibido en enteros; sin bloqueo al escribir | CASOS_DE_USO.md |
+| 2026-06-26 | Cierres: sincronización automática de datos, historial cronológico y tabla X por jornada | CASOS_DE_USO.md |
+| 2026-06-25 | Cierres X/Z: totales por período acotado; Z = suma de X; recálculo histórico | CASOS_DE_USO.md |
+| 2026-06-25 | Cierres: fechas en formato local (d/m/Y H:i), período visible y reparación de fechas inconsistentes | CASOS_DE_USO.md |
+| 2026-06-21 | Cierres: panel dual ventas por medio + arqueo efectivo; historial sin columna «Vendido» | CASOS_DE_USO.md |
+| 2026-06-21 | Limpieza cierres duplicados en BD (`ventapos:limpiar-cierres-duplicados`) y UI sin KPIs repetidos | CASOS_DE_USO.md |
+| 2026-06-21 | Cierre X: registra arqueo, cierra sesión cajero e impresión opcional (sin auto-print) | CASOS_DE_USO.md |
+| 2026-06-22 | VPS: cron scheduler + backup MySQL 03:00 Lima (`deploy/vps-cron-backup.sh`) | PUESTA_EN_MARCHA.md |
+| 2026-06-22 | Fix 500: import ProspectoController; Blade form admin empresas | Este índice |
+| 2026-06-21 | Página precios: diseño dinámico, tarjetas por color, animaciones scroll | Este índice |
+| 2026-06-21 | Beta pública: 1 mes gratis (antes 2) en landing, contacto y config planes | Este índice |
 | 2026-06-08 | Cupos usuarios flexibles: bonificados + add-on por empresa | MODULOS_Y_FASES.md, PlanLimiteService |
 | 2026-06-08 | Admin tarifas: super admin edita precios planes/módulos/extras | MODULOS_Y_FASES.md, storage/app/tarifas.json |
 | 2026-06-08 | Extras como add-ons S/9: gestión super admin (no dueño) | MODULOS_Y_FASES.md, config/extras.php |

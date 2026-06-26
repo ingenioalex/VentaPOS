@@ -25,7 +25,7 @@ class ProspectoController extends Controller
 
         $wa = config('ventapos.whatsapp', '51973034118');
         $texto = rawurlencode(
-            "Solicitud Beta VentaPOS\n\n".
+            "Solicitud Beta VentasÁgil\n\n".
             "Negocio: {$datos['nombre_negocio']}\n".
             "Contacto: ".($datos['nombre_contacto'] ?? '-')."\n".
             "WhatsApp: {$datos['telefono']}\n".

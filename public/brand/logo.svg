@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 220 48" fill="none">
+  <defs>
+    <linearGradient id="g" x1="4" y1="4" x2="44" y2="44" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <rect x="2" y="4" width="40" height="40" rx="11" fill="url(#g)"/>
+  <path d="M12 32 L22 14 L19 28 L33 28 L21 38 L24 26 Z" fill="#fff"/>
+  <text x="52" y="32" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="700" fill="#0f172a">Ventas</text>
+  <text x="132" y="32" font-family="system-ui,Segoe UI,sans-serif" font-size="22" font-weight="800" fill="#0f766e">&#193;gil</text>
+</svg>

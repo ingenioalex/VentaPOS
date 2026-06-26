@@ -44,13 +44,77 @@
         .cpe-no { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
         .cpe-leyenda { font-size: .8rem; color: #64748b; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
         .cpe-leyenda span { display: inline-flex; align-items: center; gap: .35rem; }
+
+        /* —— Móvil: barra superior + menú drawer —— */
+        .app-topbar {
+            display: none;
+            position: sticky;
+            top: 0;
+            z-index: 90;
+            align-items: center;
+            gap: .75rem;
+            padding: .65rem 1rem;
+            padding-top: max(.65rem, env(safe-area-inset-top));
+            background: var(--sidebar);
+            color: #fff;
+            box-shadow: 0 2px 8px rgba(0,0,0,.15);
+        }
+        .app-topbar-title { font-weight: 700; font-size: .95rem; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .app-topbar-sub { font-size: .72rem; color: #94a3b8; font-weight: 400; }
+        .btn-menu {
+            width: 44px; height: 44px;
+            border: none; border-radius: .5rem;
+            background: #334155; color: #fff;
+            font-size: 1.35rem; line-height: 1;
+            cursor: pointer; flex-shrink: 0;
+        }
+        .btn-menu:active { background: #475569; }
+        .sidebar-backdrop {
+            display: none;
+            position: fixed; inset: 0;
+            background: rgba(15, 23, 42, .55);
+            z-index: 199;
+            opacity: 0;
+            transition: opacity .2s ease;
+        }
+        .layout-main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+        aside.sidebar {
+            overflow-y: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        @media (max-width: 900px) {
+            .layout { flex-direction: column; }
+            .app-topbar { display: flex; }
+            aside.sidebar {
+                position: fixed;
+                top: 0; left: 0; bottom: 0;
+                width: min(280px, 88vw);
+                z-index: 200;
+                transform: translateX(-105%);
+                transition: transform .25s ease;
+                box-shadow: 4px 0 24px rgba(0,0,0,.2);
+                padding-bottom: max(1.25rem, env(safe-area-inset-bottom));
+            }
+            body.sidebar-open aside.sidebar { transform: translateX(0); }
+            body.sidebar-open .sidebar-backdrop {
+                display: block;
+                opacity: 1;
+            }
+            body.sidebar-open { overflow: hidden; }
+            main { padding: 1rem; }
+            .filtros { flex-direction: column; align-items: stretch; }
+            table.data { font-size: .82rem; }
+            table.data th, table.data td { padding: .4rem .3rem; }
+        }
     </style>
     @stack('head')
 </head>
 <body>
 @php $u = auth()->user(); @endphp
+<div class="sidebar-backdrop" id="sidebar-backdrop" aria-hidden="true"></div>
 <div class="layout">
-    <aside>
+    <aside class="sidebar" id="app-sidebar" aria-label="Menú principal">
         <h2>VentaPOS</h2>
         <p style="font-size:.85rem">{{ $u->nombre }}</p>
         <span class="rol-badge">{{ $u->etiquetaRol() }}</span>
@@ -160,9 +224,28 @@
         @endif
         <a href="{{ route('guia.index') }}" style="display:block;margin-top:1rem;font-size:.82rem;color:#94a3b8">Guía rápida</a>
     </aside>
-    <main>
+    <div class="layout-main">
+        <header class="app-topbar">
+            <button type="button" class="btn-menu" id="btn-sidebar" aria-label="Abrir menú" aria-expanded="false" aria-controls="app-sidebar">☰</button>
+            <div class="app-topbar-title">
+                VentaPOS
+                @if($u->empresa)
+                <div class="app-topbar-sub">{{ $u->empresa->nombre }}</div>
+                @endif
+            </div>
+        </header>
+        <main>
         @if(session('ok'))
-            <div class="alert-ok">{{ session('ok') }}</div>
+            <div class="alert-ok">
+                {{ session('ok') }}
+                @if(session('ticket_url'))
+                @php $ticketReimprimir = session('ticket_url').(str_contains(session('ticket_url'), '?') ? '&' : '?').'imprimir=1'; @endphp
+                <a href="{{ $ticketReimprimir }}" target="_blank" rel="noopener"
+                   style="display:inline-block;margin-left:.75rem;padding:.35rem .75rem;background:#2563eb;color:#fff;border-radius:.35rem;text-decoration:none;font-size:.85rem">
+                    Reimprimir ticket
+                </a>
+                @endif
+            </div>
         @endif
         @if($errors->any())
             <div class="alert-error">
@@ -170,8 +253,41 @@
             </div>
         @endif
         @yield('contenido')
-    </main>
+        </main>
+    </div>
 </div>
+<script>
+(function () {
+    const body = document.body;
+    const btn = document.getElementById('btn-sidebar');
+    const backdrop = document.getElementById('sidebar-backdrop');
+    const sidebar = document.getElementById('app-sidebar');
+    if (!btn || !backdrop || !sidebar) return;
+
+    const mq = window.matchMedia('(max-width: 900px)');
+
+    function setOpen(open) {
+        body.classList.toggle('sidebar-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+        btn.setAttribute('aria-label', open ? 'Cerrar menú' : 'Abrir menú');
+    }
+
+    function toggle() {
+        if (!mq.matches) return;
+        setOpen(!body.classList.contains('sidebar-open'));
+    }
+
+    btn.addEventListener('click', toggle);
+    backdrop.addEventListener('click', () => setOpen(false));
+    sidebar.querySelectorAll('a').forEach(a => {
+        a.addEventListener('click', () => { if (mq.matches) setOpen(false); });
+    });
+    window.addEventListener('keydown', e => {
+        if (e.key === 'Escape') setOpen(false);
+    });
+    mq.addEventListener('change', e => { if (!e.matches) setOpen(false); });
+})();
+</script>
 @stack('scripts')
 </body>
 </html>

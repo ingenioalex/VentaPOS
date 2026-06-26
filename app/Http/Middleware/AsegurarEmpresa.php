@@ -26,12 +26,16 @@ class AsegurarEmpresa
         }
 
         if ($usuario->rol === 'cajero' && ! $usuario->en_sesion) {
+            if ($request->routeIs('cierres.ticket', 'pos.ticket-cierre')) {
+                return $next($request);
+            }
+
             Auth::logout();
             $request->session()->invalidate();
             $request->session()->regenerateToken();
 
             return redirect()->route('login')
-                ->withErrors(['usuario' => 'Su sesión fue cerrada por el supervisor.']);
+                ->withErrors(['usuario' => 'Su sesión fue cerrada. Vuelva a iniciar sesión para un nuevo turno.']);
         }
 
         if ($usuario->empresa_id) {

@@ -12,7 +12,8 @@
     .btn-suspender { background: #d97706; color: #fff; }
     .btn-recuperar { background: #2563eb; color: #fff; }
     .btn-cancelar { background: #dc2626; color: #fff; }
-    .pos-layout { display: grid; grid-template-columns: 1fr 380px; gap: 1rem; }
+    .pos-layout { display: grid; grid-template-columns: 1fr minmax(430px, 480px); gap: 1rem; }
+    @media (max-width: 1280px) { .pos-layout { grid-template-columns: 1fr minmax(400px, 440px); } }
     @media (max-width: 1100px) { .pos-layout { grid-template-columns: 1fr; } }
     .pos-left { display: flex; flex-direction: column; gap: .75rem; }
     #buscar { flex: 1; padding: .85rem; font-size: 1.05rem; border: 2px solid #0f766e; border-radius: .5rem; }
@@ -23,6 +24,7 @@
     .tab { padding: .45rem .85rem; border: 1px solid #cbd5e1; background: #fff; border-radius: .4rem; cursor: pointer; font-size: .85rem; }
     .tab.activo { background: #0f766e; color: #fff; border-color: #0f766e; }
     .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; max-height: 320px; overflow-y: auto; }
+    .grid-productos.grid-cargando { opacity: .55; pointer-events: none; }
     .prod-card { border: 1px solid #e2e8f0; border-radius: .5rem; padding: .6rem; cursor: pointer; background: #fff; transition: .15s; }
     .prod-card:hover { border-color: #0f766e; background: #f0fdfa; }
     .prod-card strong { display: block; font-size: .82rem; line-height: 1.2; margin-bottom: .25rem; }
@@ -31,18 +33,39 @@
     .grid-titulo { font-size: .85rem; color: #64748b; margin-bottom: .5rem; font-weight: 600; }
     #resultados div { padding: .55rem; border-bottom: 1px solid #e2e8f0; cursor: pointer; }
     #resultados div:hover { background: #f0fdfa; }
-    .panel-derecho { display: flex; flex-direction: column; gap: .75rem; }
+    .panel-derecho { display: flex; flex-direction: column; gap: .75rem; min-width: 0; }
+    .card-detalle-venta { min-width: 0; }
+    #carrito { margin-top: .5rem; max-height: 280px; overflow: auto; min-width: 0; }
+    #carrito table { width: 100%; border-collapse: collapse; font-size: .84rem; table-layout: fixed; }
+    #carrito th, #carrito td { padding: .5rem .4rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
+    #carrito th { font-size: .78rem; color: #64748b; font-weight: 700; }
+    #carrito .col-producto { width: 32%; word-break: break-word; line-height: 1.25; }
+    #carrito .col-um { width: 2.5rem; text-align: center; font-size: .75rem; color: #64748b; text-transform: lowercase; }
+    #carrito .col-pu,
+    #carrito .col-sub { width: 4.5rem; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
+    #carrito .col-cant { width: 5.5rem; text-align: center; }
+    #carrito .inp-cant-kg { width: 100%; max-width: 4.25rem; padding: .2rem .25rem; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; font-variant-numeric: tabular-nums; }
+    #carrito .col-desc { width: 3.25rem; text-align: center; }
+    #carrito .col-quitar { width: 1.75rem; text-align: center; padding: .35rem .15rem; }
+    #carrito .carrito-barra { display: block; margin-top: .2rem; font-family: ui-monospace, monospace; font-size: .7rem; color: #64748b; word-break: break-all; }
+    #carrito .inp-desc { width: 100%; max-width: 3rem; padding: .2rem .25rem; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; }
+    #carrito .celda-sub { font-weight: 600; color: #0f766e; }
+    .qty-btn { width: 24px; height: 24px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; border-radius: 3px; font-size: .9rem; line-height: 1; }
+    .totales { font-size: .92rem; line-height: 1.8; display: grid; grid-template-columns: 1fr auto; gap: .2rem 1rem; align-items: center; }
+    .totales .totales-fila { display: contents; }
+    .totales .lbl-total { grid-column: 1; }
+    .totales .val-total { grid-column: 2; text-align: right; font-variant-numeric: tabular-nums; white-space: nowrap; min-width: 5.5rem; }
+    .totales .fila-descuento { grid-column: 1 / -1; display: flex; align-items: center; justify-content: space-between; gap: .5rem; }
+    .totales .fila-descuento input { width: 5rem; border: 1px solid #cbd5e1; border-radius: 3px; padding: .25rem .4rem; text-align: right; font-variant-numeric: tabular-nums; }
+    .total-grande { grid-column: 1 / -1; display: flex; align-items: baseline; justify-content: space-between; gap: .75rem; font-size: 1.55rem; font-weight: 800; color: #0f766e; margin-top: .25rem; padding-top: .35rem; border-top: 1px dashed #cbd5e1; }
+    .total-grande .val-total { font-size: inherit; font-weight: inherit; color: inherit; min-width: auto; }
     .cliente-row { display: flex; gap: .4rem; }
     .cliente-row input { flex: 1; padding: .5rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
-    #carrito table { width: 100%; border-collapse: collapse; font-size: .82rem; }
-    #carrito th, #carrito td { padding: .35rem .25rem; border-bottom: 1px solid #e2e8f0; text-align: left; }
-    .qty-btn { width: 22px; height: 22px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; border-radius: 3px; }
-    .totales { font-size: .9rem; line-height: 1.7; }
-    .total-grande { font-size: 1.6rem; font-weight: 800; color: #0f766e; }
     .pago-row { display: flex; gap: .5rem; margin-bottom: .5rem; }
     .pago-row input, .pago-row select { flex: 1; padding: .5rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
     #btn-cobrar { width: 100%; padding: .85rem; font-size: 1rem; background: #0f766e; color: #fff; border: none; border-radius: .5rem; font-weight: 800; cursor: pointer; }
-    #btn-cobrar:hover { background: #115e59; }
+    #btn-cobrar:hover:not(:disabled) { background: #115e59; }
+    #btn-cobrar:disabled { opacity: .5; cursor: not-allowed; }
     .atajos { font-size: .75rem; color: #64748b; margin-top: .5rem; }
     .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.4); z-index: 100; align-items: center; justify-content: center; }
     .modal.activo { display: flex; }
@@ -63,7 +86,9 @@
     .mixto-grid input { width: 100%; padding: .45rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
     .mixto-total { font-size: .8rem; color: #64748b; margin-bottom: .5rem; }
     .mixto-total.ok { color: #065f46; }
+    .mixto-total.warn { color: #92400e; }
     .mixto-total.err { color: #991b1b; }
+    .mixto-ayuda { font-size: .72rem; color: #64748b; margin: 0 0 .5rem; line-height: 1.35; }
     #qr-reader { width: 100%; border-radius: .5rem; overflow: hidden; }
     .modal-scanner { max-width: 480px; }
 </style>
@@ -148,14 +173,17 @@
             <div class="cliente-estado ok" id="cliente-estado">Consumidor final (venta sin DNI)</div>
         </div>
 
-        <div class="card" style="margin:0;flex:1">
+        <div class="card card-detalle-venta" style="margin:0;flex:1">
             <strong>Detalle venta</strong>
-            <div id="carrito" style="margin-top:.5rem;max-height:220px;overflow:auto"><p style="color:#64748b">Sin productos</p></div>
+            <div id="carrito"><p style="color:#64748b">Sin productos</p></div>
             <div class="totales" style="margin-top:.75rem;border-top:1px solid #e2e8f0;padding-top:.5rem">
-                <div>Subtotal: S/ <span id="subtotal">0.00</span></div>
-                <div>IGV incl.: S/ <span id="igv">0.00</span></div>
-                <div>Descuento: S/ <input type="number" id="descuento-global" value="0" min="0" step="0.01" style="width:70px;border:1px solid #cbd5e1;border-radius:3px;padding:2px 4px"></div>
-                <div class="total-grande">TOTAL: S/ <span id="total">0.00</span></div>
+                <div class="totales-fila"><span class="lbl-total">Subtotal:</span><span class="val-total">S/ <span id="subtotal">0.00</span></span></div>
+                <div class="totales-fila"><span class="lbl-total">IGV incl.:</span><span class="val-total">S/ <span id="igv">0.00</span></span></div>
+                <div class="fila-descuento">
+                    <span class="lbl-total">Descuento:</span>
+                    <span>S/ <input type="number" id="descuento-global" value="0" min="0" step="1" inputmode="numeric"></span>
+                </div>
+                <div class="total-grande"><span>TOTAL:</span><span class="val-total">S/ <span id="total">0.00</span></span></div>
             </div>
         </div>
 
@@ -170,6 +198,7 @@
                 </select>
             </div>
             <div id="fila-mixto" style="display:none">
+                <p class="mixto-ayuda">Yape, Plin y Tarjeta: monto exacto (sin vuelto). Efectivo: puede incluir vuelto si la suma supera el total.</p>
                 <div class="mixto-grid">
                     <div><label>Efectivo</label><input type="number" id="mix_efectivo" min="0" step="0.01" placeholder="0.00"></div>
                     <div><label>Yape</label><input type="number" id="mix_yape" min="0" step="0.01" placeholder="0.00"></div>
@@ -179,7 +208,7 @@
                 <div class="mixto-total" id="mixto-estado">Distribuya el total entre los medios de pago.</div>
             </div>
             <div class="pago-row" id="fila-efectivo">
-                <input type="number" id="monto_recibido" placeholder="Recibido S/" min="0" step="0.01">
+                <input type="number" id="monto_recibido" placeholder="Recibido S/" min="0" step="1" inputmode="numeric">
                 <input type="text" id="vuelto" placeholder="Vuelto" readonly style="background:#f1f5f9">
             </div>
             <button type="button" id="btn-cobrar">COBRAR (F9)</button>
@@ -216,6 +245,7 @@
 <script>
 const carrito = [];
 let tipoDocumento = 'boleta';
+let rafTotales = 0;
 const previews = {
     boleta: @json($preview),
     factura: @json($previewFactura),
@@ -228,6 +258,11 @@ const buscar = document.getElementById('buscar');
 const resultados = document.getElementById('resultados');
 const grid = document.getElementById('grid-productos');
 let timer;
+let categoriaGridActiva = 'todos';
+let topFetchSeq = 0;
+let topFetchAbort = null;
+const topCacheCliente = new Map();
+const topInicial = @json($topProductosInicial ?? []);
 
 function headers() {
     return { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' };
@@ -299,42 +334,87 @@ document.getElementById('btn-tipo-boleta').onclick = () => setTipoDocumento('bol
 document.getElementById('btn-tipo-factura').onclick = () => setTipoDocumento('factura');
 document.getElementById('btn-sin-dni').onclick = () => setConsumidorFinal();
 
-async function cargarMasVendidos(categoriaId) {
-    const params = new URLSearchParams({ categoria_id: categoriaId });
-    const res = await fetch(`{{ route('pos.mas-vendidos') }}?${params}`);
-    const items = await res.json();
+async function cargarMasVendidos(categoriaId, forzar = false) {
+    categoriaGridActiva = categoriaId;
+
+    if (!forzar && topCacheCliente.has(categoriaId)) {
+        pintarGridTop(topCacheCliente.get(categoriaId), categoriaId);
+        return;
+    }
+
+    if (topFetchAbort) topFetchAbort.abort();
+    topFetchAbort = new AbortController();
+    const seq = ++topFetchSeq;
+
+    grid.classList.add('grid-cargando');
+
+    try {
+        const params = new URLSearchParams({ categoria_id: categoriaId });
+        const res = await fetch(`{{ route('pos.mas-vendidos') }}?${params}`, {
+            signal: topFetchAbort.signal,
+            headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error('No se pudo cargar el top de productos');
+        const items = await res.json();
+        if (seq !== topFetchSeq) return;
+
+        topCacheCliente.set(categoriaId, items);
+        pintarGridTop(items, categoriaId);
+    } catch (e) {
+        if (e.name === 'AbortError') return;
+        if (seq !== topFetchSeq) return;
+        document.getElementById('grid-titulo').textContent = 'Top 5 más vendidos';
+        grid.innerHTML = '<p style="color:#991b1b;grid-column:1/-1">No se pudo actualizar el catálogo rápido.</p>';
+    } finally {
+        if (seq === topFetchSeq) grid.classList.remove('grid-cargando');
+    }
+}
+
+function pintarGridTop(items, categoriaId) {
     const catNombre = categoriaId === 'todos'
         ? 'todas las categorías'
         : (document.querySelector(`.tab[data-id="${categoriaId}"]`)?.textContent || '');
     document.getElementById('grid-titulo').textContent =
         `Top 5 más vendidos${categoriaId !== 'todos' ? ' · ' + catNombre : ''}`;
 
-    grid.innerHTML = items.map(p => cardProducto(p)).join('')
-        || '<p style="color:#64748b">Sin productos en esta categoría</p>';
+    grid.innerHTML = (items || []).map(p => cardProducto(p)).join('')
+        || '<p style="color:#64748b;grid-column:1/-1">Sin productos en esta categoría</p>';
 }
 
 function cardProducto(p) {
     const barra = p.codigo_barra || p.sku || '—';
     return `
         <div class="prod-card" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-barra="${esc(barra)}"
-             data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}">
+             data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}" data-um="${esc(p.unidad_medida || 'UND')}">
             <span class="prod-barra">${esc(barra)}</span>
             <strong>${esc(p.nombre)}</strong>
-            <small>S/ ${(+p.precio_venta).toFixed(2)} · Stock: ${p.stock_disponible}</small>
+            <small>${textoPrecioStockUm(p)}</small>
         </div>`;
 }
 
 function esc(s) { return String(s ?? '').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
 
+function formatoStock(stock) {
+    const n = +stock;
+    return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+}
+
+function textoPrecioStockUm(p) {
+    const um = esc(String(p.unidad_medida || 'UND').toLowerCase());
+    return `S/ ${(+p.precio_venta).toFixed(2)} · Stock: ${formatoStock(p.stock_disponible)} · ${um}`;
+}
+
 document.querySelectorAll('.tab').forEach(tab => {
     tab.onclick = () => {
+        if (tab.classList.contains('activo')) return;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
         tab.classList.add('activo');
         cargarMasVendidos(tab.dataset.id);
     };
 });
 
-cargarMasVendidos('todos');
+topCacheCliente.set('todos', topInicial);
+pintarGridTop(topInicial, 'todos');
 
 grid.addEventListener('click', e => {
     const card = e.target.closest('.prod-card');
@@ -370,9 +450,9 @@ buscar.addEventListener('input', () => {
             const barra = p.codigo_barra || p.sku || '—';
             return `
             <div class="resultado-busqueda" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-barra="${esc(barra)}"
-                 data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}">
+                 data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}" data-um="${esc(p.unidad_medida || 'UND')}">
                 <strong>${esc(p.nombre)}</strong><br>
-                <small><span style="font-family:monospace">${esc(barra)}</span> · S/ ${(+p.precio_venta).toFixed(2)} · Stock: ${p.stock_disponible}</small>
+                <small><span style="font-family:monospace">${esc(barra)}</span> · Stock: ${formatoStock(p.stock_disponible)} · ${esc((p.unidad_medida || 'UND').toLowerCase())} · S/ ${(+p.precio_venta).toFixed(2)}</small>
             </div>`;
         }).join('') || '<p style="padding:.5rem;color:#64748b">Sin resultados</p>';
     }, 250);
@@ -392,7 +472,14 @@ function productoApiValido(p) {
 
 function agregarDesdeApi(p) {
     if (!productoApiValido(p)) return false;
-    return agregar(p.id, p.nombre, p.codigo_barra || p.sku || '', +p.precio_venta, +p.stock_disponible, p.afecto_igv ? 1 : 0, +p.stock_minimo || 0);
+    return agregar(
+        p.id, p.nombre, p.codigo_barra || p.sku || '', +p.precio_venta, +p.stock_disponible,
+        p.afecto_igv ? 1 : 0, +p.stock_minimo || 0, p.unidad_medida || 'UND'
+    );
+}
+
+function esPesable(unidad) {
+    return String(unidad || 'UND').toUpperCase() === 'KG';
 }
 
 function agregarDesdeFila(row) {
@@ -400,149 +487,422 @@ function agregarDesdeFila(row) {
     const id = +row.dataset.id;
     const nombre = row.dataset.nombre;
     if (!Number.isFinite(id) || id <= 0 || !nombre) return false;
-    return agregar(id, nombre, row.dataset.barra || '', +row.dataset.precio, +row.dataset.stock, +row.dataset.igv, +row.dataset.min);
+    return agregar(id, nombre, row.dataset.barra || '', +row.dataset.precio, +row.dataset.stock, +row.dataset.igv, +row.dataset.min, row.dataset.um || 'UND');
 }
 
-function agregar(id, nombre, codigoBarra, precio, stock, afectoIgv = 1, stockMinimo = 0) {
+function agregar(id, nombre, codigoBarra, precio, stock, afectoIgv = 1, stockMinimo = 0, unidadMedida = 'UND') {
     id = +id;
     nombre = String(nombre || '').trim();
     precio = +precio;
     stock = +stock || 0;
     stockMinimo = +stockMinimo || 0;
     afectoIgv = +afectoIgv ? 1 : 0;
+    const pesable = esPesable(unidadMedida);
     if (!Number.isFinite(id) || id <= 0 || !nombre || !Number.isFinite(precio) || precio < 0) return false;
 
     const existente = carrito.find(l => l.producto_id === id);
     let cantidadFinal;
     if (existente) {
-        existente.cantidad++;
+        existente.cantidad = pesable
+            ? +(existente.cantidad + 0.25).toFixed(4)
+            : existente.cantidad + 1;
         existente.stock = stock;
         existente.stock_minimo = stockMinimo;
         cantidadFinal = existente.cantidad;
     } else {
+        const cantidadInicial = pesable ? 0.25 : 1;
         carrito.push({
             producto_id: id, nombre, codigo_barra: codigoBarra || '—',
-            precio, cantidad: 1, stock, stock_minimo: stockMinimo, descuento_pct: 0, afecto_igv: afectoIgv
+            precio, cantidad: cantidadInicial, stock, stock_minimo: stockMinimo,
+            descuento_pct: 0, afecto_igv: afectoIgv, unidad_medida: unidadMedida, pesable
         });
-        cantidadFinal = 1;
+        cantidadFinal = cantidadInicial;
     }
-    const restante = stock - cantidadFinal;
     const msg = document.getElementById('msg');
-    if (restante < 0) {
-        msg.style.color = '#991b1b';
-        msg.textContent = `⚠ ${nombre}: stock insuficiente (quedan ${stock})`;
-    } else if (stockMinimo > 0 && restante <= stockMinimo) {
-        msg.style.color = '#92400e';
-        msg.textContent = `⚠ ${nombre}: stock bajo — quedarán ${restante} (mín. ${stockMinimo})`;
+    if (!pesable) {
+        const restante = stock - cantidadFinal;
+        if (restante < 0) {
+            msg.style.color = '#991b1b';
+            msg.textContent = `⚠ ${nombre}: stock insuficiente (quedan ${formatoStock(stock)})`;
+        } else if (stockMinimo > 0 && restante <= stockMinimo) {
+            msg.style.color = '#92400e';
+            msg.textContent = `⚠ ${nombre}: stock bajo — quedarán ${formatoStock(restante)} (mín. ${formatoStock(stockMinimo)})`;
+        } else {
+            msg.textContent = '';
+        }
     } else {
         msg.textContent = '';
     }
-    render();
+    reflejarLineaCarrito(carrito.findIndex(l => l.producto_id === id));
     return true;
 }
 
-function calcularTotales() {
-    let subtotal = 0, igv = 0;
-    carrito.forEach(l => {
-        const bruto = l.precio * l.cantidad;
-        const desc = bruto * (l.descuento_pct / 100);
-        const linea = bruto - desc;
-        subtotal += linea;
-        if (l.afecto_igv) igv += linea * TASA_IGV / (1 + TASA_IGV);
+function etiquetaUm(unidad) {
+    const u = String(unidad || 'UND').toUpperCase();
+    return u === 'UND' ? 'und' : u.toLowerCase();
+}
+
+function cantidadKgTexto(cantidad) {
+    const n = +cantidad;
+    if (!Number.isFinite(n)) return '0';
+    return n.toFixed(3).replace(/\.?0+$/, '');
+}
+
+function encolarTotales() {
+    if (rafTotales) return;
+    rafTotales = requestAnimationFrame(() => {
+        rafTotales = 0;
+        actualizarTotales();
     });
-    const descGlobal = Math.min(subtotal, +document.getElementById('descuento-global').value || 0);
-    const total = subtotal - descGlobal;
-    return { subtotal, igv, descGlobal, total };
+}
+
+function filaCarritoHtml(l, i) {
+    const sub = subtotalLinea(l);
+    const um = etiquetaUm(l.unidad_medida);
+    return `<tr data-idx="${i}">
+        <td class="col-producto">
+            <span>${l.nombre}</span>
+            <span class="carrito-barra">${l.codigo_barra || '—'}</span>
+        </td>
+        <td class="col-um">${um}</td>
+        <td class="col-pu">S/ ${l.precio.toFixed(2)}</td>
+        <td class="col-cant">
+            ${l.pesable
+                ? `<input type="number" class="inp-cant inp-cant-kg" data-i="${i}" value="${cantidadKgTexto(l.cantidad)}" min="0.001" step="0.01" inputmode="decimal">`
+                : `<button type="button" class="qty-btn" data-i="${i}" data-d="-1">−</button>
+            <span class="qty-num">${l.cantidad}</span>
+            <button type="button" class="qty-btn" data-i="${i}" data-d="1">+</button>`}
+        </td>
+        <td class="col-desc"><input type="number" class="inp-desc" data-i="${i}" value="${l.descuento_pct}" min="0" max="100" step="1" inputmode="numeric"></td>
+        <td class="col-sub celda-sub">S/ ${sub.toFixed(2)}</td>
+        <td class="col-quitar"><button type="button" class="btn-quitar" data-i="${i}" style="border:none;background:none;color:#dc2626;cursor:pointer">✕</button></td>
+    </tr>`;
+}
+
+function htmlTablaCarrito() {
+    return `<table id="carrito-tabla"><thead><tr>
+            <th class="col-producto">Producto</th>
+            <th class="col-um">UM</th>
+            <th class="col-pu">P.U.</th>
+            <th class="col-cant">Cant</th>
+            <th class="col-desc">Desc%</th>
+            <th class="col-sub">Sub</th>
+            <th class="col-quitar"></th>
+        </tr></thead><tbody>` +
+        carrito.map((l, i) => filaCarritoHtml(l, i)).join('') +
+        '</tbody></table>';
+}
+
+function sincronizarIndiceFilas() {
+    document.querySelectorAll('#carrito tbody tr').forEach((tr, i) => {
+        tr.dataset.idx = i;
+        tr.querySelectorAll('[data-i]').forEach(el => { el.dataset.i = i; });
+    });
+}
+
+function reflejarLineaCarrito(i) {
+    const el = document.getElementById('carrito');
+    if (!carrito.length) {
+        el.innerHTML = '<p style="color:#64748b">Sin productos</p>';
+        encolarTotales();
+        return;
+    }
+    if (!el.querySelector('#carrito-tabla')) {
+        el.innerHTML = htmlTablaCarrito();
+        encolarTotales();
+        return;
+    }
+    const tbody = el.querySelector('#carrito tbody');
+    const html = filaCarritoHtml(carrito[i], i);
+    if (tbody.children[i]) {
+        tbody.children[i].outerHTML = html;
+    } else {
+        tbody.insertAdjacentHTML('beforeend', html);
+    }
+    sincronizarIndiceFilas();
+    encolarTotales();
 }
 
 function render() {
     const el = document.getElementById('carrito');
     if (!carrito.length) {
         el.innerHTML = '<p style="color:#64748b">Sin productos</p>';
-        document.getElementById('subtotal').textContent = '0.00';
-        document.getElementById('igv').textContent = '0.00';
-        document.getElementById('total').textContent = '0.00';
-        calcularVuelto();
+        encolarTotales();
         return;
     }
-    el.innerHTML = `<table><thead><tr><th>Producto</th><th>C.Barra</th><th>Cant</th><th>Desc%</th><th>Sub</th><th></th></tr></thead><tbody>` +
-        carrito.map((l, i) => {
-            const bruto = l.precio * l.cantidad;
-            const sub = bruto - bruto * (l.descuento_pct / 100);
-            return `<tr>
-                <td>${l.nombre}</td>
-                <td style="font-family:monospace;font-size:.78rem">${l.codigo_barra || '—'}</td>
-                <td>
-                    <button type="button" class="qty-btn" data-i="${i}" data-d="-1">−</button>
-                    ${l.cantidad}
-                    <button type="button" class="qty-btn" data-i="${i}" data-d="1">+</button>
-                </td>
-                <td><input type="number" class="inp-desc" data-i="${i}" value="${l.descuento_pct}" min="0" max="100" style="width:42px"></td>
-                <td>S/ ${sub.toFixed(2)}</td>
-                <td><button type="button" class="btn-quitar" data-i="${i}" style="border:none;background:none;color:#dc2626;cursor:pointer">✕</button></td>
-            </tr>`;
-        }).join('') + '</tbody></table>';
+    el.innerHTML = htmlTablaCarrito();
+    encolarTotales();
+}
 
-    document.querySelectorAll('.qty-btn').forEach(b => b.onclick = () => {
-        const i = +b.dataset.i;
-        const d = +b.dataset.d;
-        carrito[i].cantidad += d;
-        if (carrito[i].cantidad <= 0) carrito.splice(i, 1);
-        render();
-    });
-    document.querySelectorAll('.inp-desc').forEach(inp => inp.onchange = () => {
-        carrito[+inp.dataset.i].descuento_pct = Math.min(100, Math.max(0, +inp.value || 0));
-        render();
-    });
-    document.querySelectorAll('.btn-quitar').forEach(b => b.onclick = () => { carrito.splice(+b.dataset.i, 1); render(); });
+function subtotalLinea(l) {
+    const bruto = l.precio * l.cantidad;
+    return bruto - bruto * (l.descuento_pct / 100);
+}
 
+function calcularTotales() {
+    let subtotal = 0, igv = 0;
+    carrito.forEach(l => {
+        const linea = subtotalLinea(l);
+        subtotal += linea;
+        if (l.afecto_igv) igv += linea * TASA_IGV / (1 + TASA_IGV);
+    });
+    const descGlobal = Math.min(subtotal, Math.round(+document.getElementById('descuento-global').value || 0));
+    const total = subtotal - descGlobal;
+    return { subtotal, igv, descGlobal, total };
+}
+
+function actualizarTotales() {
     const t = calcularTotales();
     document.getElementById('subtotal').textContent = t.subtotal.toFixed(2);
     document.getElementById('igv').textContent = t.igv.toFixed(2);
     document.getElementById('total').textContent = t.total.toFixed(2);
     calcularVuelto();
     actualizarMixtoEstado();
+    if (document.getElementById('medio_pago').value !== 'mixto') {
+        actualizarBotonCobrar();
+    }
+}
+
+function actualizarCeldaSubtotal(fila, linea) {
+    const celda = fila?.querySelector('.celda-sub');
+    if (celda) celda.textContent = 'S/ ' + subtotalLinea(linea).toFixed(2);
+}
+
+const carritoEl = document.getElementById('carrito');
+carritoEl.addEventListener('click', e => {
+    const qb = e.target.closest('.qty-btn');
+    if (qb) {
+        const i = +qb.dataset.i;
+        const d = +qb.dataset.d;
+        const paso = carrito[i].pesable ? 0.25 : 1;
+        carrito[i].cantidad = +(carrito[i].cantidad + d * paso).toFixed(4);
+        if (carrito[i].cantidad <= 0) {
+            carrito.splice(i, 1);
+            render();
+        } else {
+            reflejarLineaCarrito(i);
+        }
+        return;
+    }
+    const bq = e.target.closest('.btn-quitar');
+    if (bq) {
+        carrito.splice(+bq.dataset.i, 1);
+        render();
+    }
+});
+
+carritoEl.addEventListener('input', e => {
+    const inpDesc = e.target.closest('.inp-desc');
+    if (inpDesc) {
+        const i = +inpDesc.dataset.i;
+        carrito[i].descuento_pct = Math.min(100, Math.max(0, parseInt(inpDesc.value, 10) || 0));
+        actualizarCeldaSubtotal(inpDesc.closest('tr'), carrito[i]);
+        encolarTotales();
+        return;
+    }
+    const inpCant = e.target.closest('.inp-cant');
+    if (inpCant) {
+        const i = +inpCant.dataset.i;
+        const val = +inpCant.value || 0;
+        if (val > 0) {
+            carrito[i].cantidad = +val.toFixed(4);
+            actualizarCeldaSubtotal(inpCant.closest('tr'), carrito[i]);
+            encolarTotales();
+        }
+    }
+});
+
+carritoEl.addEventListener('change', e => {
+    const inpDesc = e.target.closest('.inp-desc');
+    if (inpDesc) {
+        const i = +inpDesc.dataset.i;
+        carrito[i].descuento_pct = Math.min(100, Math.max(0, parseInt(inpDesc.value, 10) || 0));
+        inpDesc.value = carrito[i].descuento_pct;
+        actualizarCeldaSubtotal(inpDesc.closest('tr'), carrito[i]);
+        encolarTotales();
+        return;
+    }
+    const inpCant = e.target.closest('.inp-cant');
+    if (inpCant) {
+        const i = +inpCant.dataset.i;
+        const val = +inpCant.value || 0;
+        if (val <= 0) {
+            carrito.splice(i, 1);
+            render();
+        } else {
+            carrito[i].cantidad = +val.toFixed(4);
+            reflejarLineaCarrito(i);
+        }
+    }
+});
+
+function leerMontosMixto() {
+    return {
+        efectivo: +document.getElementById('mix_efectivo').value || 0,
+        yape: +document.getElementById('mix_yape').value || 0,
+        plin: +document.getElementById('mix_plin').value || 0,
+        tarjeta: +document.getElementById('mix_tarjeta').value || 0,
+    };
+}
+
+function analizarPagoMixto(total) {
+    const m = leerMontosMixto();
+    const noEfectivo = m.yape + m.plin + m.tarjeta;
+    const suma = noEfectivo + m.efectivo;
+    const tol = 0.01;
+    const efectivoNecesario = Math.max(0, total - noEfectivo);
+
+    if (suma <= tol) {
+        return { ok: false, estado: 'pendiente', mensaje: `Total a distribuir: S/ ${total.toFixed(2)}`, suma, vuelto: 0, pagos: [] };
+    }
+
+    if (m.yape > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Yape (S/ ${m.yape.toFixed(2)}) no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (m.plin > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Plin (S/ ${m.plin.toFixed(2)}) no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (m.tarjeta > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Tarjeta (S/ ${m.tarjeta.toFixed(2)}) no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (noEfectivo > total + tol) {
+        return {
+            ok: false,
+            estado: 'err',
+            mensaje: `Yape/Plin/Tarjeta suman S/ ${noEfectivo.toFixed(2)} y superan el total (S/ ${total.toFixed(2)}). No hay vuelto en medios digitales.`,
+        };
+    }
+
+    if (suma < total - tol) {
+        return {
+            ok: false,
+            estado: 'err',
+            mensaje: `Faltan S/ ${(total - suma).toFixed(2)} (suma S/ ${suma.toFixed(2)} de S/ ${total.toFixed(2)})`,
+            suma,
+            vuelto: 0,
+        };
+    }
+
+    let vuelto = 0;
+    let montoRecibido = null;
+    const pagos = [];
+
+    if (suma > total + tol) {
+        if (m.efectivo <= 0) {
+            return {
+                ok: false,
+                estado: 'err',
+                mensaje: `Sobran S/ ${(suma - total).toFixed(2)}. Solo el efectivo genera vuelto; reduzca Yape/Plin/Tarjeta o indique efectivo entregado.`,
+            };
+        }
+        vuelto = +(suma - total).toFixed(2);
+        if (m.efectivo + tol < vuelto) {
+            return {
+                ok: false,
+                estado: 'err',
+                mensaje: `El vuelto (S/ ${vuelto.toFixed(2)}) debe salir del efectivo entregado (S/ ${m.efectivo.toFixed(2)}).`,
+            };
+        }
+        montoRecibido = m.efectivo;
+    } else if (m.efectivo > 0) {
+        const rec = +document.getElementById('monto_recibido').value || 0;
+        if (rec > 0) {
+            if (rec + tol < m.efectivo) {
+                return { ok: false, estado: 'err', mensaje: 'Efectivo recibido insuficiente para el monto en efectivo.' };
+            }
+            montoRecibido = rec;
+            vuelto = +(rec - m.efectivo).toFixed(2);
+        } else {
+            montoRecibido = m.efectivo;
+        }
+    }
+
+    if (efectivoNecesario > tol) {
+        pagos.push({ medio: 'efectivo', monto: +efectivoNecesario.toFixed(2) });
+    }
+    if (m.yape > 0) pagos.push({ medio: 'yape', monto: +m.yape.toFixed(2) });
+    if (m.plin > 0) pagos.push({ medio: 'plin', monto: +m.plin.toFixed(2) });
+    if (m.tarjeta > 0) pagos.push({ medio: 'tarjeta', monto: +m.tarjeta.toFixed(2) });
+
+    let mensaje;
+    let estado = 'ok';
+    if (vuelto > tol) {
+        mensaje = `✓ Vuelto en efectivo: S/ ${vuelto.toFixed(2)} (pagado S/ ${suma.toFixed(2)} · total S/ ${total.toFixed(2)})`;
+    } else {
+        mensaje = `✓ Pagos cuadran: S/ ${total.toFixed(2)}`;
+    }
+
+    return { ok: true, estado, mensaje, suma, vuelto, montoRecibido, pagos, excedente: suma > total + tol };
 }
 
 function calcularVuelto() {
     const t = calcularTotales();
     const medio = document.getElementById('medio_pago').value;
-    const rec = +document.getElementById('monto_recibido').value || 0;
-    let base = t.total;
+    const vueltoEl = document.getElementById('vuelto');
+
     if (medio === 'mixto') {
-        base = +document.getElementById('mix_efectivo').value || 0;
+        const analisis = analizarPagoMixto(t.total);
+        vueltoEl.value = analisis.vuelto > 0.01 ? analisis.vuelto.toFixed(2) : '';
+        return;
     }
-    document.getElementById('vuelto').value = rec > 0 && base > 0 ? Math.max(0, rec - base).toFixed(2) : '';
+
+    const rec = +document.getElementById('monto_recibido').value || 0;
+    vueltoEl.value = rec > 0 ? Math.max(0, rec - t.total).toFixed(2) : '';
 }
 
-function sumaMixto() {
-    return ['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta']
-        .reduce((s, id) => s + (+document.getElementById(id).value || 0), 0);
+function actualizarBotonCobrar(analisisMixto = null) {
+    const btn = document.getElementById('btn-cobrar');
+    if (!btn) return;
+
+    const t = calcularTotales();
+    const medio = document.getElementById('medio_pago').value;
+    let puede = carrito.length > 0;
+    let titulo = '';
+
+    if (puede && medio === 'efectivo') {
+        const rec = +document.getElementById('monto_recibido').value || 0;
+        if (rec > 0 && rec + 0.01 < t.total) {
+            puede = false;
+            titulo = 'Monto recibido insuficiente';
+        }
+    } else if (puede && medio === 'mixto') {
+        const analisis = analisisMixto || analizarPagoMixto(t.total);
+        if (!analisis.ok && analisis.estado === 'err') {
+            puede = false;
+            titulo = analisis.mensaje;
+        }
+    }
+
+    btn.disabled = !puede;
+    btn.title = titulo;
 }
 
 function actualizarMixtoEstado() {
     const el = document.getElementById('mixto-estado');
     if (!el || document.getElementById('medio_pago').value !== 'mixto') return;
+
     const t = calcularTotales();
-    const suma = sumaMixto();
-    const diff = Math.abs(suma - t.total);
-    if (suma === 0) {
-        el.textContent = `Total a distribuir: S/ ${t.total.toFixed(2)}`;
-        el.className = 'mixto-total';
-    } else if (diff <= 0.01) {
-        el.textContent = `✓ Pagos cuadran: S/ ${suma.toFixed(2)}`;
-        el.className = 'mixto-total ok';
-    } else {
-        el.textContent = `Faltan S/ ${(t.total - suma).toFixed(2)} (suma S/ ${suma.toFixed(2)} de S/ ${t.total.toFixed(2)})`;
-        el.className = 'mixto-total err';
-    }
+    const analisis = analizarPagoMixto(t.total);
+
+    el.textContent = analisis.mensaje;
+    el.className = 'mixto-total' + (analisis.estado === 'ok' ? ' ok' : analisis.estado === 'warn' ? ' warn' : analisis.estado === 'pendiente' ? '' : ' err');
     calcularVuelto();
+    actualizarBotonCobrar(analisis);
 }
 
 function actualizarFilasPago() {
     const medio = document.getElementById('medio_pago').value;
     document.getElementById('fila-mixto').style.display = medio === 'mixto' ? 'block' : 'none';
-    const muestraEfectivo = medio === 'efectivo' || (medio === 'mixto' && (+document.getElementById('mix_efectivo').value || 0) > 0);
+
+    let muestraEfectivo = medio === 'efectivo';
+    if (medio === 'mixto') {
+        const m = leerMontosMixto();
+        const t = calcularTotales();
+        const analisis = analizarPagoMixto(t.total);
+        // Recibido extra solo si cuadra exacto y hay parte en efectivo (billetes de más)
+        muestraEfectivo = m.efectivo > 0 && analisis.ok && !analisis.excedente;
+    }
+
     document.getElementById('fila-efectivo').style.display = muestraEfectivo ? 'flex' : 'none';
     if (medio !== 'mixto') {
         ['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta'].forEach(id => document.getElementById(id).value = '');
@@ -550,9 +910,24 @@ function actualizarFilasPago() {
     actualizarMixtoEstado();
 }
 
-document.getElementById('descuento-global').oninput = render;
-document.getElementById('monto_recibido').oninput = calcularVuelto;
-document.getElementById('medio_pago').onchange = actualizarFilasPago;
+document.getElementById('descuento-global').addEventListener('input', actualizarTotales);
+document.getElementById('descuento-global').addEventListener('blur', function () {
+    this.value = Math.max(0, Math.round(+this.value || 0));
+    actualizarTotales();
+});
+document.getElementById('monto_recibido').addEventListener('input', () => {
+    calcularVuelto();
+    actualizarBotonCobrar();
+});
+document.getElementById('monto_recibido').addEventListener('blur', function () {
+    if (this.value !== '') this.value = Math.max(0, Math.round(+this.value || 0));
+    calcularVuelto();
+    actualizarBotonCobrar();
+});
+document.getElementById('medio_pago').onchange = () => {
+    actualizarFilasPago();
+    actualizarBotonCobrar();
+};
 ['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta'].forEach(id => {
     document.getElementById(id).addEventListener('input', () => {
         actualizarMixtoEstado();
@@ -706,32 +1081,27 @@ document.getElementById('btn-guardar-cliente').onclick = async () => {
 };
 
 document.getElementById('btn-cobrar').onclick = async () => {
-    if (!carrito.length) return;
+    const btn = document.getElementById('btn-cobrar');
+    if (!carrito.length || btn.disabled) return;
+
     const t = calcularTotales();
     const medio = document.getElementById('medio_pago').value;
-    const recibido = +document.getElementById('monto_recibido').value || 0;
+    let montoRecibidoEnvio = medio === 'efectivo'
+        ? (+document.getElementById('monto_recibido').value || 0)
+        : null;
     let pagosMixtos = null;
 
-    if (medio === 'efectivo' && recibido < t.total) return alert('Monto recibido insuficiente');
+    if (medio === 'efectivo' && montoRecibidoEnvio < t.total) {
+        return alert('Monto recibido insuficiente');
+    }
 
     if (medio === 'mixto') {
-        const medios = [
-            { medio: 'efectivo', monto: +document.getElementById('mix_efectivo').value || 0 },
-            { medio: 'yape', monto: +document.getElementById('mix_yape').value || 0 },
-            { medio: 'plin', monto: +document.getElementById('mix_plin').value || 0 },
-            { medio: 'tarjeta', monto: +document.getElementById('mix_tarjeta').value || 0 },
-        ].filter(p => p.monto > 0);
-
-        if (!medios.length) return alert('Indique al menos un monto en el pago mixto');
-        const suma = medios.reduce((s, p) => s + p.monto, 0);
-        if (Math.abs(suma - t.total) > 0.01) {
-            return alert(`Los pagos deben sumar S/ ${t.total.toFixed(2)} (actual: S/ ${suma.toFixed(2)})`);
+        const analisis = analizarPagoMixto(t.total);
+        if (!analisis.ok) {
+            return alert(analisis.mensaje || 'Revise los montos del pago mixto');
         }
-        const efectivoMonto = medios.find(p => p.medio === 'efectivo')?.monto || 0;
-        if (efectivoMonto > 0 && recibido < efectivoMonto) {
-            return alert('Monto en efectivo recibido insuficiente');
-        }
-        pagosMixtos = medios;
+        pagosMixtos = analisis.pagos;
+        montoRecibidoEnvio = analisis.montoRecibido;
     }
 
     const clienteId = document.getElementById('cliente-id').value || null;
@@ -741,32 +1111,42 @@ document.getElementById('btn-cobrar').onclick = async () => {
 
     const msg = document.getElementById('msg');
     msg.textContent = 'Procesando...';
-    const res = await fetch('{{ route('pos.cobrar') }}', {
-        method: 'POST', headers: headers(),
-        body: JSON.stringify({
-            lineas: carrito.map(l => ({ producto_id: l.producto_id, cantidad: l.cantidad, descuento_pct: l.descuento_pct })),
-            medio_pago: medio,
-            tipo_documento: tipoDocumento,
-            cliente_id: clienteId,
-            descuento_global: t.descGlobal,
-            monto_recibido: (medio === 'efectivo' || (medio === 'mixto' && pagosMixtos?.some(p => p.medio === 'efectivo')))
-                ? recibido || null
-                : null,
-            pagos_mixtos: pagosMixtos,
-        })
-    });
-    const data = await res.json();
-    if (data.ok) {
-        msg.style.color = '#065f46';
-        msg.textContent = `✓ ${data.tipo_etiqueta} ${data.numero} — Total S/ ${data.total}` + (data.vuelto != null ? ` · Vuelto S/ ${data.vuelto}` : '') + etiquetaSunatCobro(data);
-        if (data.preview_boleta) previews.boleta = data.preview_boleta;
-        if (data.preview_factura) previews.factura = data.preview_factura;
-        actualizarPreview(data.preview || previews[tipoDocumento]);
-        if (data.ticket_url) window.open(data.ticket_url, '_blank');
-        limpiarVenta();
-    } else {
+    msg.style.color = '#64748b';
+    btn.disabled = true;
+
+    try {
+        const res = await fetch('{{ route('pos.cobrar') }}', {
+            method: 'POST', headers: headers(),
+            body: JSON.stringify({
+                lineas: carrito.map(l => ({ producto_id: l.producto_id, cantidad: l.cantidad, descuento_pct: l.descuento_pct })),
+                medio_pago: medio,
+                tipo_documento: tipoDocumento,
+                cliente_id: clienteId,
+                descuento_global: t.descGlobal,
+                monto_recibido: (medio === 'efectivo' || (medio === 'mixto' && pagosMixtos?.some(p => p.medio === 'efectivo')))
+                    ? montoRecibidoEnvio || null
+                    : null,
+                pagos_mixtos: pagosMixtos,
+            })
+        });
+        const data = await res.json();
+        if (data.ok) {
+            msg.style.color = '#065f46';
+            msg.textContent = `✓ ${data.tipo_etiqueta} ${data.numero} — Total S/ ${data.total}` + (data.vuelto != null ? ` · Vuelto S/ ${data.vuelto}` : '') + etiquetaSunatCobro(data);
+            if (data.preview_boleta) previews.boleta = data.preview_boleta;
+            if (data.preview_factura) previews.factura = data.preview_factura;
+            actualizarPreview(data.preview || previews[tipoDocumento]);
+            if (data.ticket_url) window.open(data.ticket_url, '_blank');
+            limpiarVenta();
+        } else {
+            msg.style.color = '#991b1b';
+            msg.textContent = data.error || 'Error al cobrar';
+        }
+    } catch (_) {
         msg.style.color = '#991b1b';
-        msg.textContent = data.error || 'Error al cobrar';
+        msg.textContent = 'Error de conexión al cobrar. Intente de nuevo.';
+    } finally {
+        actualizarBotonCobrar();
     }
 };
 
@@ -830,6 +1210,7 @@ document.getElementById('btn-escanear').onclick = async () => {
 };
 
 actualizarFilasPago();
+actualizarBotonCobrar();
 
 const selTerminal = document.getElementById('sel-terminal');
 if (selTerminal) {

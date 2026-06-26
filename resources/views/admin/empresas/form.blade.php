@@ -141,10 +141,14 @@
 
     @if(!$empresa->exists)
     @push('scripts')
+    @php
+        $planesJs = collect(config('planes.planes_disponibles', ['beta', 'basico', 'negocio', 'pro']))
+            ->mapWithKeys(fn ($k) => [$k => config('planes.'.$k)]);
+    @endphp
     <script>
     (function () {
         const arranque = @json(config('planes.arranque'));
-        const planes = @json(collect(config('planes.planes_disponibles', ['beta','basico','negocio','pro']))->mapWithKeys(fn ($k) => [$k => config('planes.'.$k)]));
+        const planes = @json($planesJs);
         const sel = document.getElementById('sel-plan');
         const hint = document.getElementById('plan-cobro-hint');
         if (!sel || !hint) return;

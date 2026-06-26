@@ -131,6 +131,10 @@ const csrf = '{{ csrf_token() }}';
 const TASA_IGV = 0.18;
 let html5QrCode = null;
 let timer;
+let topFetchSeq = 0;
+let topFetchAbort = null;
+const topCacheCliente = new Map();
+const topInicial = @json($topProductosInicial ?? []);
 
 const buscar = document.getElementById('buscar');
 const resultados = document.getElementById('resultados');
@@ -154,6 +158,11 @@ function etiquetaSunatCobro(data) {
 }
 
 function esc(s) { return String(s ?? '').replace(/"/g, '&quot;').replace(/'/g, '&#39;'); }
+
+function formatoStock(stock) {
+    const n = +stock;
+    return Number.isFinite(n) ? n.toFixed(2) : '0.00';
+}
 
 function totales() {
     let sub = 0, igv = 0;
@@ -180,9 +189,11 @@ function pintarCarrito() {
                 <small>S/ ${l.precio.toFixed(2)} × ${l.cantidad}</small>
             </div>
             <div class="qty">
-                <button type="button" data-i="${i}" data-d="-1">−</button>
+                ${l.pesable
+                    ? `<input type="number" class="inp-cant-m" data-i="${i}" value="${l.cantidad}" min="0.001" step="0.001" style="width:64px;text-align:center">`
+                    : `<button type="button" data-i="${i}" data-d="-1">−</button>
                 <span>${l.cantidad}</span>
-                <button type="button" data-i="${i}" data-d="1">+</button>
+                <button type="button" data-i="${i}" data-d="1">+</button>`}
             </div>
         </div>`).join('') || '<p style="color:#64748b">Carrito vacío</p>';
 }
@@ -191,9 +202,16 @@ function productoApiValido(p) {
     return p && p.id != null && String(p.nombre || '').trim() !== '' && Number.isFinite(+p.precio_venta);
 }
 
+function esPesable(unidad) {
+    return String(unidad || 'UND').toUpperCase() === 'KG';
+}
+
 function agregarDesdeApi(p) {
     if (!productoApiValido(p)) return false;
-    return agregar(p.id, p.nombre, p.codigo_barra || p.sku || '', +p.precio_venta, +p.stock_disponible, p.afecto_igv ? 1 : 0, +p.stock_minimo || 0);
+    return agregar(
+        p.id, p.nombre, p.codigo_barra || p.sku || '', +p.precio_venta, +p.stock_disponible,
+        p.afecto_igv ? 1 : 0, +p.stock_minimo || 0, p.unidad_medida || 'UND'
+    );
 }
 
 function agregarDesdeFila(row) {
@@ -201,24 +219,32 @@ function agregarDesdeFila(row) {
     const id = +row.dataset.id;
     const nombre = row.dataset.nombre;
     if (!Number.isFinite(id) || id <= 0 || !nombre) return false;
-    return agregar(id, nombre, row.dataset.barra || '', +row.dataset.precio, +row.dataset.stock, +row.dataset.igv, +row.dataset.min);
+    return agregar(id, nombre, row.dataset.barra || '', +row.dataset.precio, +row.dataset.stock, +row.dataset.igv, +row.dataset.min, row.dataset.um || 'UND');
 }
 
-function agregar(id, nombre, barra, precio, stock, afectoIgv = 1, stockMinimo = 0) {
+function agregar(id, nombre, barra, precio, stock, afectoIgv = 1, stockMinimo = 0, unidadMedida = 'UND') {
     id = +id;
     nombre = String(nombre || '').trim();
     precio = +precio;
     stock = +stock || 0;
     stockMinimo = +stockMinimo || 0;
     afectoIgv = +afectoIgv ? 1 : 0;
+    const pesable = esPesable(unidadMedida);
     if (!Number.isFinite(id) || id <= 0 || !nombre || !Number.isFinite(precio) || precio < 0) return false;
 
     const ex = carrito.find(l => l.producto_id === id);
-    if (ex) ex.cantidad++;
-    else carrito.push({ producto_id: id, nombre, codigo_barra: barra, precio, cantidad: 1, stock, stock_minimo: stockMinimo, descuento_pct: 0, afecto_igv: afectoIgv });
+    if (ex) {
+        ex.cantidad = pesable ? +(ex.cantidad + 0.25).toFixed(4) : ex.cantidad + 1;
+    } else {
+        carrito.push({
+            producto_id: id, nombre, codigo_barra: barra, precio,
+            cantidad: pesable ? 0.25 : 1, stock, stock_minimo: stockMinimo,
+            descuento_pct: 0, afecto_igv: afectoIgv, unidad_medida: unidadMedida, pesable
+        });
+    }
     const msg = document.getElementById('msg');
     msg.style.color = '#065f46';
-    msg.textContent = '✓ ' + nombre;
+    msg.textContent = '✓ ' + nombre + (pesable ? ' (0.25 kg)' : '');
     pintarCarrito();
     return true;
 }
@@ -240,27 +266,56 @@ async function buscarExacto(q) {
 function cardHtml(p) {
     const barra = p.codigo_barra || p.sku || '—';
     return `<div class="card" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-barra="${esc(barra)}"
-        data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}">
+        data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}" data-um="${esc(p.unidad_medida || 'UND')}">
         <div class="barra">${esc(barra)}</div>
         <strong>${esc(p.nombre)}</strong>
-        <div class="precio">S/ ${(+p.precio_venta).toFixed(2)}</div>
+        <div class="precio">S/ ${(+p.precio_venta).toFixed(2)} · Stock: ${formatoStock(p.stock_disponible)} · ${esc((p.unidad_medida || 'UND').toLowerCase())}</div>
     </div>`;
 }
 
-async function cargarGrid(categoriaId) {
-    const params = new URLSearchParams({ categoria_id: categoriaId });
-    const res = await fetch(`{{ route('pos.mas-vendidos') }}?${params}`);
-    const items = await res.json();
-    grid.innerHTML = items.map(cardHtml).join('') || '<p style="grid-column:1/-1;color:#64748b">Sin productos</p>';
+function pintarGrid(items) {
+    grid.innerHTML = (items || []).map(cardHtml).join('') || '<p style="grid-column:1/-1;color:#64748b">Sin productos</p>';
+}
+
+async function cargarGrid(categoriaId, forzar = false) {
+    if (!forzar && topCacheCliente.has(categoriaId)) {
+        pintarGrid(topCacheCliente.get(categoriaId));
+        return;
+    }
+
+    if (topFetchAbort) topFetchAbort.abort();
+    topFetchAbort = new AbortController();
+    const seq = ++topFetchSeq;
+
+    try {
+        const params = new URLSearchParams({ categoria_id: categoriaId });
+        const res = await fetch(`{{ route('pos.mas-vendidos') }}?${params}`, {
+            signal: topFetchAbort.signal,
+            headers: { Accept: 'application/json' },
+        });
+        if (!res.ok) throw new Error();
+        const items = await res.json();
+        if (seq !== topFetchSeq) return;
+        topCacheCliente.set(categoriaId, items);
+        pintarGrid(items);
+    } catch (e) {
+        if (e.name === 'AbortError') return;
+        if (seq !== topFetchSeq) return;
+        grid.innerHTML = '<p style="grid-column:1/-1;color:#991b1b">No se pudo cargar productos.</p>';
+    }
 }
 
 document.querySelectorAll('.tab').forEach(tab => {
     tab.onclick = () => {
+        if (tab.classList.contains('activo')) return;
         document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
         tab.classList.add('activo');
         cargarGrid(tab.dataset.id);
     };
 });
+
+topCacheCliente.set('todos', topInicial);
+pintarGrid(topInicial);
 
 grid.addEventListener('click', e => {
     const card = e.target.closest('.card[data-id]');
@@ -285,7 +340,7 @@ buscar.addEventListener('input', () => {
         resultados.innerHTML = items.filter(productoApiValido).map(p => {
             const barra = p.codigo_barra || p.sku || '—';
             return `<div class="resultado-busqueda" data-id="${p.id}" data-nombre="${esc(p.nombre)}" data-barra="${esc(barra)}"
-                data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}">
+                data-precio="${p.precio_venta}" data-stock="${p.stock_disponible}" data-min="${p.stock_minimo || 0}" data-igv="${p.afecto_igv ? 1 : 0}" data-um="${esc(p.unidad_medida || 'UND')}">
                 <strong>${esc(p.nombre)}</strong><br><small>${esc(barra)} · S/ ${(+p.precio_venta).toFixed(2)}</small></div>`;
         }).join('') || '<div style="padding:.75rem;color:#64748b">Sin resultados</div>';
     }, 280);
@@ -303,8 +358,19 @@ document.getElementById('lista-carrito').addEventListener('click', e => {
     if (!btn) return;
     const i = +btn.dataset.i;
     const d = +btn.dataset.d;
-    carrito[i].cantidad += d;
+    const paso = carrito[i].pesable ? 0.25 : 1;
+    carrito[i].cantidad = +(carrito[i].cantidad + d * paso).toFixed(4);
     if (carrito[i].cantidad <= 0) carrito.splice(i, 1);
+    pintarCarrito();
+});
+
+document.getElementById('lista-carrito').addEventListener('change', e => {
+    const inp = e.target.closest('.inp-cant-m');
+    if (!inp) return;
+    const i = +inp.dataset.i;
+    const val = +inp.value || 0;
+    if (val <= 0) carrito.splice(i, 1);
+    else carrito[i].cantidad = +val.toFixed(4);
     pintarCarrito();
 });
 
@@ -367,7 +433,6 @@ document.getElementById('btn-escanear').onclick = async () => {
     }
 };
 
-cargarGrid('todos');
 pintarCarrito();
 </script>
 </body>

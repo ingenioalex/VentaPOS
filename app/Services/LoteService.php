@@ -38,10 +38,34 @@ class LoteService
         ]);
     }
 
-    public function descontarVenta(Producto $producto, float $cantidad, ?string $referencia = null): void
-    {
-        if (! $producto->control_lote || $cantidad <= 0) {
+    public function descontarVenta(
+        Producto $producto,
+        float $cantidad,
+        ?string $referencia = null,
+        ?float $stockAntesVenta = null,
+    ): void {
+        if (! $producto->control_lote || $cantidad <= 0 || $producto->esPesable()) {
             return;
+        }
+
+        $empresa = $producto->empresa ?? Empresa::find($producto->empresa_id);
+        if (! $empresa || ! $this->habilitado($empresa)) {
+            return;
+        }
+
+        $stockReferencia = $stockAntesVenta ?? ((float) $producto->stock_disponible + $cantidad);
+        $totalEnLotes = (float) ProductoLote::where('producto_id', $producto->id)
+            ->where('cantidad', '>', 0)
+            ->sum('cantidad');
+
+        if ($totalEnLotes + 0.0001 < $stockReferencia) {
+            $this->registrarEntrada(
+                $producto,
+                round($stockReferencia - $totalEnLotes, 4),
+                'SYNC-STOCK',
+                null,
+                $referencia ?? 'sync-lotes',
+            );
         }
 
         $restante = $cantidad;

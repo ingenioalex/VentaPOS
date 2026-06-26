@@ -290,21 +290,36 @@ class DemoDatasetService
             $catId = $categorias[$catKeys[$i % count($catKeys)]];
             $costo = round(1.5 + ($i % 40) * 0.35, 2);
             $precio = round($costo * (1.25 + ($i % 5) * 0.05), 2);
+            $stock = 50 + ($i % 30) * 5;
+            $controlLote = $i % 17 === 0;
+            $unidad = (stripos($nombre, 'kg') !== false || stripos($nombre, '500g') !== false) ? 'KG' : 'UND';
             $id = DB::table('productos')->insertGetId([
                 'empresa_id' => $empresaId,
                 'categoria_id' => $catId,
                 'sku' => 'SM'.str_pad((string) ($i + 1), 4, '0', STR_PAD_LEFT),
                 'codigo_barra' => '7752000'.str_pad((string) ($i + 1), 6, '0', STR_PAD_LEFT),
                 'nombre' => $nombre,
+                'unidad_medida' => $unidad,
                 'precio_venta' => $precio,
                 'costo_compra' => $costo,
-                'stock_disponible' => 50 + ($i % 30) * 5,
+                'stock_disponible' => $stock,
                 'stock_minimo' => 8 + ($i % 4) * 2,
-                'control_lote' => $i % 17 === 0,
+                'control_lote' => $controlLote,
                 'activo' => true,
                 'creado_en' => now(),
                 'actualizado_en' => now(),
             ]);
+            if ($controlLote) {
+                DB::table('producto_lotes')->insert([
+                    'empresa_id' => $empresaId,
+                    'producto_id' => $id,
+                    'lote' => 'INICIAL',
+                    'fecha_vencimiento' => null,
+                    'cantidad' => $stock,
+                    'referencia' => 'demo',
+                    'creado_en' => now(),
+                ]);
+            }
             $productos[] = ['id' => $id, 'precio' => $precio, 'costo' => $costo, 'nombre' => $nombre];
         }
 

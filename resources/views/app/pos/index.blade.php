@@ -66,6 +66,38 @@
     .mixto-total.err { color: #991b1b; }
     #qr-reader { width: 100%; border-radius: .5rem; overflow: hidden; }
     .modal-scanner { max-width: 480px; }
+    #carrito table { table-layout: fixed; }
+    #carrito th { white-space: nowrap; }
+    #carrito td { overflow-wrap: anywhere; }
+    /* Detalle venta: en móvil cada línea se muestra como tarjeta para evitar columnas comprimidas */
+    @media (max-width: 640px) {
+        #carrito table, #carrito tbody, #carrito tr, #carrito td { display: block; width: 100%; }
+        #carrito thead { display: none; }
+        #carrito tr {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "nombre quitar"
+                "barra barra"
+                "cant sub"
+                "desc sub";
+            gap: .35rem .5rem;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            border-radius: .5rem;
+            padding: .55rem .65rem;
+            margin-bottom: .5rem;
+        }
+        #carrito td { border: none; padding: 0; overflow-wrap: anywhere; }
+        #carrito .c-nombre { grid-area: nombre; font-weight: 700; font-size: .92rem; line-height: 1.25; }
+        #carrito .c-quitar { grid-area: quitar; text-align: right; align-self: start; }
+        #carrito .c-barra { grid-area: barra; color: #64748b; }
+        #carrito .c-cant { grid-area: cant; white-space: nowrap; }
+        #carrito .c-desc { grid-area: desc; white-space: nowrap; }
+        #carrito .c-sub { grid-area: sub; text-align: right; font-weight: 700; font-size: 1.05rem; color: #0f766e; align-self: center; }
+        #carrito .c-desc::before { content: "Desc% "; color: #64748b; font-size: .72rem; }
+        #carrito .c-cant::before { content: "Cant "; color: #64748b; font-size: .72rem; }
+    }
 </style>
 @endpush
 
@@ -470,16 +502,16 @@ function render() {
             const bruto = l.precio * l.cantidad;
             const sub = bruto - bruto * (l.descuento_pct / 100);
             return `<tr>
-                <td>${l.nombre}</td>
-                <td style="font-family:monospace;font-size:.78rem">${l.codigo_barra || '—'}</td>
-                <td>
+                <td class="c-nombre">${l.nombre}</td>
+                <td class="c-barra" style="font-family:monospace;font-size:.78rem">${l.codigo_barra || '—'}</td>
+                <td class="c-cant">
                     <button type="button" class="qty-btn" data-i="${i}" data-d="-1">−</button>
                     ${l.cantidad}
                     <button type="button" class="qty-btn" data-i="${i}" data-d="1">+</button>
                 </td>
-                <td><input type="number" class="inp-desc" data-i="${i}" value="${l.descuento_pct}" min="0" max="100" style="width:42px"></td>
-                <td>S/ ${sub.toFixed(2)}</td>
-                <td><button type="button" class="btn-quitar" data-i="${i}" style="border:none;background:none;color:#dc2626;cursor:pointer">✕</button></td>
+                <td class="c-desc"><input type="number" class="inp-desc" data-i="${i}" value="${l.descuento_pct}" min="0" max="100" style="width:42px"></td>
+                <td class="c-sub">S/ ${sub.toFixed(2)}</td>
+                <td class="c-quitar"><button type="button" class="btn-quitar" data-i="${i}" style="border:none;background:none;color:#dc2626;cursor:pointer">✕</button></td>
             </tr>`;
         }).join('') + '</tbody></table>';
 

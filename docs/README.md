@@ -34,6 +34,7 @@
 | Documento | Contenido |
 |-----------|-----------|
 | [ARRANQUE_LOCAL.md](ARRANQUE_LOCAL.md) | Laragon, migraciones, usuarios demo |
+| [SOLUCION_POS_LOCAL.md](SOLUCION_POS_LOCAL.md) | **🔧 Troubleshooting: Solucionar problemas con POS local** |
 | [SETUP_ENTORNO.md](SETUP_ENTORNO.md) | Requisitos de entorno |
 | [PUESTA_EN_MARCHA.md](PUESTA_EN_MARCHA.md) | Checklist producción: VPS, SSL, cron, backups |
 | [HOSTING_DOMINIO_Y_DESPLIEGUE.md](HOSTING_DOMINIO_Y_DESPLIEGUE.md) | Hosting, dominio, estrategia SaaS |
@@ -64,6 +65,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-10-10 | Solución POS local: guía troubleshooting + scripts verificación | SOLUCION_POS_LOCAL.md, iniciar-con-verificacion.ps1/.sh |
 | 2026-06-08 | Cupos usuarios flexibles: bonificados + add-on por empresa | MODULOS_Y_FASES.md, PlanLimiteService |
 | 2026-06-08 | Admin tarifas: super admin edita precios planes/módulos/extras | MODULOS_Y_FASES.md, storage/app/tarifas.json |
 | 2026-06-08 | Extras como add-ons S/9: gestión super admin (no dueño) | MODULOS_Y_FASES.md, config/extras.php |

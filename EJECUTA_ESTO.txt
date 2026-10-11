@@ -1,0 +1,111 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║               🚀 EJECUTA ESTO EN TU VPS AHORA                           ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+
+📋 PASO 1: Conectar a tu VPS
+────────────────────────────────────────────────────────────────────────────
+
+ssh root@TU_IP_DEL_VPS
+
+
+📋 PASO 2: Copiar y pegar este comando (TODO EN UNA LÍNEA)
+────────────────────────────────────────────────────────────────────────────
+
+curl -o deploy.sh https://raw.githubusercontent.com/ingenioalex/VentaPOS/cursor/seccionk-module-0c7c/deploy-vps-ruta.sh && chmod +x deploy.sh && ./deploy.sh
+
+
+📋 PASO 3: Responder las preguntas
+────────────────────────────────────────────────────────────────────────────
+
+El script te preguntará:
+
+  1️⃣  Dominio (sin www): ventasagil.com
+  2️⃣  Email para SSL: tu@email.com
+  3️⃣  Contraseña MySQL: ********
+
+
+⏱️ TIEMPO: 5-10 minutos
+
+
+✅ RESULTADO: Todo funcionando en https://ventasagil.com/seccionk
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                   📚 SI QUIERES LEER MÁS PRIMERO                        ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+Lee estos archivos (en orden):
+
+  1️⃣  README_SECCIONK.md           ← Introducción
+  2️⃣  DESPLEGAR_AQUI.md            ← Guía rápida
+  3️⃣  VERIFICACION_PRE_DEPLOY.md   ← Checklist
+  4️⃣  RESUMEN_FINAL.md             ← Todo lo que se hizo
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                        🎯 URLs DESPUÉS DEL DEPLOY                        ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+  🌐  VentaPOS:         https://ventasagil.com
+  🎓  SeccionK Público: https://ventasagil.com/seccionk
+  🔐  SeccionK Admin:   https://ventasagil.com/seccionk/admin/login
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                          🔐 CREDENCIALES                                 ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+┌─ SeccionK Admin ────────────────────────────────────────────────────────┐
+│                                                                          │
+│  URL:        https://ventasagil.com/seccionk/admin/login                │
+│  Usuario:    admin                                                       │
+│  Contraseña: seccionk2026                                                │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ SeccionK Búsqueda Pública (datos de prueba) ──────────────────────────┐
+│                                                                          │
+│  URL:      https://ventasagil.com/seccionk                              │
+│  DNI:      12345678                                                      │
+│  Apellido: García                                                        │
+│                                                                          │
+└──────────────────────────────────────────────────────────────────────────┘
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                     ⚠️  IMPORTANTE: VentaPOS                            ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+VentaPOS seguirá funcionando EXACTAMENTE IGUAL:
+
+  ✅  Misma URL: https://ventasagil.com
+  ✅  Misma base de datos
+  ✅  Mismos usuarios
+  ✅  Cero cambios
+
+SeccionK es COMPLETAMENTE INDEPENDIENTE:
+
+  ✅  Su propia base de datos
+  ✅  Sus propias tablas
+  ✅  Su propio login
+  ✅  Su propia URL: /seccionk
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║                          🎉 ¡ESO ES TODO!                               ║
+║                                                                          ║
+║  Solo ejecuta el comando del PASO 2 y en 10 minutos estará listo.      ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝

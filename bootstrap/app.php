@@ -15,8 +15,10 @@ return Application::configure(basePath: dirname(__DIR__))
             Route::middleware('web')
                 ->group(base_path('routes/admin.php'));
             
-            Route::domain('seccionk.ventasagil.com')
-                ->middleware('web')
+            // SeccionK en ruta /seccionk en lugar de subdominio
+            Route::middleware('web')
+                ->prefix('seccionk')
+                ->name('seccionk.')
                 ->group(base_path('routes/seccionk.php'));
         },
     )

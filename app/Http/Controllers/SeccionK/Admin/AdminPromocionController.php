@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\SeccionK\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SeccionKEvento;
 use App\Models\SeccionKPromocion;
 use Illuminate\Http\Request;
 
@@ -30,9 +31,29 @@ class AdminPromocionController extends Controller
             $query->where('activo', true);
         }
 
-        $promociones = $query->orderBy('apellido_paterno')->orderBy('apellido_materno')->paginate(20);
+        $promociones = $query
+            ->withCount([
+                'participaciones as cuotas_pagadas' => function ($q) {
+                    $q->where('pago', true)
+                        ->whereHas('evento', function ($evento) {
+                            $evento->where('tipo', 'cuota_mensual')->where('activo', true);
+                        });
+                },
+                'participaciones as eventos_pagados' => function ($q) {
+                    $q->where('pago', true)
+                        ->whereHas('evento', function ($evento) {
+                            $evento->where('tipo', 'evento')->where('activo', true);
+                        });
+                },
+            ])
+            ->orderBy('apellido_paterno')
+            ->orderBy('apellido_materno')
+            ->paginate(20);
 
-        return view('seccionk.admin.promociones.index', compact('promociones'));
+        $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
+        $totalEventos = SeccionKEvento::eventos()->activos()->count();
+
+        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos'));
     }
 
     public function create()
@@ -66,7 +87,48 @@ class AdminPromocionController extends Controller
 
     public function show(SeccionKPromocion $promocion)
     {
-        return redirect()->route('seccionk.admin.promociones.edit', $promocion);
+        $promocion->load('participaciones.evento');
+        $participaciones = $promocion->participaciones->keyBy('evento_id');
+
+        $cuotas = SeccionKEvento::cuotasMensuales()->activos()->orderBy('fecha')->get()->map(function ($cuota) use ($participaciones) {
+            $part = $participaciones->get($cuota->id);
+
+            return [
+                'evento' => $cuota,
+                'pago' => $part?->pago ?? false,
+                'monto_aportado' => $part?->monto_aportado ?? 0,
+                'fecha_pago' => $part?->fecha_pago,
+                'comentario' => $part?->observaciones,
+                'imagen' => $part?->imagen_sustento,
+                'numero_transaccion' => $part?->numero_transaccion,
+            ];
+        });
+
+        $eventos = SeccionKEvento::eventos()->activos()->orderBy('fecha', 'desc')->get()->map(function ($evento) use ($participaciones) {
+            $part = $participaciones->get($evento->id);
+
+            return [
+                'evento' => $evento,
+                'participo' => $part?->participo ?? false,
+                'pago' => $part?->pago ?? false,
+                'monto_aportado' => $part?->monto_aportado ?? 0,
+                'fecha_pago' => $part?->fecha_pago,
+                'comentario' => $part?->observaciones,
+                'imagen' => $part?->imagen_sustento,
+                'numero_transaccion' => $part?->numero_transaccion,
+            ];
+        });
+
+        $cuotasPagadas = $cuotas->where('pago', true)->count();
+        $eventosPagados = $eventos->where('pago', true)->count();
+
+        return view('seccionk.admin.promociones.pagos', compact(
+            'promocion',
+            'cuotas',
+            'eventos',
+            'cuotasPagadas',
+            'eventosPagados'
+        ));
     }
 
     public function update(Request $request, SeccionKPromocion $promocion)

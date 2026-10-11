@@ -21,6 +21,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [SeccionKPublicoController::class, 'index'])->name('index');
 Route::post('/buscar', [SeccionKPublicoController::class, 'buscar'])->name('buscar');
 Route::get('/perfil/{id}', [SeccionKPublicoController::class, 'perfil'])->name('perfil');
+Route::post('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'guardarComentarioCuota'])
+    ->name('perfil.cuota.comentario');
 Route::get('/registro', [SeccionKPublicoController::class, 'registroForm'])->name('registro');
 Route::post('/registro', [SeccionKPublicoController::class, 'registro'])->name('registro.store');
 

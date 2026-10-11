@@ -7,7 +7,8 @@ use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class SeccionKPublicoController extends Controller
 {
@@ -64,6 +65,8 @@ class SeccionKPublicoController extends Controller
                 'pago' => $part?->pago ?? false,
                 'monto_aportado' => $part?->monto_aportado ?? 0,
                 'fecha_pago' => $part?->fecha_pago,
+                'comentario' => $part?->observaciones,
+                'imagen' => $part?->imagen_sustento,
             ];
         });
 
@@ -116,5 +119,60 @@ class SeccionKPublicoController extends Controller
 
         return redirect()->route('seccionk.perfil', $promocion->id)
             ->with('success', '¡Registro exitoso! Bienvenido a la Sección K - Promoción 2001.');
+    }
+
+    public function guardarComentarioCuota(Request $request, $id, $eventoId)
+    {
+        $promocion = SeccionKPromocion::where('activo', true)->findOrFail($id);
+
+        $evento = SeccionKEvento::cuotasMensuales()
+            ->activos()
+            ->findOrFail($eventoId);
+
+        $request->validate([
+            'comentario' => 'nullable|string|max:1000',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ]);
+
+        if (! $request->filled('comentario') && ! $request->hasFile('imagen')) {
+            return redirect()
+                ->route('seccionk.perfil', $promocion->id)
+                ->withErrors(['comentario_'.$evento->id => 'Escribe un comentario o carga una imagen.'])
+                ->withFragment('cuota-'.$evento->id);
+        }
+
+        $participacion = SeccionKParticipacion::firstOrNew([
+            'promocion_id' => $promocion->id,
+            'evento_id' => $evento->id,
+        ]);
+
+        if ($request->filled('comentario')) {
+            $participacion->observaciones = $request->comentario;
+        }
+
+        if ($request->hasFile('imagen')) {
+            $directorio = public_path('uploads/seccionk');
+            File::ensureDirectoryExists($directorio);
+
+            $archivo = $request->file('imagen');
+            $nombre = $promocion->id.'_'.$evento->id.'_'.Str::random(8).'.'.$archivo->getClientOriginalExtension();
+            $archivo->move($directorio, $nombre);
+
+            if ($participacion->imagen_sustento) {
+                $anterior = public_path('uploads/seccionk/'.$participacion->imagen_sustento);
+                if (File::exists($anterior)) {
+                    File::delete($anterior);
+                }
+            }
+
+            $participacion->imagen_sustento = $nombre;
+        }
+
+        $participacion->save();
+
+        return redirect()
+            ->route('seccionk.perfil', $promocion->id)
+            ->with('success', 'Comentario guardado en la cuota de '.$evento->mes_cuota.'.')
+            ->withFragment('cuota-'.$evento->id);
     }
 }

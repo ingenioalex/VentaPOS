@@ -18,6 +18,8 @@
 /public/fonts-manifest.dev.json
 /public/hot
 /public/storage
+/public/uploads/seccionk/*
+!/public/uploads/seccionk/.gitkeep
 /storage/*.key
 /storage/pail
 /vendor

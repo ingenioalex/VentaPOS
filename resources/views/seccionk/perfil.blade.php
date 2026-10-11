@@ -109,13 +109,11 @@
 
                 <div class="space-y-6 relative">
                     @foreach($cuotasData as $index => $cuota)
-                        <div class="relative pl-12 timeline-item">
-                            <!-- Icono -->
+                        <div id="cuota-{{ $cuota['evento']->id }}" class="relative pl-12 timeline-item">
                             <div class="absolute left-0 top-0 w-10 h-10 rounded-full flex items-center justify-center {{ $cuota['pago'] ? 'bg-green-500' : 'bg-gray-300' }}">
                                 <i class="fas {{ $cuota['pago'] ? 'fa-check' : 'fa-clock' }} text-white"></i>
                             </div>
 
-                            <!-- Contenido -->
                             <div class="bg-gray-50 rounded-lg p-4 {{ $cuota['pago'] ? 'border-l-4 border-green-500' : '' }}">
                                 <div class="flex justify-between items-start mb-2">
                                     <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mes_cuota }}</h3>
@@ -135,7 +133,7 @@
                                 @if($cuota['pago'])
                                     <div class="flex justify-between items-center text-sm">
                                         <span class="text-gray-600">
-                                            <i class="fas fa-money-bill mr-2"></i>Monto: 
+                                            <i class="fas fa-money-bill mr-2"></i>Monto:
                                             <span class="font-semibold text-green-600">S/ {{ number_format($cuota['monto_aportado'], 2) }}</span>
                                         </span>
                                         @if($cuota['fecha_pago'])
@@ -149,6 +147,49 @@
                                         Monto sugerido: S/ {{ number_format($cuota['evento']->monto, 2) }}
                                     </p>
                                 @endif
+
+                                @if($cuota['comentario'] || $cuota['imagen'])
+                                    <div class="mt-3 pt-3 border-t border-gray-200">
+                                        @if($cuota['comentario'])
+                                            <p class="text-sm text-gray-700 whitespace-pre-line">
+                                                <i class="fas fa-comment text-purple-500 mr-2"></i>{{ $cuota['comentario'] }}
+                                            </p>
+                                        @endif
+                                        @if($cuota['imagen'])
+                                            <a href="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" target="_blank" class="inline-block mt-2">
+                                                <img src="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" alt="Sustento {{ $cuota['evento']->mes_cuota }}" class="h-24 w-auto rounded-lg border border-gray-200 object-cover">
+                                            </a>
+                                        @endif
+                                    </div>
+                                @endif
+
+                                <form action="{{ route('seccionk.perfil.cuota.comentario', [$promocion->id, $cuota['evento']->id]) }}" method="POST" enctype="multipart/form-data" class="mt-4 space-y-3">
+                                    @csrf
+                                    <label class="block text-xs font-semibold text-gray-500 uppercase tracking-wide">Comentario</label>
+                                    <textarea name="comentario" rows="2" maxlength="1000" placeholder="Escribe un comentario sobre esta cuota..." class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500">{{ old('comentario', $cuota['comentario']) }}</textarea>
+                                    @error('comentario_'.$cuota['evento']->id)
+                                        <p class="text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    @error('comentario')
+                                        <p class="text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+                                    @error('imagen')
+                                        <p class="text-xs text-red-600">{{ $message }}</p>
+                                    @enderror
+
+                                    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+                                        <label class="inline-flex items-center text-sm text-purple-700 cursor-pointer">
+                                            <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.nextElementSibling.querySelector('.nombre-archivo').textContent = this.files[0] ? this.files[0].name : 'Cargar imagen (opcional)'">
+                                            <span class="inline-flex items-center px-3 py-2 rounded-lg bg-white border border-purple-200 hover:bg-purple-50">
+                                                <i class="fas fa-image mr-2"></i>
+                                                <span class="nombre-archivo">Cargar imagen (opcional)</span>
+                                            </span>
+                                        </label>
+                                        <button type="submit" class="inline-flex items-center justify-center px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-semibold hover:bg-purple-700">
+                                            <i class="fas fa-save mr-2"></i>Guardar
+                                        </button>
+                                    </div>
+                                </form>
                             </div>
                         </div>
                     @endforeach

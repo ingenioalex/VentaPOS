@@ -36,10 +36,12 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     
     // Gestión de promociones
-    Route::resource('promociones', AdminPromocionController::class);
+    Route::resource('promociones', AdminPromocionController::class)
+        ->parameters(['promociones' => 'promocion']);
     
     // Gestión de eventos
-    Route::resource('eventos', AdminEventoController::class);
+    Route::resource('eventos', AdminEventoController::class)
+        ->parameters(['eventos' => 'evento']);
     Route::get('eventos/{evento}/participantes', [AdminEventoController::class, 'participantes'])
         ->name('eventos.participantes');
     Route::post('eventos/{evento}/participantes', [AdminEventoController::class, 'guardarParticipantes'])

@@ -8,7 +8,8 @@ use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class AdminEventoController extends Controller
 {
@@ -58,6 +59,11 @@ class AdminEventoController extends Controller
     public function edit(SeccionKEvento $evento)
     {
         return view('seccionk.admin.eventos.form', compact('evento'));
+    }
+
+    public function show(SeccionKEvento $evento)
+    {
+        return redirect()->route('seccionk.admin.eventos.participantes', $evento);
     }
 
     public function update(Request $request, SeccionKEvento $evento)
@@ -113,11 +119,14 @@ class AdminEventoController extends Controller
         DB::transaction(function () use ($evento, $data, $request) {
             foreach ($data['participantes'] as $promocionId => $participanteData) {
                 $imagenSustento = null;
-                
-                // Manejar la imagen si fue subida
+
                 if ($request->hasFile("participantes.{$promocionId}.imagen_sustento")) {
+                    $directorio = public_path('uploads/seccionk');
+                    File::ensureDirectoryExists($directorio);
                     $imagen = $request->file("participantes.{$promocionId}.imagen_sustento");
-                    $imagenSustento = $imagen->store('seccionk/sustentos', 'public');
+                    $nombre = $promocionId.'_'.$evento->id.'_'.Str::random(8).'.'.$imagen->getClientOriginalExtension();
+                    $imagen->move($directorio, $nombre);
+                    $imagenSustento = $nombre;
                 }
 
                 $existente = SeccionKParticipacion::where('evento_id', $evento->id)

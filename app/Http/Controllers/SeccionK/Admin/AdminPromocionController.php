@@ -64,6 +64,11 @@ class AdminPromocionController extends Controller
         return view('seccionk.admin.promociones.form', compact('promocion'));
     }
 
+    public function show(SeccionKPromocion $promocion)
+    {
+        return redirect()->route('seccionk.admin.promociones.edit', $promocion);
+    }
+
     public function update(Request $request, SeccionKPromocion $promocion)
     {
         $data = $request->validate([

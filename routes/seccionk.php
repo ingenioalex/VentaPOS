@@ -38,6 +38,8 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     // Gestión de promociones
     Route::resource('promociones', AdminPromocionController::class)
         ->parameters(['promociones' => 'promocion']);
+    Route::post('promociones/{promocion}/pagos/{evento}', [AdminPromocionController::class, 'registrarPago'])
+        ->name('promociones.pagos.store');
     
     // Gestión de eventos
     Route::resource('eventos', AdminEventoController::class)

@@ -10,7 +10,7 @@
         @if($promocion->celular) · {{ $promocion->celular }} @endif
     </div>
     <div class="flex gap-3">
-        <a href="{{ route('seccionk.perfil', $promocion->id) }}" target="_blank" class="text-purple-600 font-semibold">Ver perfil público</a>
+        <a href="{{ url('seccionk/perfil/'.$promocion->getKey()) }}" target="_blank" class="text-purple-600 font-semibold">Ver perfil público</a>
         <a href="{{ route('seccionk.admin.promociones.index') }}" class="text-gray-600 font-semibold">Volver</a>
     </div>
 </div>
@@ -65,6 +65,18 @@
                     @if($cuota['imagen'])
                         <a href="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" target="_blank" class="text-xs text-purple-600">Ver imagen</a>
                     @endif
+
+                    <form action="{{ route('seccionk.admin.promociones.pagos.store', ['promocion' => $promocion->getKey(), 'evento' => $cuota['evento']->getKey()]) }}" method="POST" enctype="multipart/form-data" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @csrf
+                        <input type="number" name="monto_aportado" step="0.01" min="0" required value="{{ old('monto_aportado', $cuota['pago'] ? $cuota['monto_aportado'] : $cuota['evento']->monto) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Monto">
+                        <input type="text" name="numero_transaccion" value="{{ old('numero_transaccion', $cuota['numero_transaccion']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="N° transacción (opcional)">
+                        <input type="date" name="fecha_pago" value="{{ old('fecha_pago', optional($cuota['fecha_pago'])->format('Y-m-d') ?: date('Y-m-d')) }}" class="px-3 py-2 border rounded-lg text-sm">
+                        <input type="text" name="observaciones" value="{{ old('observaciones', $cuota['comentario']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Comentario (opcional)">
+                        <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="text-xs sm:col-span-2">
+                        <button type="submit" class="sm:col-span-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
+                            {{ $cuota['pago'] ? 'Actualizar pago' : 'Registrar pago' }}
+                        </button>
+                    </form>
                 </div>
             @empty
                 <p class="px-6 py-8 text-center text-gray-500">No hay cuotas registradas</p>
@@ -105,6 +117,18 @@
                     @if($evento['imagen'])
                         <a href="{{ asset('uploads/seccionk/'.$evento['imagen']) }}" target="_blank" class="text-xs text-purple-600">Ver imagen</a>
                     @endif
+
+                    <form action="{{ route('seccionk.admin.promociones.pagos.store', ['promocion' => $promocion->getKey(), 'evento' => $evento['evento']->getKey()]) }}" method="POST" enctype="multipart/form-data" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
+                        @csrf
+                        <input type="number" name="monto_aportado" step="0.01" min="0" required value="{{ old('monto_aportado', $evento['pago'] ? $evento['monto_aportado'] : $evento['evento']->monto) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Monto">
+                        <input type="text" name="numero_transaccion" value="{{ old('numero_transaccion', $evento['numero_transaccion']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="N° transacción (opcional)">
+                        <input type="date" name="fecha_pago" value="{{ old('fecha_pago', optional($evento['fecha_pago'])->format('Y-m-d') ?: date('Y-m-d')) }}" class="px-3 py-2 border rounded-lg text-sm">
+                        <input type="text" name="observaciones" value="{{ old('observaciones', $evento['comentario']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Comentario (opcional)">
+                        <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="text-xs sm:col-span-2">
+                        <button type="submit" class="sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
+                            {{ $evento['pago'] ? 'Actualizar pago' : 'Registrar pago' }}
+                        </button>
+                    </form>
                 </div>
             @empty
                 <p class="px-6 py-8 text-center text-gray-500">No hay eventos registrados</p>

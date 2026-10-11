@@ -4,8 +4,11 @@ namespace App\Http\Controllers\SeccionK\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
+use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class AdminPromocionController extends Controller
 {
@@ -149,6 +152,52 @@ class AdminPromocionController extends Controller
 
         return redirect()->route('seccionk.admin.promociones.index')
             ->with('success', 'Promoción actualizada exitosamente.');
+    }
+
+    public function registrarPago(Request $request, SeccionKPromocion $promocion, SeccionKEvento $evento)
+    {
+        $data = $request->validate([
+            'monto_aportado' => 'required|numeric|min:0',
+            'numero_transaccion' => 'nullable|string|max:100',
+            'fecha_pago' => 'nullable|date',
+            'observaciones' => 'nullable|string|max:1000',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ]);
+
+        $participacion = SeccionKParticipacion::firstOrNew([
+            'promocion_id' => $promocion->id,
+            'evento_id' => $evento->id,
+        ]);
+
+        $participacion->pago = true;
+        $participacion->participo = true;
+        $participacion->monto_aportado = $data['monto_aportado'];
+        $participacion->numero_transaccion = $data['numero_transaccion'] ?? $participacion->numero_transaccion;
+        $participacion->fecha_pago = $data['fecha_pago'] ?? now()->toDateString();
+        $participacion->observaciones = $data['observaciones'] ?? $participacion->observaciones;
+
+        if ($request->hasFile('imagen')) {
+            $directorio = public_path('uploads/seccionk');
+            File::ensureDirectoryExists($directorio);
+            $archivo = $request->file('imagen');
+            $nombre = $promocion->id.'_'.$evento->id.'_'.Str::random(8).'.'.$archivo->getClientOriginalExtension();
+            $archivo->move($directorio, $nombre);
+
+            if ($participacion->imagen_sustento) {
+                $anterior = public_path('uploads/seccionk/'.$participacion->imagen_sustento);
+                if (File::exists($anterior)) {
+                    File::delete($anterior);
+                }
+            }
+
+            $participacion->imagen_sustento = $nombre;
+        }
+
+        $participacion->save();
+
+        return redirect()
+            ->route('seccionk.admin.promociones.show', $promocion)
+            ->with('success', 'Pago registrado en '.$evento->nombre.'.');
     }
 
     public function destroy(SeccionKPromocion $promocion)

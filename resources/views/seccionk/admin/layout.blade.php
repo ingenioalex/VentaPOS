@@ -48,6 +48,10 @@
                     <i class="fas fa-calendar-alt w-5"></i>
                     <span>Eventos</span>
                 </a>
+                <a href="{{ route('seccionk.admin.resumen.cuotas') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition {{ request()->routeIs('seccionk.admin.resumen.cuotas') ? 'sidebar-active' : '' }}">
+                    <i class="fas fa-table w-5"></i>
+                    <span>Resumen cuotas</span>
+                </a>
                 
                 <div class="pt-4 mt-4 border-t border-gray-800">
                     <a href="{{ route('seccionk.index') }}" target="_blank" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition">

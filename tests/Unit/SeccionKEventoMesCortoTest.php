@@ -37,4 +37,14 @@ class SeccionKEventoMesCortoTest extends TestCase
 
         $this->assertSame('NOV26', $cuota->mesCorto());
     }
+
+    public function test_el_texto_del_mes_gana_sobre_la_fecha(): void
+    {
+        $cuota = new SeccionKEvento([
+            'fecha' => '2028-01-01',
+            'mes_cuota' => 'Enero 2027',
+        ]);
+
+        $this->assertSame('ENE27', $cuota->mesCorto());
+    }
 }

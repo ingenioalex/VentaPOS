@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -34,7 +35,96 @@ class AdminPromocionController extends Controller
             $query->where('activo', true);
         }
 
-        $promociones = $query
+        $promociones = $this->aplicarFiltrosPromociones($query)
+            ->paginate(20);
+
+        $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
+        $totalEventos = SeccionKEvento::eventos()->activos()->count();
+
+        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos'));
+    }
+
+    public function exportar(Request $request)
+    {
+        $query = SeccionKPromocion::query();
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->where(function ($q) use ($buscar) {
+                $q->where('dni', 'like', "%{$buscar}%")
+                    ->orWhere('nombre', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_materno', 'like', "%{$buscar}%");
+            });
+        }
+        if ($request->filled('participa_cuotas')) {
+            $query->where('participa_cuotas', $request->participa_cuotas === '1');
+        }
+        if (! $request->has('mostrar_inactivos')) {
+            $query->where('activo', true);
+        }
+
+        $promociones = $this->aplicarFiltrosPromociones($query)->get();
+        $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
+        $totalEventos = SeccionKEvento::eventos()->activos()->count();
+
+        $filasExcel = $promociones->map(function ($promo) use ($totalCuotas, $totalEventos) {
+            $cuotasPagadas = (int) $promo->cuotas_pagadas;
+            $eventosPagados = (int) $promo->eventos_pagados;
+
+            return [
+                $promo->dni,
+                $promo->nombreCompleto(),
+                $promo->celular ?? '',
+                $promo->participa_cuotas ? 'Sí' : 'No',
+                $cuotasPagadas,
+                max($totalCuotas - $cuotasPagadas, 0),
+                $eventosPagados,
+                max($totalEventos - $eventosPagados, 0),
+                $promo->activo ? 'Activo' : 'Inactivo',
+            ];
+        })->all();
+
+        if ($request->get('formato') === 'excel') {
+            return SeccionKExport::excel(
+                'Promociones',
+                ['DNI', 'Nombre', 'Celular', 'Participa cuotas', 'Cuotas pagadas', 'Cuotas por pagar', 'Eventos pagados', 'Eventos por pagar', 'Estado'],
+                $filasExcel,
+                'seccionk-promociones'
+            );
+        }
+
+        $lineas = ["📋 *SECCIÓN K 2001 - PROMOCIONES*", 'Fecha: '.now()->format('d/m/Y H:i'), ''];
+        foreach ($promociones as $promo) {
+            $cuotasPagadas = (int) $promo->cuotas_pagadas;
+            $cuotasFaltan = max($totalCuotas - $cuotasPagadas, 0);
+            $eventosPagados = (int) $promo->eventos_pagados;
+            $eventosFaltan = max($totalEventos - $eventosPagados, 0);
+            $lineas[] = '👤 *'.$promo->nombreCompleto().'*';
+            $lineas[] = 'DNI: '.$promo->dni;
+            if ($promo->celular) {
+                $lineas[] = 'Cel: '.$promo->celular;
+            }
+            $lineas[] = 'Cuotas: '.$cuotasPagadas.'/'.$totalCuotas.' pagadas · '.$cuotasFaltan.' por pagar';
+            $lineas[] = 'Eventos: '.$eventosPagados.'/'.$totalEventos.' pagados · '.$eventosFaltan.' por pagar';
+            $lineas[] = '------------------------------';
+        }
+        $texto = implode("\n", $lineas);
+
+        if ($request->get('formato') === 'descargar') {
+            return SeccionKExport::texto($texto, 'seccionk-promociones-whatsapp');
+        }
+
+        return view('seccionk.admin.exportar-whatsapp', [
+            'titulo' => 'Promociones para WhatsApp',
+            'texto' => $texto,
+            'volver' => route('seccionk.admin.promociones.index', $request->query()),
+            'descargar' => route('seccionk.admin.promociones.exportar', array_merge($request->query(), ['formato' => 'descargar'])),
+        ]);
+    }
+
+    private function aplicarFiltrosPromociones($query)
+    {
+        return $query
             ->withCount([
                 'participaciones as cuotas_pagadas' => function ($q) {
                     $q->where('pago', true)
@@ -50,13 +140,7 @@ class AdminPromocionController extends Controller
                 },
             ])
             ->orderBy('apellido_paterno')
-            ->orderBy('apellido_materno')
-            ->paginate(20);
-
-        $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
-        $totalEventos = SeccionKEvento::eventos()->activos()->count();
-
-        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos'));
+            ->orderBy('apellido_materno');
     }
 
     public function create()

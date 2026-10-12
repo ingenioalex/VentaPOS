@@ -18,9 +18,17 @@
         </label>
         <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">Filtrar</button>
     </form>
-    <a href="{{ route('seccionk.admin.promociones.create') }}" class="bg-green-600 text-white px-6 py-2 rounded-lg hover:bg-green-700 text-center">
-        <i class="fas fa-plus mr-2"></i>Nueva Promoción
-    </a>
+    <div class="flex flex-wrap gap-2">
+        <a href="{{ route('seccionk.admin.promociones.exportar', array_merge(request()->query(), ['formato' => 'excel'])) }}" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700 text-center">
+            <i class="fas fa-file-excel mr-2"></i>Excel
+        </a>
+        <a href="{{ route('seccionk.admin.promociones.exportar', array_merge(request()->query(), ['formato' => 'whatsapp'])) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-center">
+            <i class="fab fa-whatsapp mr-2"></i>WhatsApp
+        </a>
+        <a href="{{ route('seccionk.admin.promociones.create') }}" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-center">
+            <i class="fas fa-plus mr-2"></i>Nueva Promoción
+        </a>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl shadow-lg overflow-x-auto">

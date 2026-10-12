@@ -6,7 +6,15 @@
 @section('content')
 <div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
     <p class="text-gray-600">Cada celda muestra si el miembro pagó esa cuota y el monto.</p>
-    <a href="{{ route('seccionk.admin.dashboard') }}" class="text-purple-600 font-semibold">Volver al dashboard</a>
+    <div class="flex flex-wrap gap-3">
+        <a href="{{ route('seccionk.admin.resumen.cuotas.exportar', ['formato' => 'excel']) }}" class="bg-emerald-600 text-white px-4 py-2 rounded-lg hover:bg-emerald-700">
+            <i class="fas fa-file-excel mr-2"></i>Excel
+        </a>
+        <a href="{{ route('seccionk.admin.resumen.cuotas.exportar', ['formato' => 'whatsapp']) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700">
+            <i class="fab fa-whatsapp mr-2"></i>WhatsApp
+        </a>
+        <a href="{{ route('seccionk.admin.dashboard') }}" class="text-purple-600 font-semibold self-center">Volver al dashboard</a>
+    </div>
 </div>
 
 <div class="bg-white rounded-xl shadow-lg overflow-x-auto">

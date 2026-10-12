@@ -22,6 +22,7 @@ class AdminDashboardController extends Controller
         $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
 
         $pagosCuotas = SeccionKParticipacion::query()
+            ->dePromocionesActivas()
             ->where('pago', true)
             ->whereHas('evento', function ($evento) {
                 $evento->where('tipo', 'cuota_mensual')->where('activo', true);
@@ -43,7 +44,9 @@ class AdminDashboardController extends Controller
             ->orderBy('fecha')
             ->get()
             ->map(function ($cuota) use ($participanCuotas) {
-                $pagos = SeccionKParticipacion::where('evento_id', $cuota->id)->where('pago', true);
+                $pagos = SeccionKParticipacion::dePromocionesActivas()
+                    ->where('evento_id', $cuota->id)
+                    ->where('pago', true);
                 $pagaron = (clone $pagos)->count();
 
                 return [
@@ -262,6 +265,7 @@ class AdminDashboardController extends Controller
             ->get();
 
         $pagos = SeccionKParticipacion::query()
+            ->dePromocionesActivas()
             ->whereIn('evento_id', $cuotas->pluck('id')->filter())
             ->where('pago', true)
             ->get()

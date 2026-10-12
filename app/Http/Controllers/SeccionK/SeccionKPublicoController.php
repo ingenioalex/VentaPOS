@@ -38,7 +38,8 @@ class SeccionKPublicoController extends Controller
 
     public function perfil($id)
     {
-        $promocion = SeccionKPromocion::with(['participaciones.evento'])
+        $promocion = SeccionKPromocion::activos()
+            ->with(['participaciones.evento'])
             ->findOrFail($id);
 
         // Cuotas mensuales ordenadas por fecha

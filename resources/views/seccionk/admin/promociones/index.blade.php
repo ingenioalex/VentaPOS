@@ -13,8 +13,11 @@
             <option value="0" {{ request('participa_cuotas') === '0' ? 'selected' : '' }}>No participa</option>
         </select>
         <label class="flex items-center space-x-2">
-            <input type="checkbox" name="mostrar_inactivos" {{ request('mostrar_inactivos') ? 'checked' : '' }}>
+            <input type="checkbox" name="mostrar_inactivos" value="1" {{ $mostrarInactivos ? 'checked' : '' }} onchange="this.form.submit()">
             <span>Mostrar inactivos</span>
+            @if($ocultas > 0)
+                <span class="text-xs text-amber-700 font-semibold">({{ $ocultas }} ocultas)</span>
+            @endif
         </label>
         <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">Filtrar</button>
     </form>
@@ -97,11 +100,27 @@
                     <a href="{{ route('seccionk.admin.promociones.edit', $promo) }}" class="text-blue-600 hover:text-blue-800" title="Editar">
                         <i class="fas fa-edit"></i>
                     </a>
-                    <form action="{{ route('seccionk.admin.promociones.destroy', $promo) }}" method="POST" class="inline" onsubmit="return confirm('¿Ocultar esta promoción?')">
+                    @if($promo->activo)
+                        <form action="{{ route('seccionk.admin.promociones.destroy', $promo) }}" method="POST" class="inline" onsubmit="return confirm('¿Ocultar esta promoción? Dejará de salir en reportes y en el sitio público.')">
+                            @csrf
+                            @method('DELETE')
+                            <button type="submit" class="text-amber-600 hover:text-amber-800" title="Ocultar">
+                                <i class="fas fa-eye-slash"></i>
+                            </button>
+                        </form>
+                    @else
+                        <form action="{{ route('seccionk.admin.promociones.restaurar', $promo) }}" method="POST" class="inline">
+                            @csrf
+                            <button type="submit" class="text-green-600 hover:text-green-800" title="Restaurar">
+                                <i class="fas fa-undo"></i>
+                            </button>
+                        </form>
+                    @endif
+                    <form action="{{ route('seccionk.admin.promociones.eliminar', $promo) }}" method="POST" class="inline" onsubmit="return confirm('¿Eliminar DEFINITIVO a {{ $promo->nombreCompleto() }}? Se borrarán sus pagos y vínculos de eventos.')">
                         @csrf
                         @method('DELETE')
-                        <button type="submit" class="text-red-600 hover:text-red-800" title="Ocultar">
-                            <i class="fas fa-eye-slash"></i>
+                        <button type="submit" class="text-red-600 hover:text-red-800" title="Eliminar definitivo">
+                            <i class="fas fa-trash-alt"></i>
                         </button>
                     </form>
                 </td>

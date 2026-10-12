@@ -37,4 +37,11 @@ class SeccionKParticipacion extends Model
     {
         return $this->belongsTo(SeccionKEvento::class, 'evento_id');
     }
+
+    public function scopeDePromocionesActivas($query)
+    {
+        return $query->whereHas('promocion', function ($promocion) {
+            $promocion->where('activo', true);
+        });
+    }
 }

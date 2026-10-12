@@ -31,17 +31,19 @@ class AdminPromocionController extends Controller
             $query->where('participa_cuotas', $request->participa_cuotas === '1');
         }
 
-        if (!$request->has('mostrar_inactivos')) {
+        $mostrarInactivos = $request->boolean('mostrar_inactivos');
+        if (! $mostrarInactivos) {
             $query->where('activo', true);
         }
 
-        $promociones = $this->aplicarFiltrosPromociones($query)
+        $promociones = $this->aplicarFiltrosPromociones($query, $mostrarInactivos)
             ->paginate(20);
 
         $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
+        $ocultas = SeccionKPromocion::where('activo', false)->count();
 
-        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos'));
+        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos', 'ocultas', 'mostrarInactivos'));
     }
 
     public function exportar(Request $request)
@@ -59,11 +61,11 @@ class AdminPromocionController extends Controller
         if ($request->filled('participa_cuotas')) {
             $query->where('participa_cuotas', $request->participa_cuotas === '1');
         }
-        if (! $request->has('mostrar_inactivos')) {
+        if (! $request->boolean('mostrar_inactivos')) {
             $query->where('activo', true);
         }
 
-        $promociones = $this->aplicarFiltrosPromociones($query)->get();
+        $promociones = $this->aplicarFiltrosPromociones($query, $request->boolean('mostrar_inactivos'))->get();
         $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
 
@@ -122,8 +124,12 @@ class AdminPromocionController extends Controller
         ]);
     }
 
-    private function aplicarFiltrosPromociones($query)
+    private function aplicarFiltrosPromociones($query, bool $mostrarInactivos = false)
     {
+        if ($mostrarInactivos) {
+            $query->orderBy('activo');
+        }
+
         return $query
             ->withCount([
                 'participaciones as cuotas_pagadas' => function ($q) {
@@ -289,7 +295,35 @@ class AdminPromocionController extends Controller
         $promocion->update(['activo' => false]);
 
         return redirect()->route('seccionk.admin.promociones.index')
-            ->with('success', 'Promoción ocultada exitosamente.');
+            ->with('success', 'Promoción ocultada. Ya no aparece en reportes ni en el sitio público.');
+    }
+
+    public function restaurar(SeccionKPromocion $promocion)
+    {
+        $promocion->update(['activo' => true]);
+
+        return redirect()->route('seccionk.admin.promociones.index', ['mostrar_inactivos' => 1])
+            ->with('success', 'Promoción restaurada.');
+    }
+
+    public function eliminar(SeccionKPromocion $promocion)
+    {
+        $nombre = $promocion->nombreCompleto();
+
+        foreach ($promocion->participaciones as $pago) {
+            if ($pago->imagen_sustento) {
+                $archivo = public_path('uploads/seccionk/'.$pago->imagen_sustento);
+                if (File::exists($archivo)) {
+                    File::delete($archivo);
+                }
+            }
+        }
+
+        $promocion->participaciones()->delete();
+        $promocion->delete();
+
+        return redirect()->route('seccionk.admin.promociones.index', request()->only('mostrar_inactivos'))
+            ->with('success', $nombre.' y sus pagos fueron eliminados.');
     }
 
     public function referencias(Request $request)

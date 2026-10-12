@@ -1,6 +1,5 @@
 #!/bin/bash
 # Actualiza SeccionK en el VPS sin tocar la data de VentaPOS.
-# Ejecutar en el servidor: bash actualizar-seccionk-vps.sh
 
 set -euo pipefail
 
@@ -23,6 +22,10 @@ fi
 
 echo "App: $APP"
 cd "$APP"
+
+env_get() {
+    grep -E "^${1}=" "$APP/.env" | tail -1 | cut -d= -f2- | tr -d '"' | tr -d "'"
+}
 
 TMP=/tmp/seccionk-update
 rm -rf "$TMP"
@@ -54,25 +57,18 @@ copy_path public/uploads/seccionk
 copy_path bootstrap/app.php
 copy_path config/auth.php
 
-if [ -f "$APP/database/sql/seccionk_instalar.sql" ]; then
-    php -r '
-        $env = file($argv[1]);
-        $c = [];
-        foreach ($env as $line) {
-            if (str_contains($line, "=") && !str_starts_with(trim($line), "#")) {
-                [$k, $v] = explode("=", trim($line), 2);
-                $c[$k] = trim($v, "\"'");
-            }
-        }
-        $db = $c["DB_DATABASE"] ?? "ventapos";
-        $user = $c["DB_USERNAME"] ?? "root";
-        $pass = $c["DB_PASSWORD"] ?? "";
-        $host = $c["DB_HOST"] ?? "127.0.0.1";
-        echo "$host|$db|$user|$pass";
-    ' "$APP/.env" > /tmp/seccionk-db.txt
-    IFS='|' read -r DB_HOST DB_NAME DB_USER DB_PASS < /tmp/seccionk-db.txt
-    rm -f /tmp/seccionk-db.txt
-    mysql -h"$DB_HOST" -u"$DB_USER" ${DB_PASS:+-p"$DB_PASS"} "$DB_NAME" < "$APP/database/sql/seccionk_instalar.sql"
+SQL_FILE="$APP/database/sql/seccionk_instalar.sql"
+if [ -f "$SQL_FILE" ]; then
+    DB_HOST=$(env_get DB_HOST)
+    DB_NAME=$(env_get DB_DATABASE)
+    DB_USER=$(env_get DB_USERNAME)
+    DB_PASS=$(env_get DB_PASSWORD)
+    DB_HOST=${DB_HOST:-127.0.0.1}
+    DB_NAME=${DB_NAME:-ventapos}
+    DB_USER=${DB_USER:-root}
+    export MYSQL_PWD="${DB_PASS:-}"
+    mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$SQL_FILE"
+    unset MYSQL_PWD
     echo "Tablas seccionk listas"
 fi
 

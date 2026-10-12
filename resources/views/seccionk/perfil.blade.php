@@ -15,15 +15,15 @@
     @endif
 
     <!-- Header -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <div class="flex items-center space-x-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span class="text-white text-3xl font-bold">
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8 mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:space-x-6">
+            <div class="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-white text-2xl sm:text-3xl font-bold">
                     {{ substr($promocion->nombre, 0, 1) }}{{ substr($promocion->apellido_paterno, 0, 1) }}
                 </span>
             </div>
-            <div class="flex-1">
-                <h1 class="text-3xl font-bold text-gray-900">{{ $promocion->nombreCompleto() }}</h1>
+            <div class="flex-1 min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{{ $promocion->nombreCompleto() }}</h1>
                 <p class="text-gray-600">
                     <i class="fas fa-id-card mr-2"></i>DNI: {{ $promocion->dni }}
                 </p>
@@ -33,7 +33,7 @@
                     </p>
                 @endif
             </div>
-            <div class="text-right">
+            <div class="sm:text-right">
                 @if($promocion->participa_cuotas)
                     <span class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
                         <i class="fas fa-check-circle mr-2"></i>Participa en Cuotas

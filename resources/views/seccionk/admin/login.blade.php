@@ -21,11 +21,11 @@
             <div class="mx-auto w-20 h-20 bg-white rounded-full flex items-center justify-center mb-4 shadow-xl">
                 <i class="fas fa-shield-alt text-purple-600 text-3xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-white mb-2">Panel de Administración</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-white mb-2">Panel de Administración</h1>
             <p class="text-purple-200">Sección K - Promoción 2001</p>
         </div>
 
-        <div class="bg-white rounded-2xl shadow-2xl p-8">
+        <div class="bg-white rounded-2xl shadow-2xl p-5 sm:p-8">
             @if($errors->any())
                 <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
                     <div class="flex">

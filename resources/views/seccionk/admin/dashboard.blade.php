@@ -29,8 +29,8 @@
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
     <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
-        <div class="flex items-center justify-between mb-4">
-            <h3 class="text-xl font-bold text-gray-900">Recaudación por mes</h3>
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+            <h3 class="text-lg sm:text-xl font-bold text-gray-900">Recaudación por mes</h3>
             <a href="{{ route('seccionk.admin.resumen.cuotas') }}" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
                 Ver detalle por promoción
             </a>

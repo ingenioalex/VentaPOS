@@ -3,21 +3,21 @@
 @section('title', 'Consultar - Sección K Promoción 2001')
 
 @section('content')
-<div class="min-h-screen flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8">
+<div class="min-h-[70vh] flex items-center justify-center py-8 sm:py-12 px-3 sm:px-6 lg:px-8">
     <div class="max-w-md w-full">
         <!-- Hero Section -->
-        <div class="text-center mb-8">
-            <div class="mx-auto w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-users text-white text-4xl"></i>
+        <div class="text-center mb-6 sm:mb-8">
+            <div class="mx-auto w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-users text-white text-2xl sm:text-4xl"></i>
             </div>
-            <h1 class="text-4xl font-bold text-gray-900 mb-2">Sección K</h1>
-            <p class="text-xl text-gray-600 mb-1">Promoción 2001</p>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Sección K</h1>
+            <p class="text-lg sm:text-xl text-gray-600 mb-1">Promoción 2001</p>
             <p class="text-sm text-gray-500">Consulta tu participación y aportes</p>
         </div>
 
         <!-- Search Form -->
-        <div class="bg-white rounded-2xl shadow-xl p-8">
-            <h2 class="text-2xl font-bold text-gray-900 mb-6">Buscar Mi Perfil</h2>
+        <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8">
+            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Buscar Mi Perfil</h2>
             
             @if($errors->has('busqueda'))
                 <div class="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded">
@@ -70,7 +70,7 @@
 
                 <button 
                     type="submit" 
-                    class="w-full gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition transform hover:scale-105 flex items-center justify-center"
+                    class="w-full gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition flex items-center justify-center"
                 >
                     <i class="fas fa-search mr-2"></i>
                     Buscar Mi Información

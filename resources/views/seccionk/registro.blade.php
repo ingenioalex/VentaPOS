@@ -3,13 +3,13 @@
 @section('title', 'Registro - Sección K Promoción 2001')
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white rounded-2xl shadow-xl p-8">
+<div class="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8">
         <div class="text-center mb-8">
-            <div class="mx-auto w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-user-plus text-white text-3xl"></i>
+            <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-user-plus text-white text-2xl sm:text-3xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Registro de Miembro</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Registro de Miembro</h1>
             <p class="text-gray-600">Sección K - Promoción 2001</p>
         </div>
 

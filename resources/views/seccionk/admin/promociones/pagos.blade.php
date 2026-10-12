@@ -44,7 +44,7 @@
                 <div class="px-6 py-4">
                     <div class="flex justify-between items-start gap-3">
                         <div>
-                            <p class="font-semibold">{{ $cuota['evento']->mesCorto() }}</p>
+                            <p class="font-semibold">{{ $cuota['evento']->mes_cuota ?: $cuota['evento']->nombre }}</p>
                             <p class="text-xs text-gray-500">{{ $cuota['evento']->fecha->format('d/m/Y') }} · Sugerido S/ {{ number_format($cuota['evento']->monto, 2) }}</p>
                         </div>
                         @if($cuota['pago'])

@@ -7,12 +7,15 @@ use App\Models\SeccionKEvento;
 use App\Models\SeccionKPromocion;
 use App\Models\SeccionKParticipacion;
 use App\Support\SeccionKExport;
+use App\Support\SeccionKLimpiarCuotas;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
+        SeccionKLimpiarCuotas::ejecutar();
+
         $totalPromociones = SeccionKPromocion::activos()->count();
         $participanCuotas = SeccionKPromocion::activos()->where('participa_cuotas', true)->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
@@ -67,6 +70,7 @@ class AdminDashboardController extends Controller
 
     public function resumenCuotas()
     {
+        SeccionKLimpiarCuotas::ejecutar();
         $datos = $this->datosResumenCuotas();
 
         return view('seccionk.admin.resumen-cuotas', $datos);

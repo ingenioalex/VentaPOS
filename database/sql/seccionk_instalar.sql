@@ -117,7 +117,9 @@ SELECT * FROM (
   UNION ALL SELECT 'Partido de Fútbol', 'Encuentro deportivo de confraternidad', '2026-09-21', 5.00, 'evento', NULL, 1, NOW(), NOW()
 ) AS nuevos
 WHERE NOT EXISTS (
-  SELECT 1 FROM `seccionk_eventos` e WHERE e.nombre = nuevos.nombre AND e.fecha = nuevos.fecha
+  SELECT 1 FROM `seccionk_eventos` e
+  WHERE (e.nombre = nuevos.nombre AND e.fecha = nuevos.fecha)
+     OR (nuevos.tipo = 'cuota_mensual' AND e.tipo = 'cuota_mensual' AND e.mes_cuota = nuevos.mes_cuota)
 );
 
 INSERT INTO `migrations` (`migration`, `batch`)

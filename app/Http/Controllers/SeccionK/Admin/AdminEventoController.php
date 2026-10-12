@@ -47,8 +47,15 @@ class AdminEventoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0',
             'tipo' => 'required|in:evento,cuota_mensual',
-            'mes_cuota' => 'nullable|string|max:20',
         ]);
+
+        if ($error = $this->validarMesUnico($data)) {
+            return back()->withInput()->withErrors($error);
+        }
+
+        $data['mes_cuota'] = $data['tipo'] === 'cuota_mensual'
+            ? SeccionKEvento::etiquetaDesdeFecha($data['fecha'])
+            : null;
 
         SeccionKEvento::create($data);
 
@@ -74,9 +81,16 @@ class AdminEventoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0',
             'tipo' => 'required|in:evento,cuota_mensual',
-            'mes_cuota' => 'nullable|string|max:20',
             'activo' => 'boolean',
         ]);
+
+        if ($error = $this->validarMesUnico($data, $evento)) {
+            return back()->withInput()->withErrors($error);
+        }
+
+        $data['mes_cuota'] = $data['tipo'] === 'cuota_mensual'
+            ? SeccionKEvento::etiquetaDesdeFecha($data['fecha'])
+            : null;
 
         $evento->update($data);
 
@@ -158,5 +172,24 @@ class AdminEventoController extends Controller
 
         return redirect()->route('seccionk.admin.eventos.participantes', $evento)
             ->with('success', 'Participantes actualizados exitosamente.');
+    }
+
+    private function validarMesUnico(array $data, ?SeccionKEvento $evento = null): ?array
+    {
+        if (($data['tipo'] ?? '') !== 'cuota_mensual') {
+            return null;
+        }
+
+        $mes = SeccionKEvento::etiquetaDesdeFecha($data['fecha']);
+        $existe = SeccionKEvento::cuotasMensuales()
+            ->where('mes_cuota', $mes)
+            ->when($evento, fn ($query) => $query->where('id', '!=', $evento->id))
+            ->exists();
+
+        if ($existe) {
+            return ['fecha' => 'Ya existe la cuota de '.$mes.'. No se puede repetir el mes.'];
+        }
+
+        return null;
     }
 }

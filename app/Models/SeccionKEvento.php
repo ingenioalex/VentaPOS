@@ -35,6 +35,44 @@ class SeccionKEvento extends Model
         return $this->tipo === 'cuota_mensual';
     }
 
+    public static function mesesEspanol(): array
+    {
+        return [
+            1 => 'Enero',
+            2 => 'Febrero',
+            3 => 'Marzo',
+            4 => 'Abril',
+            5 => 'Mayo',
+            6 => 'Junio',
+            7 => 'Julio',
+            8 => 'Agosto',
+            9 => 'Septiembre',
+            10 => 'Octubre',
+            11 => 'Noviembre',
+            12 => 'Diciembre',
+        ];
+    }
+
+    public static function etiquetaDesdeFecha(mixed $fecha): string
+    {
+        $fecha = \Carbon\Carbon::parse($fecha);
+
+        return self::mesesEspanol()[$fecha->month].' '.$fecha->year;
+    }
+
+    public function claveMes(): string
+    {
+        if ($this->mes_cuota && preg_match('/^(\p{L}+)\s+(\d{4})$/u', trim($this->mes_cuota), $partes)) {
+            return mb_strtolower($partes[1]).' '.$partes[2];
+        }
+
+        if ($this->fecha) {
+            return mb_strtolower(self::etiquetaDesdeFecha($this->fecha));
+        }
+
+        return mb_strtolower(trim((string) $this->mes_cuota));
+    }
+
     public function mesCorto(): string
     {
         $mapa = [

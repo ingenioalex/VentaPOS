@@ -48,7 +48,8 @@ copy_path app/Models/SeccionKPromocion.php
 copy_path app/Models/SeccionKEvento.php
 copy_path app/Models/SeccionKParticipacion.php
 copy_path app/Models/SeccionKUsuario.php
-copy_path app/Support/SeccionKExport.php
+copy_path app/Support
+copy_path app/Console/Commands/SeccionKLimpiarCuotasCommand.php
 copy_path resources/views/seccionk
 copy_path routes/seccionk.php
 copy_path database/migrations/2026_10_11_000001_crear_tablas_seccionk.php
@@ -74,6 +75,7 @@ if [ -f "$SQL_FILE" ]; then
 fi
 
 cd "$APP"
+php artisan seccionk:limpiar-cuotas-duplicadas || true
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true

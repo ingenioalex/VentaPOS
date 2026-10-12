@@ -45,9 +45,8 @@
                     <option value="cuota_mensual" {{ old('tipo', $evento->tipo ?? '') === 'cuota_mensual' ? 'selected' : '' }}>Cuota mensual</option>
                 </select>
             </div>
-            <div id="campo-mes">
-                <label class="block text-sm font-semibold text-gray-700 mb-2">Mes de cuota</label>
-                <input type="text" name="mes_cuota" value="{{ old('mes_cuota', $evento->mes_cuota ?? '') }}" maxlength="20" placeholder="Ej: Octubre 2026" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">
+            <div id="campo-mes" class="text-sm text-gray-600 bg-purple-50 rounded-lg p-3">
+                El mes de la cuota se toma de la fecha (OCT26, NOV26). Solo puede haber una cuota por mes.
             </div>
         </div>
 

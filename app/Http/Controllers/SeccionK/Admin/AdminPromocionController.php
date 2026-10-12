@@ -291,4 +291,85 @@ class AdminPromocionController extends Controller
         return redirect()->route('seccionk.admin.promociones.index')
             ->with('success', 'Promoción ocultada exitosamente.');
     }
+
+    public function referencias(Request $request)
+    {
+        $promociones = $this->consultaReferencias($request)->paginate(20);
+        $conReferencia = SeccionKPromocion::activos()
+            ->whereNotNull('referencias')
+            ->where('referencias', '!=', '')
+            ->count();
+
+        return view('seccionk.admin.referencias', compact('promociones', 'conReferencia'));
+    }
+
+    public function exportarReferencias(Request $request)
+    {
+        $promociones = $this->consultaReferencias($request)->get();
+
+        if ($request->get('formato') === 'excel') {
+            return SeccionKExport::excel(
+                'Referencias',
+                ['Quién indicó', 'DNI', 'Celular', 'Referencias'],
+                $promociones->map(fn ($promo) => [
+                    $promo->nombreCompleto(),
+                    $promo->dni,
+                    $promo->celular ?? '',
+                    $promo->referencias ?? '',
+                ])->all(),
+                'seccionk-referencias'
+            );
+        }
+
+        $lineas = [
+            '📒 *SECCIÓN K 2001 - REFERENCIAS*',
+            'Fecha: '.now()->format('d/m/Y H:i'),
+            '',
+        ];
+        foreach ($promociones as $promo) {
+            $lineas[] = '👤 *'.$promo->nombreCompleto().'*';
+            $lineas[] = 'DNI '.$promo->dni.($promo->celular ? ' · Cel '.$promo->celular : '');
+            $lineas[] = 'Indicó: '.($promo->referencias ?: 'Sin referencia');
+            $lineas[] = '------------------------------';
+        }
+        $texto = implode("\n", $lineas);
+
+        if ($request->get('formato') === 'descargar') {
+            return SeccionKExport::texto($texto, 'seccionk-referencias-whatsapp');
+        }
+
+        return view('seccionk.admin.exportar-whatsapp', [
+            'titulo' => 'Referencias para WhatsApp',
+            'texto' => $texto,
+            'volver' => route('seccionk.admin.referencias', $request->query()),
+            'descargar' => route('seccionk.admin.referencias.exportar', array_merge($request->query(), ['formato' => 'descargar'])),
+        ]);
+    }
+
+    private function consultaReferencias(Request $request)
+    {
+        $query = SeccionKPromocion::query()->orderBy('apellido_paterno')->orderBy('nombre');
+
+        if (! $request->boolean('mostrar_inactivos')) {
+            $query->where('activo', true);
+        }
+
+        if ($request->get('filtro') !== 'todas') {
+            $query->whereNotNull('referencias')->where('referencias', '!=', '');
+        }
+
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->where(function ($q) use ($buscar) {
+                $q->where('dni', 'like', "%{$buscar}%")
+                    ->orWhere('nombre', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_materno', 'like', "%{$buscar}%")
+                    ->orWhere('celular', 'like', "%{$buscar}%")
+                    ->orWhere('referencias', 'like', "%{$buscar}%");
+            });
+        }
+
+        return $query;
+    }
 }

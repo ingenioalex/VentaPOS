@@ -36,6 +36,8 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/resumen-cuotas', [AdminDashboardController::class, 'resumenCuotas'])->name('resumen.cuotas');
     Route::get('/resumen-cuotas/exportar', [AdminDashboardController::class, 'exportarResumen'])->name('resumen.cuotas.exportar');
+    Route::get('/referencias', [AdminPromocionController::class, 'referencias'])->name('referencias');
+    Route::get('/referencias/exportar', [AdminPromocionController::class, 'exportarReferencias'])->name('referencias.exportar');
     
     // Gestión de promociones
     Route::get('promociones/exportar', [AdminPromocionController::class, 'exportar'])->name('promociones.exportar');

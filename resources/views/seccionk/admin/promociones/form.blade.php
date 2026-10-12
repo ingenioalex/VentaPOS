@@ -49,7 +49,8 @@
 
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Referencias</label>
-            <textarea name="referencias" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('referencias', $promocion->referencias ?? '') }}</textarea>
+            <textarea name="referencias" rows="3" placeholder="Ej: Manuel Llauce Pizarro celular 909090678" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('referencias', $promocion->referencias ?? '') }}</textarea>
+            <p class="text-xs text-gray-500 mt-1">Nombres o celulares de otras promociones que esta persona conoce.</p>
         </div>
 
         <label class="flex items-center space-x-2">

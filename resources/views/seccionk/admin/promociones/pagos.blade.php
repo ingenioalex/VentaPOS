@@ -8,6 +8,11 @@
     <div class="text-gray-600">
         DNI {{ $promocion->dni }}
         @if($promocion->celular) · {{ $promocion->celular }} @endif
+        @if($promocion->referencias)
+            <div class="mt-2 text-sm text-gray-700">
+                <span class="font-semibold">Referencias:</span> {{ $promocion->referencias }}
+            </div>
+        @endif
     </div>
     <div class="flex gap-3">
         <a href="{{ url('seccionk/perfil/'.$promocion->getKey()) }}" target="_blank" class="text-purple-600 font-semibold">Ver perfil público</a>

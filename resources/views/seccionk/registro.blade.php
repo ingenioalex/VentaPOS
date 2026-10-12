@@ -133,7 +133,7 @@
                         name="referencias" 
                         id="referencias" 
                         rows="2"
-                        placeholder="Ej: Sección A 2000, Sección B 2002"
+                        placeholder="Ej: Manuel Llauce Pizarro celular 909090678"
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring focus:ring-purple-200 transition @error('referencias') border-red-500 @enderror"
                     >{{ old('referencias') }}</textarea>
                     @error('referencias')
@@ -155,7 +155,7 @@
                             <i class="fas fa-hand-holding-usd text-purple-600 mr-2"></i>
                             <strong>Deseo participar en las cuotas mensuales</strong>
                             <span class="block text-sm text-gray-500 ml-7">
-                                Aporte mensual de S/ 50.00 desde Octubre 2026 hasta Diciembre 2027
+                                Aporte mensual de S/ 10.00 desde Octubre 2026 hasta Diciembre 2027
                             </span>
                         </span>
                     </label>

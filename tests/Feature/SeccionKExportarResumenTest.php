@@ -26,9 +26,9 @@ class SeccionKExportarResumenTest extends TestCase
 
         $respuesta->assertOk();
         $respuesta->assertSee('CUOTAS POR MES');
-        $respuesta->assertSee('Octubre 2026');
+        $respuesta->assertSee('OCT26');
         $respuesta->assertSee('Juan García Pérez');
-        $respuesta->assertDontSee('Noviembre 2026');
+        $respuesta->assertDontSee('NOV26');
         $respuesta->assertDontSee('POR PROMOCIÓN');
     }
 
@@ -45,8 +45,8 @@ class SeccionKExportarResumenTest extends TestCase
 
         $respuesta->assertOk();
         $respuesta->assertSee('CUOTAS POR PROMOCIÓN');
-        $respuesta->assertSee('Octubre 2026');
-        $respuesta->assertSee('Noviembre 2026');
+        $respuesta->assertSee('OCT26');
+        $respuesta->assertSee('NOV26');
         $respuesta->assertSee('Juan García Pérez');
         $respuesta->assertSee('Ana López Díaz');
     }
@@ -64,8 +64,8 @@ class SeccionKExportarResumenTest extends TestCase
 
         $respuesta->assertOk();
         $contenido = $respuesta->getContent();
-        $this->assertStringContainsString('Octubre 2026', $contenido);
-        $this->assertStringNotContainsString('Noviembre 2026', $contenido);
+        $this->assertStringContainsString('OCT26', $contenido);
+        $this->assertStringNotContainsString('NOV26', $contenido);
         $this->assertStringContainsString('Juan García Pérez', $contenido);
     }
 

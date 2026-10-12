@@ -129,7 +129,7 @@ class AdminDashboardController extends Controller
             foreach ($filas as $fila) {
                 $celda = $fila['celdas'][$cuota->id];
                 $filasExcel[] = [
-                    $cuota->mes_cuota,
+                    $cuota->mesCorto(),
                     $fila['promocion']->nombreCompleto(),
                     $fila['promocion']->dni,
                     $celda['pago'] ? 'Pagó' : 'Pendiente',
@@ -137,7 +137,7 @@ class AdminDashboardController extends Controller
                 ];
             }
             $filasExcel[] = [
-                $cuota->mes_cuota.' TOTAL',
+                $cuota->mesCorto().' TOTAL',
                 $totalesMes[$cuota->id]['pagaron'].' pagaron',
                 '',
                 '',
@@ -157,7 +157,7 @@ class AdminDashboardController extends Controller
     {
         $encabezados = array_merge(
             ['Promoción', 'DNI'],
-            $cuotas->map(fn ($cuota) => $cuota->mes_cuota)->all(),
+            $cuotas->map(fn ($cuota) => $cuota->mesCorto())->all(),
             ['Cuotas pagadas', 'Total S/']
         );
 
@@ -200,12 +200,12 @@ class AdminDashboardController extends Controller
         $lineas = [
             '📊 *SECCIÓN K 2001 - CUOTAS POR MES*',
             'Fecha: '.now()->format('d/m/Y H:i'),
-            'Meses: '.$cuotas->pluck('mes_cuota')->implode(', '),
+            'Meses: '.$cuotas->map->mesCorto()->implode(', '),
             '',
         ];
 
         foreach ($cuotas as $cuota) {
-            $lineas[] = '📅 *'.$cuota->mes_cuota.'* · Sugerido S/ '.number_format($cuota->monto, 2);
+            $lineas[] = '📅 *'.$cuota->mesCorto().'* · Sugerido S/ '.number_format($cuota->monto, 2);
             $lineas[] = $totalesMes[$cuota->id]['pagaron'].' pagaron · S/ '.number_format($totalesMes[$cuota->id]['recaudado'], 2);
             foreach ($filas as $fila) {
                 $celda = $fila['celdas'][$cuota->id];
@@ -227,7 +227,7 @@ class AdminDashboardController extends Controller
         $lineas = [
             '📊 *SECCIÓN K 2001 - CUOTAS POR PROMOCIÓN*',
             'Fecha: '.now()->format('d/m/Y H:i'),
-            'Meses: '.$cuotas->pluck('mes_cuota')->implode(', '),
+            'Meses: '.$cuotas->map->mesCorto()->implode(', '),
             '',
         ];
 
@@ -238,7 +238,7 @@ class AdminDashboardController extends Controller
             $lineas[] = 'DNI '.$fila['promocion']->dni.' · '.$pagadas.'/'.$cuotas->count().' · S/ '.number_format($recaudado, 2);
             foreach ($cuotas as $cuota) {
                 $celda = $fila['celdas'][$cuota->id];
-                $lineas[] = $cuota->mes_cuota.': '.($celda['pago'] ? '✅ Pagó S/ '.number_format($celda['monto'], 2) : '⏳ Pendiente');
+                $lineas[] = $cuota->mesCorto().': '.($celda['pago'] ? '✅ Pagó S/ '.number_format($celda['monto'], 2) : '⏳ Pendiente');
             }
             $lineas[] = '------------------------------';
         }

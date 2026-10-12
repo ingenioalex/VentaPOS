@@ -41,7 +41,7 @@
                 <td class="px-6 py-4">
                     <div class="font-semibold">{{ $evento->nombre }}</div>
                     @if($evento->mes_cuota)
-                        <div class="text-xs text-gray-500">{{ $evento->mes_cuota }}</div>
+                        <div class="text-xs text-gray-500">{{ $evento->mesCorto() }}</div>
                     @endif
                 </td>
                 <td class="px-6 py-4">

@@ -172,7 +172,7 @@ class SeccionKPublicoController extends Controller
 
         return redirect()
             ->route('seccionk.perfil', $promocion->id)
-            ->with('success', 'Comentario guardado en la cuota de '.$evento->mes_cuota.'.')
+            ->with('success', 'Comentario guardado en la cuota de '.$evento->mesCorto().'.')
             ->withFragment('cuota-'.$evento->id);
     }
 }

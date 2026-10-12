@@ -21,7 +21,7 @@
             @foreach($cuotas as $cuota)
                 <label class="inline-flex items-center gap-2 px-3 py-2 rounded-lg border bg-gray-50 cursor-pointer">
                     <input type="checkbox" name="meses[]" value="{{ $cuota->id }}" class="check-mes" checked>
-                    <span class="text-sm">{{ $cuota->mes_cuota }}</span>
+                    <span class="text-sm font-semibold tracking-wide">{{ $cuota->mesCorto() }}</span>
                 </label>
             @endforeach
         </div>
@@ -52,7 +52,7 @@
                 <th class="px-4 py-3 text-left font-semibold text-gray-700 sticky left-0 bg-gray-50">Promoción</th>
                 @foreach($cuotas as $cuota)
                     <th class="px-4 py-3 text-center font-semibold text-gray-700 whitespace-nowrap">
-                        {{ $cuota->mes_cuota }}
+                        {{ $cuota->mesCorto() }}
                         <div class="text-xs font-normal text-gray-500">S/ {{ number_format($cuota->monto, 2) }}</div>
                     </th>
                 @endforeach

@@ -116,7 +116,7 @@
 
                             <div class="bg-gray-50 rounded-lg p-4 {{ $cuota['pago'] ? 'border-l-4 border-green-500' : '' }}">
                                 <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mes_cuota }}</h3>
+                                    <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mesCorto() }}</h3>
                                     @if($cuota['pago'])
                                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
                                             Pagado
@@ -157,7 +157,7 @@
                                         @endif
                                         @if($cuota['imagen'])
                                             <a href="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" target="_blank" class="inline-block mt-2">
-                                                <img src="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" alt="Sustento {{ $cuota['evento']->mes_cuota }}" class="h-24 w-auto rounded-lg border border-gray-200 object-cover">
+                                                <img src="{{ asset('uploads/seccionk/'.$cuota['imagen']) }}" alt="Sustento {{ $cuota['evento']->mesCorto() }}" class="h-24 w-auto rounded-lg border border-gray-200 object-cover">
                                             </a>
                                         @endif
                                     </div>

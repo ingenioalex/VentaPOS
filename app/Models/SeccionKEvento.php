@@ -35,6 +35,42 @@ class SeccionKEvento extends Model
         return $this->tipo === 'cuota_mensual';
     }
 
+    public function mesCorto(): string
+    {
+        if ($this->fecha) {
+            $meses = ['ENE', 'FEB', 'MAR', 'ABR', 'MAY', 'JUN', 'JUL', 'AGO', 'SEP', 'OCT', 'NOV', 'DIC'];
+
+            return $meses[$this->fecha->month - 1].$this->fecha->format('y');
+        }
+
+        if (! $this->mes_cuota) {
+            return '';
+        }
+
+        $mapa = [
+            'enero' => 'ENE',
+            'febrero' => 'FEB',
+            'marzo' => 'MAR',
+            'abril' => 'ABR',
+            'mayo' => 'MAY',
+            'junio' => 'JUN',
+            'julio' => 'JUL',
+            'agosto' => 'AGO',
+            'septiembre' => 'SEP',
+            'octubre' => 'OCT',
+            'noviembre' => 'NOV',
+            'diciembre' => 'DIC',
+        ];
+
+        if (preg_match('/^(\p{L}+)\s+(\d{4})$/u', trim($this->mes_cuota), $partes)) {
+            $abrev = $mapa[mb_strtolower($partes[1])] ?? mb_strtoupper(mb_substr($partes[1], 0, 3));
+
+            return $abrev.substr($partes[2], -2);
+        }
+
+        return $this->mes_cuota;
+    }
+
     public function scopeActivos($query)
     {
         return $query->where('activo', true);

@@ -48,7 +48,7 @@
                 <tbody class="divide-y">
                     @forelse($resumenMeses as $mes)
                         <tr>
-                            <td class="py-3 pr-4 font-semibold">{{ $mes['evento']->mes_cuota }}</td>
+                            <td class="py-3 pr-4 font-semibold">{{ $mes['evento']->mesCorto() }}</td>
                             <td class="py-3 pr-4 text-green-700">{{ $mes['pagaron'] }}</td>
                             <td class="py-3 pr-4 text-amber-600">{{ $mes['faltan'] }}</td>
                             <td class="py-3 text-right font-semibold">S/ {{ number_format($mes['recaudado'], 2) }}</td>

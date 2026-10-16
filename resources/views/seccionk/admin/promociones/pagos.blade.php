@@ -14,7 +14,7 @@
             </div>
         @endif
     </div>
-    <div class="flex gap-3">
+    <div class="flex flex-wrap gap-3">
         <a href="{{ url('seccionk/perfil/'.$promocion->getKey()) }}" target="_blank" class="text-purple-600 font-semibold">Ver perfil público</a>
         <a href="{{ route('seccionk.admin.promociones.index') }}" class="text-gray-600 font-semibold">Volver</a>
     </div>
@@ -41,12 +41,12 @@
 
 <div class="grid grid-cols-1 xl:grid-cols-2 gap-8">
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-6 py-4 border-b">
+        <div class="px-4 sm:px-6 py-4 border-b">
             <h2 class="font-bold text-gray-900"><i class="fas fa-calendar-check text-purple-600 mr-2"></i>Cuotas mensuales</h2>
         </div>
         <div class="divide-y">
             @forelse($cuotas as $cuota)
-                <div class="px-6 py-4">
+                <div class="px-4 sm:px-6 py-4">
                     <div class="flex justify-between items-start gap-3">
                         <div>
                             <p class="font-semibold">{{ $cuota['evento']->mes_cuota ?: $cuota['evento']->nombre }}</p>
@@ -90,12 +90,12 @@
     </div>
 
     <div class="bg-white rounded-xl shadow-lg overflow-hidden">
-        <div class="px-6 py-4 border-b">
+        <div class="px-4 sm:px-6 py-4 border-b">
             <h2 class="font-bold text-gray-900"><i class="fas fa-star text-blue-600 mr-2"></i>Eventos</h2>
         </div>
         <div class="divide-y">
             @forelse($eventos as $evento)
-                <div class="px-6 py-4">
+                <div class="px-4 sm:px-6 py-4">
                     <div class="flex justify-between items-start gap-3">
                         <div>
                             <p class="font-semibold">{{ $evento['evento']->nombre }}</p>

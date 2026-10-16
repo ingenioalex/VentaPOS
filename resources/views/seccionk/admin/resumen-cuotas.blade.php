@@ -45,7 +45,8 @@
     </div>
 </form>
 
-<div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+<p class="lg:hidden text-xs text-gray-500 -mt-2">Desliza la tabla hacia los lados para ver cada mes.</p>
+<div class="bg-white rounded-xl shadow-lg overflow-x-auto sk-scroll">
     <table class="min-w-full text-sm">
         <thead class="bg-gray-50">
             <tr>

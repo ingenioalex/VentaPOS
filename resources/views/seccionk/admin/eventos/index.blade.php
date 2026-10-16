@@ -5,8 +5,8 @@
 
 @section('content')
 <div class="mb-6 flex flex-col md:flex-row md:justify-between md:items-center gap-4">
-    <form method="GET" class="flex flex-wrap items-center gap-3">
-        <select name="tipo" class="px-4 py-2 border rounded-lg">
+    <form method="GET" class="flex flex-wrap items-center gap-3 w-full md:w-auto">
+        <select name="tipo" class="px-4 py-2 border rounded-lg w-full sm:w-auto">
             <option value="">Todos los tipos</option>
             <option value="cuota_mensual" {{ request('tipo') === 'cuota_mensual' ? 'selected' : '' }}>Cuotas mensuales</option>
             <option value="evento" {{ request('tipo') === 'evento' ? 'selected' : '' }}>Eventos</option>
@@ -22,7 +22,46 @@
     </a>
 </div>
 
-<div class="bg-white rounded-xl shadow-lg overflow-hidden">
+<div class="space-y-3 lg:hidden">
+    @forelse($eventos as $evento)
+        <div class="bg-white rounded-xl shadow p-4">
+            <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0">
+                    <p class="font-semibold text-gray-900 break-words">{{ $evento->nombre }}</p>
+                    <p class="text-sm text-gray-500">{{ $evento->fecha->format('d/m/Y') }}</p>
+                </div>
+                @if($evento->tipo === 'cuota_mensual')
+                    <span class="px-2 py-1 rounded-full bg-purple-100 text-purple-800 text-xs font-semibold flex-shrink-0">Cuota</span>
+                @else
+                    <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold flex-shrink-0">Evento</span>
+                @endif
+            </div>
+            <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
+                <div>
+                    <p class="text-xs text-gray-500">Sugerido</p>
+                    <p class="font-semibold">S/ {{ number_format($evento->monto, 2) }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Recaudado</p>
+                    <p class="font-semibold text-green-700">S/ {{ number_format($resumenPorEvento[$evento->id]['recaudado'] ?? 0, 2) }}</p>
+                </div>
+                <div>
+                    <p class="text-xs text-gray-500">Participan</p>
+                    <p class="font-semibold">{{ $resumenPorEvento[$evento->id]['participantes'] ?? 0 }}/{{ $resumenPorEvento[$evento->id]['total_promociones'] ?? 0 }}</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap gap-3 mt-3 text-sm">
+                <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-700 font-semibold">Detalle</a>
+                <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-700 font-semibold">Participantes</a>
+                <a href="{{ route('seccionk.admin.eventos.edit', $evento) }}" class="text-blue-700 font-semibold">Editar</a>
+            </div>
+        </div>
+    @empty
+        <p class="text-center text-gray-500 py-8">No hay eventos registrados</p>
+    @endforelse
+</div>
+
+<div class="hidden lg:block bg-white rounded-xl shadow-lg overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>

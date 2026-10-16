@@ -13,7 +13,7 @@
 
 <div class="mb-6 flex flex-col lg:flex-row lg:justify-between lg:items-center gap-4">
     <form method="GET" class="flex flex-wrap items-center gap-3">
-        <input type="text" name="buscar" placeholder="Buscar nombre, DNI, celular o referencia..." value="{{ request('buscar') }}" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 min-w-[16rem]">
+        <input type="text" name="buscar" placeholder="Buscar nombre, DNI, celular o referencia..." value="{{ request('buscar') }}" class="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500 w-full sm:w-72">
         <select name="filtro" class="px-4 py-2 border rounded-lg">
             <option value="con" @selected(request('filtro', 'con') !== 'todas')>Con referencia</option>
             <option value="todas" @selected(request('filtro') === 'todas')>Todas las promociones</option>
@@ -34,7 +34,20 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+<div class="space-y-3 lg:hidden">
+    @forelse($promociones as $promo)
+        <div class="bg-white rounded-xl shadow p-4">
+            <a href="{{ route('seccionk.admin.promociones.edit', $promo) }}" class="font-semibold text-purple-700">{{ $promo->nombreCompleto() }}</a>
+            <p class="text-sm text-gray-500 mt-1">DNI {{ $promo->dni }} @if($promo->celular)· {{ $promo->celular }}@endif</p>
+            <p class="text-sm text-gray-800 mt-2 whitespace-pre-line">{{ $promo->referencias ?: 'Sin referencia' }}</p>
+            <a href="{{ route('seccionk.admin.promociones.edit', $promo) }}" class="inline-block mt-3 text-sm font-semibold text-blue-700">Editar</a>
+        </div>
+    @empty
+        <p class="text-center text-gray-500 py-8">Nadie ha dejado referencias todavía.</p>
+    @endforelse
+</div>
+
+<div class="hidden lg:block bg-white rounded-xl shadow-lg overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200">
         <thead class="bg-gray-50">
             <tr>

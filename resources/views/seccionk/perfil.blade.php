@@ -3,7 +3,7 @@
 @section('title', 'Mi Perfil - ' . $promocion->nombreCompleto())
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
     <!-- Success Message -->
     @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded">
@@ -102,8 +102,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Timeline de Cuotas Mensuales -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <i class="fas fa-calendar-check text-purple-600 mr-3"></i>
                     Línea de Tiempo - Cuotas Mensuales
                 </h2>
@@ -116,7 +116,7 @@
                             </div>
 
                             <div class="bg-gray-50 rounded-lg p-4 {{ $cuota['pago'] ? 'border-l-4 border-green-500' : '' }}">
-                                <div class="flex justify-between items-start mb-2">
+                                <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
                                     <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mes_cuota ?: $cuota['evento']->nombre }}</h3>
                                     @if($cuota['pago'])
                                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
@@ -200,8 +200,8 @@
 
         <!-- Eventos -->
         <div>
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <i class="fas fa-star text-yellow-500 mr-3"></i>
                     Eventos
                 </h2>

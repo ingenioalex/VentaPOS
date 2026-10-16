@@ -40,7 +40,34 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-lg overflow-x-auto">
+<div class="space-y-3 lg:hidden mb-4">
+    @forelse($filas as $fila)
+        <div class="bg-white rounded-xl shadow p-4 {{ $fila['pago'] ? 'border-l-4 border-green-500' : '' }}">
+            <p class="font-semibold break-words">{{ $fila['promocion']->nombreCompleto() }}</p>
+            <p class="text-xs text-gray-500">DNI {{ $fila['promocion']->dni }}</p>
+            <div class="flex flex-wrap gap-2 mt-2 text-sm">
+                <span>{{ $fila['participo'] ? 'Participó' : 'No participó' }}</span>
+                <span>·</span>
+                <span>{{ $fila['pago'] ? 'Pagó S/ '.number_format($fila['monto'], 2) : 'Pendiente' }}</span>
+            </div>
+            @if($fila['fecha_pago'] || $fila['transaccion'] || $fila['observaciones'])
+                <p class="text-xs text-gray-500 mt-1">
+                    {{ $fila['fecha_pago']?->format('d/m/Y') }}
+                    {{ $fila['transaccion'] ? ' · '.$fila['transaccion'] : '' }}
+                    {{ $fila['observaciones'] ? ' · '.$fila['observaciones'] : '' }}
+                </p>
+            @endif
+        </div>
+    @empty
+        <p class="text-center text-gray-500 py-8">No hay promociones activas</p>
+    @endforelse
+    <div class="bg-gray-50 rounded-xl p-4 font-bold flex justify-between">
+        <span>Total del evento</span>
+        <span class="text-green-700">S/ {{ number_format($recaudado, 2) }}</span>
+    </div>
+</div>
+
+<div class="hidden lg:block bg-white rounded-xl shadow-lg overflow-x-auto">
     <table class="min-w-full divide-y divide-gray-200 text-sm">
         <thead class="bg-gray-50">
             <tr>

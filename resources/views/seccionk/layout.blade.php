@@ -26,8 +26,14 @@
         }
         
         .card-hover:hover {
-            transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        @media (min-width: 768px) {
+            .card-hover:hover { transform: translateY(-5px); }
+        }
+        input, select, textarea, button { max-width: 100%; }
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px; }
         }
         
         .timeline-item::before {

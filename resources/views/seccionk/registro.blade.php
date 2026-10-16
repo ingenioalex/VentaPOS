@@ -162,13 +162,13 @@
                 </div>
             </div>
 
-            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                <a href="{{ route('seccionk.index') }}" class="text-gray-600 hover:text-gray-900 font-semibold">
+            <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-gray-200">
+                <a href="{{ route('seccionk.index') }}" class="text-gray-600 hover:text-gray-900 font-semibold text-center py-2">
                     <i class="fas fa-arrow-left mr-2"></i>Volver
                 </a>
                 <button 
                     type="submit" 
-                    class="gradient-bg text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition transform hover:scale-105"
+                    class="gradient-bg text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition w-full sm:w-auto"
                 >
                     <i class="fas fa-check mr-2"></i>
                     Registrarse

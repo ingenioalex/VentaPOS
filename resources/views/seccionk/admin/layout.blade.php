@@ -13,6 +13,11 @@
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
         }
+        input, select, textarea, button { max-width: 100%; }
+        .sk-scroll { overflow-x: auto; -webkit-overflow-scrolling: touch; }
+        @media (max-width: 1023px) {
+            input, select, textarea { font-size: 16px; }
+        }
     </style>
 </head>
 <body class="bg-gray-100 overflow-x-hidden">

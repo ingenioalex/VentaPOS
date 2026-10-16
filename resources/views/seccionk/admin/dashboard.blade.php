@@ -4,8 +4,8 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
-    <div class="bg-white rounded-xl shadow-lg p-6">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 sm:gap-6 mb-8">
+    <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <p class="text-gray-500 text-sm font-semibold mb-1">Quiénes pagaron cuotas</p>
         <p class="text-3xl font-bold text-purple-600">{{ $promocionesQuePagaron }}/{{ $participanCuotas }}</p>
         <p class="text-xs text-gray-500 mt-1">Miembros que ya registraron al menos un pago</p>
@@ -28,7 +28,7 @@
 </div>
 
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
+    <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <h3 class="text-lg sm:text-xl font-bold text-gray-900">Recaudación por mes</h3>
             <a href="{{ route('seccionk.admin.resumen.cuotas') }}" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
@@ -69,7 +69,7 @@
             <p class="text-xl font-bold mt-1">Resumen de cuotas</p>
             <p class="text-sm text-purple-100 mt-2">Detalle de pago por mes y por promoción</p>
         </a>
-        <div class="bg-white rounded-xl shadow-lg p-6">
+        <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
             <p class="text-gray-500 text-sm font-semibold">Participantes en eventos</p>
             <p class="text-3xl font-bold text-indigo-600 mt-1">{{ $participantesEventos }}</p>
             <p class="text-xs text-gray-500 mt-2">Suma de participaciones en {{ $totalEventos }} eventos · {{ $totalPromociones }} promociones activas</p>
@@ -77,14 +77,28 @@
     </div>
 </div>
 
-<div class="bg-white rounded-xl shadow-lg p-6">
+<div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
         <h3 class="text-lg sm:text-xl font-bold text-gray-900">Eventos · monto y participantes</h3>
         <a href="{{ route('seccionk.admin.eventos.index', ['tipo' => 'evento']) }}" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
             Ver todos los eventos
         </a>
     </div>
-    <div class="overflow-x-auto">
+    <div class="space-y-3 md:hidden">
+        @forelse($resumenEventos as $fila)
+            <a href="{{ route('seccionk.admin.eventos.detalle', $fila['evento']) }}" class="block border rounded-lg p-3">
+                <p class="font-semibold text-gray-900">{{ $fila['evento']->nombre }}</p>
+                <p class="text-xs text-gray-500">{{ $fila['evento']->fecha->format('d/m/Y') }}</p>
+                <p class="text-sm mt-1">
+                    {{ $fila['participantes'] }}/{{ $fila['total_promociones'] }} participaron ·
+                    <span class="font-semibold text-green-700">S/ {{ number_format($fila['recaudado'], 2) }}</span>
+                </p>
+            </a>
+        @empty
+            <p class="text-gray-500 text-center py-4">No hay eventos registrados</p>
+        @endforelse
+    </div>
+    <div class="hidden md:block overflow-x-auto">
         <table class="min-w-full text-sm">
             <thead>
                 <tr class="text-left text-gray-500">

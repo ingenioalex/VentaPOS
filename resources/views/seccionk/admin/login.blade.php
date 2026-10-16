@@ -84,7 +84,7 @@
 
                 <button 
                     type="submit" 
-                    class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition transform hover:scale-105"
+                    class="w-full bg-gradient-to-r from-purple-600 to-indigo-600 text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition"
                 >
                     <i class="fas fa-sign-in-alt mr-2"></i>
                     Iniciar Sesión

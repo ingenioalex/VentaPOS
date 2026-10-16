@@ -16,7 +16,7 @@
 
 <p id="aviso" class="hidden mb-4 text-green-700 font-semibold">Texto copiado. Pégalo en WhatsApp.</p>
 
-<textarea id="texto-whatsapp" readonly rows="22" class="w-full bg-white rounded-xl shadow-lg p-6 text-sm leading-6">{{ $texto }}</textarea>
+<textarea id="texto-whatsapp" readonly rows="18" class="w-full bg-white rounded-xl shadow-lg p-4 sm:p-6 text-sm leading-6">{{ $texto }}</textarea>
 @endsection
 
 @section('scripts')

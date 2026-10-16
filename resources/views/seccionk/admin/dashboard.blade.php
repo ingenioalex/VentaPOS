@@ -4,7 +4,7 @@
 @section('page-title', 'Dashboard')
 
 @section('content')
-<div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8">
     <div class="bg-white rounded-xl shadow-lg p-6">
         <p class="text-gray-500 text-sm font-semibold mb-1">Quiénes pagaron cuotas</p>
         <p class="text-3xl font-bold text-purple-600">{{ $promocionesQuePagaron }}/{{ $participanCuotas }}</p>
@@ -21,13 +21,13 @@
         <p class="text-xs text-gray-500 mt-1">Suma de aportes mensuales pagados</p>
     </div>
     <div class="bg-white rounded-xl shadow-lg p-6">
-        <p class="text-gray-500 text-sm font-semibold mb-1">Promociones / Eventos</p>
-        <p class="text-3xl font-bold text-blue-600">{{ $totalPromociones }}</p>
-        <p class="text-xs text-gray-500 mt-1">{{ $totalEventos }} eventos activos</p>
+        <p class="text-gray-500 text-sm font-semibold mb-1">Monto recaudado (eventos)</p>
+        <p class="text-3xl font-bold text-blue-600">S/ {{ number_format($montoRecaudadoEventos, 2) }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $aportantesEventos }}/{{ $totalPromociones }} promociones aportaron · {{ $totalEventos }} eventos</p>
     </div>
 </div>
 
-<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
             <h3 class="text-lg sm:text-xl font-bold text-gray-900">Recaudación por mes</h3>
@@ -69,23 +69,65 @@
             <p class="text-xl font-bold mt-1">Resumen de cuotas</p>
             <p class="text-sm text-purple-100 mt-2">Detalle de pago por mes y por promoción</p>
         </a>
-
         <div class="bg-white rounded-xl shadow-lg p-6">
-            <h3 class="text-lg font-bold text-gray-900 mb-4">Eventos recientes</h3>
-            <div class="space-y-3">
-                @forelse($eventosRecientes as $evento)
-                    <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
-                        <div>
-                            <p class="font-semibold text-gray-900">{{ $evento->nombre }}</p>
-                            <p class="text-sm text-gray-600">{{ $evento->fecha->format('d/m/Y') }}</p>
-                        </div>
-                        <span class="px-3 py-1 rounded-full text-xs font-semibold bg-blue-100 text-blue-800">Evento</span>
-                    </div>
-                @empty
-                    <p class="text-gray-500 text-center py-4">No hay eventos registrados</p>
-                @endforelse
-            </div>
+            <p class="text-gray-500 text-sm font-semibold">Participantes en eventos</p>
+            <p class="text-3xl font-bold text-indigo-600 mt-1">{{ $participantesEventos }}</p>
+            <p class="text-xs text-gray-500 mt-2">Suma de participaciones en {{ $totalEventos }} eventos · {{ $totalPromociones }} promociones activas</p>
         </div>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow-lg p-6">
+    <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
+        <h3 class="text-lg sm:text-xl font-bold text-gray-900">Eventos · monto y participantes</h3>
+        <a href="{{ route('seccionk.admin.eventos.index', ['tipo' => 'evento']) }}" class="text-sm font-semibold text-purple-600 hover:text-purple-800">
+            Ver todos los eventos
+        </a>
+    </div>
+    <div class="overflow-x-auto">
+        <table class="min-w-full text-sm">
+            <thead>
+                <tr class="text-left text-gray-500">
+                    <th class="pb-2 pr-4">Evento</th>
+                    <th class="pb-2 pr-4">Fecha</th>
+                    <th class="pb-2 pr-4">Participantes</th>
+                    <th class="pb-2 pr-4 text-right">Recaudado</th>
+                    <th class="pb-2 text-right">Detalle</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y">
+                @forelse($resumenEventos as $fila)
+                    <tr>
+                        <td class="py-3 pr-4 font-semibold">{{ $fila['evento']->nombre }}</td>
+                        <td class="py-3 pr-4 text-gray-600">{{ $fila['evento']->fecha->format('d/m/Y') }}</td>
+                        <td class="py-3 pr-4">
+                            <span class="font-semibold text-blue-700">{{ $fila['participantes'] }}/{{ $fila['total_promociones'] }}</span>
+                            <span class="text-xs text-gray-500 block">{{ $fila['aportantes'] }} aportaron</span>
+                        </td>
+                        <td class="py-3 pr-4 text-right font-semibold text-green-700">S/ {{ number_format($fila['recaudado'], 2) }}</td>
+                        <td class="py-3 text-right">
+                            <a href="{{ route('seccionk.admin.eventos.detalle', $fila['evento']) }}" class="inline-flex items-center text-purple-600 hover:text-purple-800 font-semibold">
+                                Ver detalle
+                                <i class="fas fa-chevron-right ml-2 text-xs"></i>
+                            </a>
+                        </td>
+                    </tr>
+                @empty
+                    <tr>
+                        <td colspan="5" class="py-6 text-center text-gray-500">No hay eventos registrados</td>
+                    </tr>
+                @endforelse
+            </tbody>
+            @if($resumenEventos->isNotEmpty())
+                <tfoot>
+                    <tr class="font-bold">
+                        <td class="pt-4" colspan="3">Total eventos</td>
+                        <td class="pt-4 text-right text-green-700">S/ {{ number_format($montoRecaudadoEventos, 2) }}</td>
+                        <td></td>
+                    </tr>
+                </tfoot>
+            @endif
+        </table>
     </div>
 </div>
 @endsection

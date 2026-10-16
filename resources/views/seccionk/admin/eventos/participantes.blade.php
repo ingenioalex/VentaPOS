@@ -8,12 +8,22 @@
     <div>
         <p class="text-gray-600">
             <i class="fas fa-calendar mr-2"></i>{{ $evento->fecha->format('d/m/Y') }}
-            · Monto: <span class="font-semibold">S/ {{ number_format($evento->monto, 2) }}</span>
+            · Sugerido: <span class="font-semibold">S/ {{ number_format($evento->monto, 2) }}</span>
+        </p>
+        <p class="text-sm text-gray-500 mt-1">
+            {{ $participantes }}/{{ $total_promociones }} participaron ·
+            {{ $aportantes }} aportaron ·
+            Total recaudado <span class="font-semibold text-green-700">S/ {{ number_format($recaudado, 2) }}</span>
         </p>
     </div>
-    <a href="{{ route('seccionk.admin.eventos.index') }}" class="text-purple-600 hover:text-purple-800 font-semibold">
-        <i class="fas fa-arrow-left mr-2"></i>Volver a eventos
-    </a>
+    <div class="flex flex-wrap gap-3">
+        <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-700 hover:text-green-900 font-semibold">
+            <i class="fas fa-list-ol mr-2"></i>Ver detalle y total
+        </a>
+        <a href="{{ route('seccionk.admin.eventos.index') }}" class="text-purple-600 hover:text-purple-800 font-semibold">
+            <i class="fas fa-arrow-left mr-2"></i>Volver a eventos
+        </a>
+    </div>
 </div>
 
 <form action="{{ route('seccionk.admin.eventos.participantes.store', $evento) }}" method="POST" enctype="multipart/form-data">
@@ -77,6 +87,12 @@
     </div>
 
     @if($promociones->isNotEmpty())
+        <div class="mt-4 bg-gray-50 rounded-xl px-4 py-3 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2">
+            <p class="text-sm text-gray-600">
+                {{ $participantes }}/{{ $total_promociones }} participaron · {{ $aportantes }} aportaron
+            </p>
+            <p class="text-lg font-bold text-green-700">Total recaudado: S/ {{ number_format($recaudado, 2) }}</p>
+        </div>
         <div class="mt-6 flex justify-end">
             <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">
                 <i class="fas fa-save mr-2"></i>Guardar participantes

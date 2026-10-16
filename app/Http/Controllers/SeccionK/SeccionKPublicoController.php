@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEstadisticas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -14,7 +15,9 @@ class SeccionKPublicoController extends Controller
 {
     public function index()
     {
-        return view('seccionk.index');
+        $stats = SeccionKEstadisticas::comunidad();
+
+        return view('seccionk.index', compact('stats'));
     }
 
     public function buscar(Request $request)
@@ -86,7 +89,8 @@ class SeccionKPublicoController extends Controller
         // Estadísticas
         $totalCuotas = $cuotasMensuales->count();
         $cuotasPagadas = $cuotasData->where('pago', true)->count();
-        $totalAportadoCuotas = $cuotasData->sum('monto_aportado');
+        $totalAportadoCuotas = $cuotasData->where('pago', true)->sum('monto_aportado');
+        $totalAportadoEventos = $eventosData->where('pago', true)->sum('monto_aportado');
 
         return view('seccionk.perfil', compact(
             'promocion',
@@ -94,7 +98,8 @@ class SeccionKPublicoController extends Controller
             'eventosData',
             'totalCuotas',
             'cuotasPagadas',
-            'totalAportadoCuotas'
+            'totalAportadoCuotas',
+            'totalAportadoEventos'
         ));
     }
 

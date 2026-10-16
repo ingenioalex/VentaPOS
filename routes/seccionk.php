@@ -53,6 +53,8 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     // Gestión de eventos
     Route::resource('eventos', AdminEventoController::class)
         ->parameters(['eventos' => 'evento']);
+    Route::get('eventos/{evento}/detalle', [AdminEventoController::class, 'detalle'])
+        ->name('eventos.detalle');
     Route::get('eventos/{evento}/participantes', [AdminEventoController::class, 'participantes'])
         ->name('eventos.participantes');
     Route::post('eventos/{evento}/participantes', [AdminEventoController::class, 'guardarParticipantes'])

@@ -29,7 +29,9 @@
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Fecha</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Nombre</th>
                 <th class="px-6 py-3 text-left text-xs font-semibold text-gray-700 uppercase">Tipo</th>
-                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Monto</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Sugerido</th>
+                <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Recaudado</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Participantes</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Estado</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
             </tr>
@@ -52,6 +54,10 @@
                     @endif
                 </td>
                 <td class="px-6 py-4 text-right font-semibold">S/ {{ number_format($evento->monto, 2) }}</td>
+                <td class="px-6 py-4 text-right font-semibold text-green-700">S/ {{ number_format($resumenPorEvento[$evento->id]['recaudado'] ?? 0, 2) }}</td>
+                <td class="px-6 py-4 text-center">
+                    <span class="font-semibold">{{ $resumenPorEvento[$evento->id]['participantes'] ?? 0 }}/{{ $resumenPorEvento[$evento->id]['total_promociones'] ?? 0 }}</span>
+                </td>
                 <td class="px-6 py-4 text-center">
                     @if($evento->activo)
                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">Activo</span>
@@ -60,6 +66,9 @@
                     @endif
                 </td>
                 <td class="px-6 py-4 text-center space-x-3">
+                    <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-600 hover:text-green-800" title="Ver detalle">
+                        <i class="fas fa-list-ol"></i>
+                    </a>
                     <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-600 hover:text-purple-800" title="Participantes">
                         <i class="fas fa-users"></i>
                     </a>
@@ -77,7 +86,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="px-6 py-12 text-center text-gray-500">No hay eventos registrados</td>
+                <td colspan="8" class="px-6 py-12 text-center text-gray-500">No hay eventos registrados</td>
             </tr>
             @endforelse
         </tbody>

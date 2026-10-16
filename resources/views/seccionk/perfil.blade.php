@@ -64,7 +64,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-semibold mb-1">Total Aportado</p>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Aporte en cuotas</p>
                     <p class="text-3xl font-bold text-green-600">S/ {{ number_format($totalAportadoCuotas, 2) }}</p>
                 </div>
                 <div class="bg-green-100 rounded-full p-3">
@@ -76,8 +76,9 @@
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-semibold mb-1">Eventos</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ $eventosData->count() }}</p>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Aporte en eventos</p>
+                    <p class="text-3xl font-bold text-blue-600">S/ {{ number_format($totalAportadoEventos, 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $eventosData->count() }} eventos</p>
                 </div>
                 <div class="bg-blue-100 rounded-full p-3">
                     <i class="fas fa-calendar-alt text-blue-600 text-2xl"></i>

@@ -69,13 +69,17 @@ if [ -f "$SQL_FILE" ]; then
     DB_NAME=${DB_NAME:-ventapos}
     DB_USER=${DB_USER:-root}
     export MYSQL_PWD="${DB_PASS:-}"
-    mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$SQL_FILE"
+    TABLA_EXISTE=$(mysql -h"$DB_HOST" -u"$DB_USER" -N -s "$DB_NAME" -e "SHOW TABLES LIKE 'seccionk_promociones'" || true)
+    if [ -n "$TABLA_EXISTE" ]; then
+        echo "Tablas seccionk ya existen: no se inserta ni se borra data del VPS"
+    else
+        mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$SQL_FILE"
+        echo "Tablas seccionk creadas"
+    fi
     unset MYSQL_PWD
-    echo "Tablas seccionk listas"
 fi
 
 cd "$APP"
-php artisan seccionk:limpiar-cuotas-duplicadas || true
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true

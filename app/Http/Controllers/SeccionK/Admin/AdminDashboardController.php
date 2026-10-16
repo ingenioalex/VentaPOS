@@ -6,16 +6,14 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKPromocion;
 use App\Models\SeccionKParticipacion;
+use App\Support\SeccionKEstadisticas;
 use App\Support\SeccionKExport;
-use App\Support\SeccionKLimpiarCuotas;
 use Illuminate\Http\Request;
 
 class AdminDashboardController extends Controller
 {
     public function index()
     {
-        SeccionKLimpiarCuotas::ejecutar();
-
         $totalPromociones = SeccionKPromocion::activos()->count();
         $participanCuotas = SeccionKPromocion::activos()->where('participa_cuotas', true)->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
@@ -33,11 +31,10 @@ class AdminDashboardController extends Controller
         $promocionesQuePagaron = (clone $pagosCuotas)->select('promocion_id')->distinct()->count('promocion_id');
         $esperadosCuotas = $participanCuotas * $totalCuotas;
 
-        $eventosRecientes = SeccionKEvento::eventos()
-            ->activos()
-            ->orderBy('fecha', 'desc')
-            ->limit(5)
-            ->get();
+        $resumenEventos = SeccionKEstadisticas::resumenEventos($totalPromociones);
+        $montoRecaudadoEventos = $resumenEventos->sum('recaudado');
+        $participantesEventos = $resumenEventos->sum('participantes');
+        $aportantesEventos = SeccionKEstadisticas::comunidad()['aportando_eventos'];
 
         $resumenMeses = SeccionKEvento::cuotasMensuales()
             ->activos()
@@ -64,16 +61,18 @@ class AdminDashboardController extends Controller
             'totalCuotas',
             'cuotasPagadasCount',
             'montoRecaudadoCuotas',
+            'montoRecaudadoEventos',
+            'participantesEventos',
+            'aportantesEventos',
             'promocionesQuePagaron',
             'esperadosCuotas',
-            'eventosRecientes',
+            'resumenEventos',
             'resumenMeses'
         ));
     }
 
     public function resumenCuotas()
     {
-        SeccionKLimpiarCuotas::ejecutar();
         $datos = $this->datosResumenCuotas();
 
         return view('seccionk.admin.resumen-cuotas', $datos);

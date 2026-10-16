@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEstadisticas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -30,8 +31,9 @@ class AdminEventoController extends Controller
         }
 
         $eventos = $query->orderBy('fecha', 'desc')->paginate(20);
+        $resumenPorEvento = SeccionKEstadisticas::resumenPorEventos(collect($eventos->items()));
 
-        return view('seccionk.admin.eventos.index', compact('eventos'));
+        return view('seccionk.admin.eventos.index', compact('eventos', 'resumenPorEvento'));
     }
 
     public function create()
@@ -106,15 +108,25 @@ class AdminEventoController extends Controller
             ->with('success', 'Evento ocultado exitosamente.');
     }
 
+    public function detalle(SeccionKEvento $evento)
+    {
+        return view('seccionk.admin.eventos.detalle', SeccionKEstadisticas::detalleEvento($evento));
+    }
+
     public function participantes(SeccionKEvento $evento)
     {
-        $promociones = SeccionKPromocion::activos()->orderBy('apellido_paterno')->get();
-        
-        $participaciones = SeccionKParticipacion::where('evento_id', $evento->id)
+        $detalle = SeccionKEstadisticas::detalleEvento($evento);
+        $promociones = $detalle['filas']->pluck('promocion');
+        $participaciones = SeccionKParticipacion::query()
+            ->dePromocionesActivas()
+            ->where('evento_id', $evento->id)
             ->get()
             ->keyBy('promocion_id');
 
-        return view('seccionk.admin.eventos.participantes', compact('evento', 'promociones', 'participaciones'));
+        return view('seccionk.admin.eventos.participantes', array_merge($detalle, [
+            'promociones' => $promociones,
+            'participaciones' => $participaciones,
+        ]));
     }
 
     public function guardarParticipantes(Request $request, SeccionKEvento $evento)

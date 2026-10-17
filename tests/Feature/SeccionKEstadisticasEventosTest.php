@@ -13,20 +13,49 @@ class SeccionKEstadisticasEventosTest extends TestCase
 {
     use RefreshDatabase;
 
-    public function test_el_inicio_publico_muestra_promociones_y_montos_separados(): void
+    public function test_el_inicio_publico_no_muestra_montos_hasta_identificarse(): void
     {
         $this->datosDemo();
 
         $respuesta = $this->get(route('seccionk.index'));
 
         $respuesta->assertOk();
+        $respuesta->assertSee('Identifícate con tu DNI');
+        $respuesta->assertDontSee('Promociones participando');
+        $respuesta->assertDontSee('Monto cuotas');
+        $respuesta->assertDontSee('S/ 90.00');
+    }
+
+    public function test_el_perfil_pide_dni_si_no_esta_identificado(): void
+    {
+        $this->datosDemo();
+        $yuri = SeccionKPromocion::where('dni', '42867691')->firstOrFail();
+
+        $this->get(route('seccionk.perfil', $yuri))
+            ->assertRedirect(route('seccionk.index'));
+    }
+
+    public function test_al_identificarse_con_dni_ve_el_resumen_de_la_seccion(): void
+    {
+        $this->datosDemo();
+        $yuri = SeccionKPromocion::where('dni', '42867691')->firstOrFail();
+
+        $this->post(route('seccionk.buscar'), [
+            'dni' => '42867691',
+            'apellido' => 'Vargas',
+        ])->assertRedirect(route('seccionk.perfil', $yuri));
+
+        $respuesta = $this->get(route('seccionk.perfil', $yuri));
+
+        $respuesta->assertOk();
+        $respuesta->assertSee('Resumen de la Sección K');
         $respuesta->assertSee('Promociones participando');
-        $respuesta->assertSee('2/2');
         $respuesta->assertSee('Promociones aportando');
         $respuesta->assertSee('Monto cuotas');
         $respuesta->assertSee('S/ 10.00');
         $respuesta->assertSee('Monto eventos');
         $respuesta->assertSee('S/ 5.00');
+        $respuesta->assertSee('Tu participación');
     }
 
     public function test_el_dashboard_muestra_el_evento_con_monto_y_participantes(): void
@@ -82,7 +111,8 @@ class SeccionKEstadisticasEventosTest extends TestCase
         $this->datosDemo();
         $yuri = SeccionKPromocion::where('dni', '42867691')->firstOrFail();
 
-        $respuesta = $this->get(route('seccionk.perfil', $yuri));
+        $respuesta = $this->withSession(['seccionk_identificado' => $yuri->id])
+            ->get(route('seccionk.perfil', $yuri));
 
         $respuesta->assertOk();
         $respuesta->assertSee('Aporte en cuotas');

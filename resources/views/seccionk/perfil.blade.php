@@ -47,7 +47,11 @@
         </div>
     </div>
 
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Resumen de la Sección K</h2>
+    @include('seccionk.partials.resumen-comunidad', ['stats' => $stats])
+
     <!-- Statistics -->
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Tu participación</h2>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">

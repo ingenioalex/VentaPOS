@@ -15,9 +15,7 @@ class SeccionKPublicoController extends Controller
 {
     public function index()
     {
-        $stats = SeccionKEstadisticas::comunidad();
-
-        return view('seccionk.index', compact('stats'));
+        return view('seccionk.index');
     }
 
     public function buscar(Request $request)
@@ -36,6 +34,8 @@ class SeccionKPublicoController extends Controller
             return back()->withErrors(['busqueda' => 'No se encontró ninguna promoción con esos datos.']);
         }
 
+        $this->recordarIdentidad($promocion);
+
         return redirect()->route('seccionk.perfil', $promocion->id);
     }
 
@@ -44,6 +44,14 @@ class SeccionKPublicoController extends Controller
         $promocion = SeccionKPromocion::activos()
             ->with(['participaciones.evento'])
             ->findOrFail($id);
+
+        if (! $this->estaIdentificado($promocion)) {
+            return redirect()
+                ->route('seccionk.index')
+                ->withErrors(['busqueda' => 'Identifícate con tu DNI y apellido para ver tu información.']);
+        }
+
+        $stats = SeccionKEstadisticas::comunidad();
 
         // Cuotas mensuales ordenadas por fecha
         $cuotasMensuales = SeccionKEvento::cuotasMensuales()
@@ -99,7 +107,8 @@ class SeccionKPublicoController extends Controller
             'totalCuotas',
             'cuotasPagadas',
             'totalAportadoCuotas',
-            'totalAportadoEventos'
+            'totalAportadoEventos',
+            'stats'
         ));
     }
 
@@ -122,6 +131,7 @@ class SeccionKPublicoController extends Controller
         ]);
 
         $promocion = SeccionKPromocion::create($request->all());
+        $this->recordarIdentidad($promocion);
 
         return redirect()->route('seccionk.perfil', $promocion->id)
             ->with('success', '¡Registro exitoso! Bienvenido a la Sección K - Promoción 2001.');
@@ -130,6 +140,12 @@ class SeccionKPublicoController extends Controller
     public function guardarComentarioCuota(Request $request, $id, $eventoId)
     {
         $promocion = SeccionKPromocion::where('activo', true)->findOrFail($id);
+
+        if (! $this->estaIdentificado($promocion)) {
+            return redirect()
+                ->route('seccionk.index')
+                ->withErrors(['busqueda' => 'Identifícate con tu DNI y apellido para ver tu información.']);
+        }
 
         $evento = SeccionKEvento::cuotasMensuales()
             ->activos()
@@ -180,5 +196,19 @@ class SeccionKPublicoController extends Controller
             ->route('seccionk.perfil', $promocion->id)
             ->with('success', 'Comentario guardado en la cuota de '.$evento->mes_cuota.'.')
             ->withFragment('cuota-'.$evento->id);
+    }
+
+    private function recordarIdentidad(SeccionKPromocion $promocion): void
+    {
+        session(['seccionk_identificado' => $promocion->id]);
+    }
+
+    private function estaIdentificado(SeccionKPromocion $promocion): bool
+    {
+        if (auth('seccionk')->check()) {
+            return true;
+        }
+
+        return (int) session('seccionk_identificado') === (int) $promocion->id;
     }
 }

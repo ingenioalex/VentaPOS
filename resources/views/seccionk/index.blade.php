@@ -3,40 +3,17 @@
 @section('title', 'Consultar - Sección K Promoción 2001')
 
 @section('content')
-<div class="max-w-5xl mx-auto py-8 sm:py-12 px-3 sm:px-6 lg:px-8">
-    <div class="text-center mb-8">
-        <div class="mx-auto w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-            <i class="fas fa-users text-white text-2xl sm:text-4xl"></i>
+<div class="min-h-[70vh] flex items-center justify-center py-8 sm:py-12 px-3 sm:px-6 lg:px-8">
+    <div class="max-w-md w-full">
+        <div class="text-center mb-6 sm:mb-8">
+            <div class="mx-auto w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-users text-white text-2xl sm:text-4xl"></i>
+            </div>
+            <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Sección K</h1>
+            <p class="text-lg sm:text-xl text-gray-600 mb-1">Promoción 2001</p>
+            <p class="text-sm text-gray-500">Identifícate con tu DNI para ver tu participación y los aportes</p>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-bold text-gray-900 mb-2">Sección K</h1>
-        <p class="text-lg sm:text-xl text-gray-600 mb-1">Promoción 2001</p>
-        <p class="text-sm text-gray-500">Consulta tu participación y aportes</p>
-    </div>
 
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-        <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Promociones participando</p>
-            <p class="text-3xl font-bold text-purple-600 mt-1">{{ $stats['participando'] }}/{{ $stats['total_promociones'] }}</p>
-            <p class="text-xs text-gray-500 mt-2">{{ $stats['participando_cuotas'] }} en cuotas · {{ $stats['participando_eventos'] }} en eventos</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Promociones aportando</p>
-            <p class="text-3xl font-bold text-indigo-600 mt-1">{{ $stats['aportando'] }}/{{ $stats['total_promociones'] }}</p>
-            <p class="text-xs text-gray-500 mt-2">{{ $stats['aportando_cuotas'] }} en cuotas · {{ $stats['aportando_eventos'] }} en eventos</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Monto cuotas</p>
-            <p class="text-3xl font-bold text-green-600 mt-1">S/ {{ number_format($stats['monto_cuotas'], 2) }}</p>
-            <p class="text-xs text-gray-500 mt-2">{{ $stats['aportando_cuotas'] }} promociones · {{ $stats['total_cuotas'] }} meses</p>
-        </div>
-        <div class="bg-white rounded-xl shadow p-5">
-            <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Monto eventos</p>
-            <p class="text-3xl font-bold text-blue-600 mt-1">S/ {{ number_format($stats['monto_eventos'], 2) }}</p>
-            <p class="text-xs text-gray-500 mt-2">{{ $stats['aportando_eventos'] }} promociones · {{ $stats['total_eventos'] }} eventos</p>
-        </div>
-    </div>
-
-    <div class="max-w-md mx-auto">
         <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8">
             <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6">Buscar Mi Perfil</h2>
 
@@ -94,7 +71,7 @@
                     class="w-full gradient-bg text-white font-bold py-3 px-6 rounded-lg hover:opacity-90 transition flex items-center justify-center"
                 >
                     <i class="fas fa-search mr-2"></i>
-                    Buscar Mi Información
+                    Identificarme
                 </button>
             </form>
 

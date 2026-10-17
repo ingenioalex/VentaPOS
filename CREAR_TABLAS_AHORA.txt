@@ -1,0 +1,25 @@
+El servidor web YA usa PHP 8.3. El php de PowerShell es 7.3 y por eso artisan falla.
+No hace falta instalar otro PHP. Crea las tablas con SQL.
+
+PASO 1
+Copia a D:\Proyectos\VentaPOS_build\
+  - CREAR-TABLAS-SECCIONK.bat
+  - database\sql\seccionk_instalar.sql
+
+PASO 2
+Doble click en CREAR-TABLAS-SECCIONK.bat
+
+Si no encuentra MySQL, abre phpMyAdmin:
+  1. http://localhost/phpmyadmin
+  2. Base ventapos
+  3. Importar -> database\sql\seccionk_instalar.sql
+  4. Continuar
+
+PASO 3
+Recarga http://localhost:8000/seccionk
+DNI 12345678  Apellido Garcia
+
+Admin: http://localhost:8000/seccionk/admin/login
+admin / seccionk2026
+
+Las tablas seccionk_* quedan en la misma base ventapos, separadas de VentaPOS.

@@ -1,0 +1,119 @@
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║        ⚡ INSTALACIÓN SÚPER SIMPLE - 2 PASOS                            ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+
+📋 PASO 1: Descargar 2 Archivos
+────────────────────────────────────────────────────────────────────────────
+
+Ve a GitHub y descarga estos 2 archivos:
+
+👉 https://github.com/ingenioalex/VentaPOS/tree/cursor/seccionk-module-0c7c
+
+Busca y descarga:
+  ✅ instalar-seccionk.ps1
+  ✅ INSTALAR-SECCIONK.bat
+
+
+📋 PASO 2: Copiar y Ejecutar
+────────────────────────────────────────────────────────────────────────────
+
+1️⃣  Copia los 2 archivos a:
+    D:\Proyectos\VentaPOS_build\
+
+2️⃣  Haz DOBLE CLICK en:
+    INSTALAR-SECCIONK.bat
+
+3️⃣  Espera 2 minutos mientras se instala...
+
+4️⃣  ¡Listo! 🎉
+
+
+🌐 ACCEDER A SECCIONK
+────────────────────────────────────────────────────────────────────────────
+
+Si tu servidor de VentaPOS ya está corriendo:
+
+  👉 http://localhost:8000/seccionk
+
+Si no está corriendo, inícialo:
+
+  php artisan serve
+
+Luego abre:
+  👉 http://localhost:8000/seccionk
+
+
+🔐 CREDENCIALES
+────────────────────────────────────────────────────────────────────────────
+
+Admin SeccionK:
+  URL:        http://localhost:8000/seccionk/admin/login
+  Usuario:    admin
+  Contraseña: seccionk2026
+
+Búsqueda Pública:
+  URL:      http://localhost:8000/seccionk
+  DNI:      12345678
+  Apellido: García
+
+
+🎯 ¿QUÉ HACE EL INSTALADOR?
+────────────────────────────────────────────────────────────────────────────
+
+✅ Descarga todos los archivos de SeccionK desde GitHub
+✅ Los copia a las carpetas correctas de tu proyecto
+✅ Modifica bootstrap/app.php (agrega rutas)
+✅ Modifica config/auth.php (agrega guard)
+✅ Ejecuta migraciones (crea tablas seccionk_*)
+✅ Carga datos de prueba
+✅ Limpia y regenera caché
+
+
+📂 ARCHIVOS QUE SE CREAN
+────────────────────────────────────────────────────────────────────────────
+
+app/Http/Controllers/SeccionK/     ← Controladores
+app/Models/SeccionK*.php           ← Modelos
+app/Http/Middleware/SeccionKAuth.php ← Autenticación
+resources/views/seccionk/          ← Vistas
+routes/seccionk.php                ← Rutas
+database/migrations/2026_10_11_... ← Migración
+database/seeders/SeccionKSeeder.php ← Datos de prueba
+
+
+⚠️ IMPORTANTE
+────────────────────────────────────────────────────────────────────────────
+
+✅ SeccionK usa su PROPIA base de datos (tablas seccionk_*)
+✅ NO afecta a VentaPOS en absoluto
+✅ Funciona como un MÓDULO INDEPENDIENTE
+✅ Se ejecuta en la misma aplicación Laravel
+
+
+🔧 SI ALGO SALE MAL
+────────────────────────────────────────────────────────────────────────────
+
+Ejecuta estos comandos en tu terminal:
+
+  php artisan config:clear
+  php artisan route:clear
+  php artisan migrate
+  php artisan db:seed --class=SeccionKSeeder
+
+
+🎉 ¡ESO ES TODO!
+────────────────────────────────────────────────────────────────────────────
+
+Solo 2 pasos:
+  1. Descargar 2 archivos
+  2. Doble click en INSTALAR-SECCIONK.bat
+
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                                                                          ║
+║  URL después de instalar: http://localhost:8000/seccionk               ║
+║                                                                          ║
+╚══════════════════════════════════════════════════════════════════════════╝

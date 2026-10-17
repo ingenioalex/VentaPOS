@@ -14,6 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
         then: function () {
             Route::middleware('web')
                 ->group(base_path('routes/admin.php'));
+            
+            // SeccionK en ruta /seccionk en lugar de subdominio
+            Route::middleware('web')
+                ->prefix('seccionk')
+                ->name('seccionk.')
+                ->group(base_path('routes/seccionk.php'));
         },
     )
     ->withMiddleware(function (Middleware $middleware): void {
@@ -26,6 +32,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'dueno' => \App\Http\Middleware\SoloDueno::class,
             'super_admin' => \App\Http\Middleware\SoloSuperAdmin::class,
             'onboarding' => \App\Http\Middleware\RequiereOnboarding::class,
+            'seccionk.auth' => \App\Http\Middleware\SeccionKAuth::class,
         ]);
         $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo(function () {

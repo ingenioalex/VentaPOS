@@ -20,6 +20,7 @@ use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::get('/', [SeccionKPublicoController::class, 'index'])->name('index');
+Route::get('/error-subida', [SeccionKPublicoController::class, 'errorSubida'])->name('error-subida');
 Route::post('/buscar', [SeccionKPublicoController::class, 'buscar'])->name('buscar');
 Route::get('/perfil/{id}', [SeccionKPublicoController::class, 'perfil'])->name('perfil');
 Route::get('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'avisoComentarioIncompleto'])

@@ -144,6 +144,18 @@ class SeccionKPublicoController extends Controller
             ->with('error', 'No se pudo guardar. Si subiste una foto del celular, vuelve a intentar: la imagen se reduce sola y es opcional.');
     }
 
+    public function errorSubida(Request $request)
+    {
+        $volver = $request->headers->get('referer') ?: route('seccionk.index');
+        if (str_contains((string) $volver, '/admin')) {
+            $volver = route('seccionk.admin.promociones.index');
+        }
+
+        return response()
+            ->view('seccionk.error-subida', ['volver' => $volver])
+            ->header('Cache-Control', 'no-store');
+    }
+
     public function guardarComentarioCuota(Request $request, $id, $eventoId)
     {
         $promocion = SeccionKPromocion::where('activo', true)->findOrFail($id);

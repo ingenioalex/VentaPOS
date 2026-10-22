@@ -74,7 +74,28 @@ class SeccionKPagoCelularTest extends TestCase
 
         $this->assertStringContainsString('Reduciendo foto', $html);
         $this->assertStringContainsString('Foto opcional', $html);
-        $this->assertStringContainsString('accept="image/*"', $html);
+        $this->assertStringContainsString('el pago se guarda igual', $html);
+        $this->assertStringContainsString('HTMLFormElement.prototype.submit', $html);
+        $this->assertStringContainsString('accept="image/jpeg,image/png,image/webp,image/*"', $html);
+    }
+
+    public function test_la_pagina_de_foto_pesada_no_exige_post(): void
+    {
+        $this->get(route('seccionk.error-subida'))
+            ->assertOk()
+            ->assertSee('La foto no se pudo subir')
+            ->assertSee('sin foto');
+    }
+
+    public function test_un_get_a_una_ruta_post_no_muestra_405(): void
+    {
+        $admin = $this->datos()[0];
+
+        $this->actingAs($admin, 'seccionk')
+            ->from(route('seccionk.admin.dashboard'))
+            ->get('/seccionk/admin/logout')
+            ->assertRedirect()
+            ->assertSessionHas('error');
     }
 
     public function test_el_perfil_publico_tambien_reduce_la_foto(): void

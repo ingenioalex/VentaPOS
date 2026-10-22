@@ -172,6 +172,7 @@ class AdminEventoController extends Controller
             'participantes.*.numero_transaccion' => 'nullable|string|max:100',
             'participantes.*.fecha_pago' => 'nullable|date',
             'participantes.*.observaciones' => 'nullable|string',
+            'participantes.*.imagen_sustento' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
         ]);
 
         DB::transaction(function () use ($evento, $data, $request) {

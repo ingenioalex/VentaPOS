@@ -5,6 +5,7 @@ use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -49,4 +50,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
+
+        $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
+            if (! $request->is('seccionk') && ! $request->is('seccionk/*')) {
+                return null;
+            }
+
+            $mensaje = 'El envío no llegó completo. Si adjuntaste una foto del celular, registra el pago sin imagen: la foto es opcional.';
+            $referer = $request->headers->get('referer');
+
+            if ($request->is('seccionk/admin/*')) {
+                return redirect($referer ?: url('/seccionk/admin'))->with('error', $mensaje);
+            }
+
+            return redirect($referer ?: url('/seccionk'))->with('error', $mensaje);
+        });
     })->create();

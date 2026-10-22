@@ -121,11 +121,25 @@ php artisan route:cache || true
 chown -R www-data:www-data "$APP/storage" "$APP/bootstrap/cache" "$APP/public/uploads" 2>/dev/null || true
 
 # Fotos de celular: nginx por defecto corta en 1MB (413) y un refresh da 405.
-# Solo sube el límite de subida. No toca MySQL ni la data de Sección K.
+# Solo sube el límite de subida y redirige el 413 a una página GET. No toca MySQL.
 if [ -d /etc/nginx/conf.d ]; then
-    echo 'client_max_body_size 16M;' > /etc/nginx/conf.d/seccionk-uploads.conf
-    nginx -t && (systemctl reload nginx || service nginx reload) || true
+    cat > /etc/nginx/conf.d/seccionk-uploads.conf <<'NGX'
+client_max_body_size 16m;
+error_page 413 =303 /seccionk/error-subida;
+NGX
 fi
+for f in /etc/nginx/sites-enabled/* /etc/nginx/sites-available/* /etc/nginx/conf.d/*.conf; do
+    [ -f "$f" ] || continue
+    case "$f" in
+        *seccionk-uploads.conf) continue ;;
+    esac
+    if grep -q 'client_max_body_size' "$f"; then
+        sed -i 's/client_max_body_size[[:space:]][^;]*/client_max_body_size 16m/g' "$f" || true
+    elif grep -q 'server_name' "$f"; then
+        sed -i '/server_name/a\    client_max_body_size 16m;' "$f" || true
+    fi
+done
+nginx -t && (systemctl reload nginx || service nginx reload) || true
 for dir in /etc/php/*/fpm/conf.d /etc/php/*/cli/conf.d; do
     if [ -d "$dir" ]; then
         printf 'upload_max_filesize=16M\npost_max_size=16M\n' > "$dir/99-seccionk-uploads.ini"

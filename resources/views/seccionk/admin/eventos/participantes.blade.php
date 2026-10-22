@@ -57,7 +57,8 @@
                         @if($part?->imagen_sustento)
                             <a href="{{ asset('uploads/seccionk/'.$part->imagen_sustento) }}" target="_blank" class="text-purple-600 text-xs block mb-1">Ver imagen</a>
                         @endif
-                        <input type="file" name="participantes[{{ $promo->id }}][imagen_sustento]" accept="image/jpeg,image/png,image/webp" class="text-xs w-full">
+                        <input type="file" name="participantes[{{ $promo->id }}][imagen_sustento]" accept="image/*" class="text-xs w-full">
+                        <p class="nombre-archivo text-xs text-gray-500 mt-1">Foto opcional. Si es del celular, se reduce sola.</p>
                     </div>
                 </div>
             </div>

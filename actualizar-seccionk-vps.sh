@@ -75,6 +75,7 @@ copy_path database/seeders/SeccionKSeeder.php
 copy_path database/sql/seccionk_instalar.sql
 copy_path database/sql/seccionk_declaraciones.sql
 copy_path public/uploads/seccionk
+copy_path public/.user.ini
 copy_path bootstrap/app.php
 copy_path config/auth.php
 copy_path deploy
@@ -118,6 +119,20 @@ php artisan view:clear || true
 php artisan config:cache || true
 php artisan route:cache || true
 chown -R www-data:www-data "$APP/storage" "$APP/bootstrap/cache" "$APP/public/uploads" 2>/dev/null || true
+
+# Fotos de celular: nginx por defecto corta en 1MB (413) y un refresh da 405.
+# Solo sube el límite de subida. No toca MySQL ni la data de Sección K.
+if [ -d /etc/nginx/conf.d ]; then
+    echo 'client_max_body_size 16M;' > /etc/nginx/conf.d/seccionk-uploads.conf
+    nginx -t && (systemctl reload nginx || service nginx reload) || true
+fi
+for dir in /etc/php/*/fpm/conf.d /etc/php/*/cli/conf.d; do
+    if [ -d "$dir" ]; then
+        printf 'upload_max_filesize=16M\npost_max_size=16M\n' > "$dir/99-seccionk-uploads.ini"
+    fi
+done
+systemctl reload php8.3-fpm 2>/dev/null || systemctl reload php-fpm 2>/dev/null || service php8.3-fpm reload 2>/dev/null || true
+
 rm -rf "$TMP"
 
 echo

@@ -144,6 +144,7 @@
             }
         }
     </script>
+    @include('seccionk.partials.comprimir-imagen')
     @yield('scripts')
 </body>
 </html>

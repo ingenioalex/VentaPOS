@@ -82,6 +82,13 @@
 
     <!-- Content -->
     <main>
+        @if(session('error'))
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6">
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <p class="text-red-700">{{ session('error') }}</p>
+                </div>
+            </div>
+        @endif
         @yield('content')
     </main>
 
@@ -117,6 +124,7 @@
         </div>
     </footer>
 
+    @include('seccionk.partials.comprimir-imagen')
     @yield('scripts')
 </body>
 </html>

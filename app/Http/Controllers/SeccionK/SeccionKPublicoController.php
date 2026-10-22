@@ -137,6 +137,13 @@ class SeccionKPublicoController extends Controller
             ->with('success', '¡Registro exitoso! Bienvenido a la Sección K - Promoción 2001.');
     }
 
+    public function avisoComentarioIncompleto($id)
+    {
+        return redirect()
+            ->route('seccionk.perfil', $id)
+            ->with('error', 'No se pudo guardar. Si subiste una foto del celular, vuelve a intentar: la imagen se reduce sola y es opcional.');
+    }
+
     public function guardarComentarioCuota(Request $request, $id, $eventoId)
     {
         $promocion = SeccionKPromocion::where('activo', true)->findOrFail($id);
@@ -153,7 +160,7 @@ class SeccionKPublicoController extends Controller
 
         $request->validate([
             'comentario' => 'nullable|string|max:1000',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
         ]);
 
         if (! $request->filled('comentario') && ! $request->hasFile('imagen')) {

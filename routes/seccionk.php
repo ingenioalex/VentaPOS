@@ -22,6 +22,8 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [SeccionKPublicoController::class, 'index'])->name('index');
 Route::post('/buscar', [SeccionKPublicoController::class, 'buscar'])->name('buscar');
 Route::get('/perfil/{id}', [SeccionKPublicoController::class, 'perfil'])->name('perfil');
+Route::get('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'avisoComentarioIncompleto'])
+    ->name('perfil.cuota.comentario.aviso');
 Route::post('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'guardarComentarioCuota'])
     ->name('perfil.cuota.comentario');
 Route::get('/registro', [SeccionKPublicoController::class, 'registroForm'])->name('registro');
@@ -45,6 +47,8 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     Route::get('promociones/exportar', [AdminPromocionController::class, 'exportar'])->name('promociones.exportar');
     Route::resource('promociones', AdminPromocionController::class)
         ->parameters(['promociones' => 'promocion']);
+    Route::get('promociones/{promocion}/pagos/{evento}', [AdminPromocionController::class, 'avisoPagoIncompleto'])
+        ->name('promociones.pagos.aviso');
     Route::post('promociones/{promocion}/pagos/{evento}', [AdminPromocionController::class, 'registrarPago'])
         ->name('promociones.pagos.store');
     Route::post('promociones/{promocion}/restaurar', [AdminPromocionController::class, 'restaurar'])

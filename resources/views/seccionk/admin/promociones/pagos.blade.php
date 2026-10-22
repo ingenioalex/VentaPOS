@@ -77,7 +77,10 @@
                         <input type="text" name="numero_transaccion" value="{{ old('numero_transaccion', $cuota['numero_transaccion']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="N° transacción (opcional)">
                         <input type="date" name="fecha_pago" value="{{ old('fecha_pago', optional($cuota['fecha_pago'])->format('Y-m-d') ?: date('Y-m-d')) }}" class="px-3 py-2 border rounded-lg text-sm">
                         <input type="text" name="observaciones" value="{{ old('observaciones', $cuota['comentario']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Comentario (opcional)">
-                        <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="text-xs sm:col-span-2">
+                        <div class="sm:col-span-2">
+                            <input type="file" name="imagen" accept="image/*" class="text-xs w-full">
+                            <p class="nombre-archivo text-xs text-gray-500 mt-1">Foto opcional. Si es del celular, se reduce sola.</p>
+                        </div>
                         <button type="submit" class="sm:col-span-2 bg-purple-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-purple-700">
                             {{ $cuota['pago'] ? 'Actualizar pago' : 'Registrar pago' }}
                         </button>
@@ -129,7 +132,10 @@
                         <input type="text" name="numero_transaccion" value="{{ old('numero_transaccion', $evento['numero_transaccion']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="N° transacción (opcional)">
                         <input type="date" name="fecha_pago" value="{{ old('fecha_pago', optional($evento['fecha_pago'])->format('Y-m-d') ?: date('Y-m-d')) }}" class="px-3 py-2 border rounded-lg text-sm">
                         <input type="text" name="observaciones" value="{{ old('observaciones', $evento['comentario']) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Comentario (opcional)">
-                        <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="text-xs sm:col-span-2">
+                        <div class="sm:col-span-2">
+                            <input type="file" name="imagen" accept="image/*" class="text-xs w-full">
+                            <p class="nombre-archivo text-xs text-gray-500 mt-1">Foto opcional. Si es del celular, se reduce sola.</p>
+                        </div>
                         <button type="submit" class="sm:col-span-2 bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700">
                             {{ $evento['pago'] ? 'Actualizar pago' : 'Registrar pago' }}
                         </button>

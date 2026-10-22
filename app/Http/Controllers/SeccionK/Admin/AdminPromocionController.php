@@ -244,6 +244,13 @@ class AdminPromocionController extends Controller
             ->with('success', 'Promoción actualizada exitosamente.');
     }
 
+    public function avisoPagoIncompleto(SeccionKPromocion $promocion, SeccionKEvento $evento)
+    {
+        return redirect()
+            ->route('seccionk.admin.promociones.show', $promocion)
+            ->with('error', 'El pago no se envió. Si subiste una foto del celular, vuelve a intentar: la imagen se reduce sola y es opcional.');
+    }
+
     public function registrarPago(Request $request, SeccionKPromocion $promocion, SeccionKEvento $evento)
     {
         $data = $request->validate([
@@ -251,7 +258,7 @@ class AdminPromocionController extends Controller
             'numero_transaccion' => 'nullable|string|max:100',
             'fecha_pago' => 'nullable|date',
             'observaciones' => 'nullable|string|max:1000',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
         ]);
 
         $participacion = SeccionKParticipacion::firstOrNew([

@@ -57,6 +57,10 @@
                     <i class="fas fa-table w-5"></i>
                     <span>Resumen cuotas</span>
                 </a>
+                <a href="{{ route('seccionk.admin.declaracion') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition {{ request()->routeIs('seccionk.admin.declaracion') ? 'sidebar-active' : '' }}">
+                    <i class="fas fa-balance-scale w-5"></i>
+                    <span>Declaración fondos</span>
+                </a>
                 <a href="{{ route('seccionk.admin.referencias') }}" class="flex items-center space-x-3 px-4 py-3 rounded-lg hover:bg-gray-800 transition {{ request()->routeIs('seccionk.admin.referencias*') ? 'sidebar-active' : '' }}">
                     <i class="fas fa-address-book w-5"></i>
                     <span>Referencias</span>

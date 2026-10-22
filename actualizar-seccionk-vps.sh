@@ -63,13 +63,17 @@ copy_path app/Models/SeccionKPromocion.php
 copy_path app/Models/SeccionKEvento.php
 copy_path app/Models/SeccionKParticipacion.php
 copy_path app/Models/SeccionKUsuario.php
+copy_path app/Models/SeccionKDeclaracion.php
 copy_path app/Support
 copy_path app/Console/Commands/SeccionKLimpiarCuotasCommand.php
+copy_path app/Console/Commands/SeccionKAsegurarEsquemaCommand.php
 copy_path resources/views/seccionk
 copy_path routes/seccionk.php
 copy_path database/migrations/2026_10_11_000001_crear_tablas_seccionk.php
+copy_path database/migrations/2026_10_22_000001_seccionk_cierre_eventos.php
 copy_path database/seeders/SeccionKSeeder.php
 copy_path database/sql/seccionk_instalar.sql
+copy_path database/sql/seccionk_declaraciones.sql
 copy_path public/uploads/seccionk
 copy_path bootstrap/app.php
 copy_path config/auth.php
@@ -82,6 +86,7 @@ if [ -f "$TMP/actualizar-seccionk-vps.sh" ]; then
 fi
 
 SQL_FILE="$APP/database/sql/seccionk_instalar.sql"
+DECL_SQL="$APP/database/sql/seccionk_declaraciones.sql"
 if [ -f "$SQL_FILE" ]; then
     DB_HOST=$(env_get DB_HOST)
     DB_NAME=$(env_get DB_DATABASE)
@@ -94,6 +99,10 @@ if [ -f "$SQL_FILE" ]; then
     TABLA_EXISTE=$(mysql -h"$DB_HOST" -u"$DB_USER" -N -s "$DB_NAME" -e "SHOW TABLES LIKE 'seccionk_promociones'" || true)
     if [ -n "$TABLA_EXISTE" ]; then
         echo "Tablas seccionk ya existen: no se inserta ni se borra data del VPS"
+        if [ -f "$DECL_SQL" ]; then
+            mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$DECL_SQL"
+            echo "Tabla seccionk_declaraciones verificada (CREATE TABLE IF NOT EXISTS)"
+        fi
     else
         mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$SQL_FILE"
         echo "Tablas seccionk creadas"
@@ -102,6 +111,7 @@ if [ -f "$SQL_FILE" ]; then
 fi
 
 cd "$APP"
+php artisan seccionk:asegurar-esquema || true
 php artisan config:clear || true
 php artisan route:clear || true
 php artisan view:clear || true

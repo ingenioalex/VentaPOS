@@ -5,6 +5,7 @@ use App\Http\Controllers\SeccionK\SeccionKAuthController;
 use App\Http\Controllers\SeccionK\Admin\AdminDashboardController;
 use App\Http\Controllers\SeccionK\Admin\AdminPromocionController;
 use App\Http\Controllers\SeccionK\Admin\AdminEventoController;
+use App\Http\Controllers\SeccionK\Admin\AdminDeclaracionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -36,6 +37,7 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/resumen-cuotas', [AdminDashboardController::class, 'resumenCuotas'])->name('resumen.cuotas');
     Route::get('/resumen-cuotas/exportar', [AdminDashboardController::class, 'exportarResumen'])->name('resumen.cuotas.exportar');
+    Route::get('/declaracion', [AdminDeclaracionController::class, 'index'])->name('declaracion');
     Route::get('/referencias', [AdminPromocionController::class, 'referencias'])->name('referencias');
     Route::get('/referencias/exportar', [AdminPromocionController::class, 'exportarReferencias'])->name('referencias.exportar');
     
@@ -59,4 +61,6 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
         ->name('eventos.participantes');
     Route::post('eventos/{evento}/participantes', [AdminEventoController::class, 'guardarParticipantes'])
         ->name('eventos.participantes.store');
+    Route::post('eventos/{evento}/cerrar', [AdminEventoController::class, 'cerrar'])
+        ->name('eventos.cerrar');
 });

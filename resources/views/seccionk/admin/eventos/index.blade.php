@@ -54,7 +54,17 @@
                 <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-700 font-semibold">Detalle</a>
                 <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-700 font-semibold">Participantes</a>
                 <a href="{{ route('seccionk.admin.eventos.edit', $evento) }}" class="text-blue-700 font-semibold">Editar</a>
+                <button
+                    type="button"
+                    class="text-amber-700 font-semibold"
+                    onclick="abrirCierre({{ $evento->id }}, @js($evento->nombre), {{ $resumenPorEvento[$evento->id]['recaudado'] ?? 0 }}, {{ $resumenPorEvento[$evento->id]['utilizado'] ?? 0 }}, {{ ($resumenPorEvento[$evento->id]['cerrado'] ?? false) ? 'true' : 'false' }})"
+                >
+                    {{ ($resumenPorEvento[$evento->id]['cerrado'] ?? false) ? 'Actualizar uso' : 'Cerrar' }}
+                </button>
             </div>
+            @if($resumenPorEvento[$evento->id]['cerrado'] ?? false)
+                <p class="text-xs text-amber-700 mt-2">Cerrado · usado S/ {{ number_format($resumenPorEvento[$evento->id]['utilizado'] ?? 0, 2) }} · saldo S/ {{ number_format($resumenPorEvento[$evento->id]['saldo'] ?? 0, 2) }}</p>
+            @endif
         </div>
     @empty
         <p class="text-center text-gray-500 py-8">No hay eventos registrados</p>
@@ -71,6 +81,7 @@
                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Sugerido</th>
                 <th class="px-6 py-3 text-right text-xs font-semibold text-gray-700 uppercase">Recaudado</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Participantes</th>
+                <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Cierre</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Estado</th>
                 <th class="px-6 py-3 text-center text-xs font-semibold text-gray-700 uppercase">Acciones</th>
             </tr>
@@ -98,6 +109,14 @@
                     <span class="font-semibold">{{ $resumenPorEvento[$evento->id]['participantes'] ?? 0 }}/{{ $resumenPorEvento[$evento->id]['total_promociones'] ?? 0 }}</span>
                 </td>
                 <td class="px-6 py-4 text-center">
+                    @if($resumenPorEvento[$evento->id]['cerrado'] ?? false)
+                        <span class="px-3 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold">Cerrado</span>
+                        <div class="text-xs text-gray-500 mt-1">Usado S/ {{ number_format($resumenPorEvento[$evento->id]['utilizado'] ?? 0, 2) }}</div>
+                    @else
+                        <span class="px-3 py-1 rounded-full bg-gray-100 text-gray-700 text-xs font-semibold">Abierto</span>
+                    @endif
+                </td>
+                <td class="px-6 py-4 text-center">
                     @if($evento->activo)
                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">Activo</span>
                     @else
@@ -105,6 +124,14 @@
                     @endif
                 </td>
                 <td class="px-6 py-4 text-center space-x-3">
+                    <button
+                        type="button"
+                        class="text-amber-600 hover:text-amber-800"
+                        title="Cerrar y declarar uso"
+                        onclick="abrirCierre({{ $evento->id }}, @js($evento->nombre), {{ $resumenPorEvento[$evento->id]['recaudado'] ?? 0 }}, {{ $resumenPorEvento[$evento->id]['utilizado'] ?? 0 }}, {{ ($resumenPorEvento[$evento->id]['cerrado'] ?? false) ? 'true' : 'false' }})"
+                    >
+                        <i class="fas fa-lock"></i>
+                    </button>
                     <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-600 hover:text-green-800" title="Ver detalle">
                         <i class="fas fa-list-ol"></i>
                     </a>
@@ -125,7 +152,7 @@
             </tr>
             @empty
             <tr>
-                <td colspan="8" class="px-6 py-12 text-center text-gray-500">No hay eventos registrados</td>
+                <td colspan="9" class="px-6 py-12 text-center text-gray-500">No hay eventos registrados</td>
             </tr>
             @endforelse
         </tbody>
@@ -135,4 +162,38 @@
 <div class="mt-6">
     {{ $eventos->withQueryString()->links() }}
 </div>
+
+<div id="modal-cierre" class="fixed inset-0 z-50 hidden">
+    <div class="absolute inset-0 bg-black/50" onclick="cerrarCierre()"></div>
+    <div class="relative max-w-md mx-auto mt-24 bg-white rounded-xl shadow-xl p-5">
+        <h3 id="cierre-titulo" class="text-lg font-bold text-gray-900 mb-4">Cerrar evento</h3>
+        <form id="form-cierre" method="POST">
+            @csrf
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Monto utilizado (S/)</label>
+            <input id="cierre-monto" type="number" step="0.01" min="0" name="monto_utilizado" required class="w-full px-3 py-2 border rounded-lg mb-2">
+            <p id="cierre-recaudado" class="text-xs text-gray-500 mb-3"></p>
+            <label class="block text-sm font-semibold text-gray-700 mb-1">Observación (opcional)</label>
+            <input type="text" name="observaciones" maxlength="1000" class="w-full px-3 py-2 border rounded-lg mb-4" placeholder="En qué se usó el dinero">
+            <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+                <button type="button" onclick="cerrarCierre()" class="px-4 py-2 rounded-lg border">Cancelar</button>
+                <button type="submit" class="bg-amber-600 text-white px-4 py-2 rounded-lg font-semibold">Cerrar y declarar</button>
+            </div>
+        </form>
+    </div>
+</div>
+@endsection
+
+@section('scripts')
+<script>
+function abrirCierre(id, nombre, recaudado, utilizado, cerrado) {
+    document.getElementById('cierre-titulo').textContent = (cerrado ? 'Actualizar uso · ' : 'Cerrar · ') + nombre;
+    document.getElementById('form-cierre').action = '{{ url('seccionk/admin/eventos') }}/' + id + '/cerrar';
+    document.getElementById('cierre-monto').value = cerrado ? utilizado : recaudado;
+    document.getElementById('cierre-recaudado').textContent = 'Recaudado: S/ ' + Number(recaudado).toFixed(2);
+    document.getElementById('modal-cierre').classList.remove('hidden');
+}
+function cerrarCierre() {
+    document.getElementById('modal-cierre').classList.add('hidden');
+}
+</script>
 @endsection

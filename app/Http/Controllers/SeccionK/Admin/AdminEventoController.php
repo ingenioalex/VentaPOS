@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\SeccionK\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEsquema;
 use App\Support\SeccionKEstadisticas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -16,6 +18,8 @@ class AdminEventoController extends Controller
 {
     public function index(Request $request)
     {
+        SeccionKEsquema::asegurarDeclaraciones();
+
         $query = SeccionKEvento::query();
 
         if ($request->filled('tipo')) {
@@ -30,7 +34,7 @@ class AdminEventoController extends Controller
             $query->where('activo', true);
         }
 
-        $eventos = $query->orderBy('fecha', 'desc')->paginate(20);
+        $eventos = $query->with('declaracion')->orderBy('fecha', 'desc')->paginate(20);
         $resumenPorEvento = SeccionKEstadisticas::resumenPorEventos(collect($eventos->items()));
 
         return view('seccionk.admin.eventos.index', compact('eventos', 'resumenPorEvento'));
@@ -108,8 +112,36 @@ class AdminEventoController extends Controller
             ->with('success', 'Evento ocultado exitosamente.');
     }
 
+    public function cerrar(Request $request, SeccionKEvento $evento)
+    {
+        SeccionKEsquema::asegurarDeclaraciones();
+
+        $data = $request->validate([
+            'monto_utilizado' => 'required|numeric|min:0',
+            'observaciones' => 'nullable|string|max:1000',
+        ]);
+
+        SeccionKDeclaracion::registrarCierre(
+            $evento,
+            (float) $data['monto_utilizado'],
+            $data['observaciones'] ?? null
+        );
+
+        $destino = $request->input('volver') === 'declaracion'
+            ? route('seccionk.admin.declaracion')
+            : route('seccionk.admin.eventos.detalle', $evento);
+
+        $tipo = $evento->esCuotaMensual() ? 'cuota' : 'evento';
+
+        return redirect($destino)
+            ->with('success', ucfirst($tipo).' cerrado. Se registró el monto utilizado sin cambiar los aportes.');
+    }
+
     public function detalle(SeccionKEvento $evento)
     {
+        SeccionKEsquema::asegurarDeclaraciones();
+        $evento->load('declaracion');
+
         return view('seccionk.admin.eventos.detalle', SeccionKEstadisticas::detalleEvento($evento));
     }
 

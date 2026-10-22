@@ -13,6 +13,9 @@
         <p class="text-sm text-gray-500 mt-1">Consulta de aportes. No modifica la información registrada.</p>
     </div>
     <div class="flex flex-wrap gap-3">
+        <a href="{{ route('seccionk.admin.declaracion') }}" class="text-amber-700 hover:text-amber-900 font-semibold">
+            <i class="fas fa-balance-scale mr-2"></i>Declaración de fondos
+        </a>
         <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-600 hover:text-purple-800 font-semibold">
             <i class="fas fa-edit mr-2"></i>Editar participantes
         </a>
@@ -22,22 +25,38 @@
     </div>
 </div>
 
-<div class="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+<div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-4 mb-6">
     <div class="bg-white rounded-xl shadow p-5">
         <p class="text-sm text-gray-500 font-semibold">Participantes</p>
         <p class="text-3xl font-bold text-blue-600">{{ $participantes }}/{{ $total_promociones }}</p>
         <p class="text-xs text-gray-500 mt-1">Del total de promociones activas</p>
     </div>
     <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500 font-semibold">Aportaron</p>
-        <p class="text-3xl font-bold text-purple-600">{{ $aportantes }}/{{ $total_promociones }}</p>
-        <p class="text-xs text-gray-500 mt-1">Promociones con pago registrado</p>
+        <p class="text-sm text-gray-500 font-semibold">Recaudado</p>
+        <p class="text-3xl font-bold text-green-600">S/ {{ number_format($recaudado, 2) }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $aportantes }} promociones aportaron</p>
     </div>
     <div class="bg-white rounded-xl shadow p-5">
-        <p class="text-sm text-gray-500 font-semibold">Monto total del evento</p>
-        <p class="text-3xl font-bold text-green-600">S/ {{ number_format($recaudado, 2) }}</p>
-        <p class="text-xs text-gray-500 mt-1">Suma de aportes de las promociones</p>
+        <p class="text-sm text-gray-500 font-semibold">Utilizado</p>
+        <p class="text-3xl font-bold text-amber-600">S/ {{ number_format($utilizado, 2) }}</p>
+        <p class="text-xs text-gray-500 mt-1">{{ $cerrado ? 'Cerrado' : 'Aún abierto' }}</p>
     </div>
+    <div class="bg-white rounded-xl shadow p-5">
+        <p class="text-sm text-gray-500 font-semibold">Saldo</p>
+        <p class="text-3xl font-bold {{ $saldo >= 0 ? 'text-blue-600' : 'text-red-600' }}">S/ {{ number_format($saldo, 2) }}</p>
+        <p class="text-xs text-gray-500 mt-1">Recaudado menos utilizado</p>
+    </div>
+</div>
+
+<div class="bg-white rounded-xl shadow p-5 mb-6">
+    <h3 class="font-bold text-gray-900 mb-2">
+        <i class="fas fa-lock text-amber-600 mr-2"></i>
+        {{ $cerrado ? 'Evento cerrado' : 'Cerrar evento y declarar el dinero usado' }}
+    </h3>
+    <p class="text-sm text-gray-600 mb-4">
+        Esto solo guarda el gasto en la tabla de declaraciones. No cambia los aportes ya registrados.
+    </p>
+    @include('seccionk.admin.partials.cerrar-evento', ['evento' => $evento, 'recaudado' => $recaudado, 'volver' => 'detalle'])
 </div>
 
 <div class="space-y-3 lg:hidden mb-4">

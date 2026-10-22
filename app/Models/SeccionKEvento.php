@@ -4,6 +4,7 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class SeccionKEvento extends Model
 {
@@ -28,6 +29,21 @@ class SeccionKEvento extends Model
     public function participaciones(): HasMany
     {
         return $this->hasMany(SeccionKParticipacion::class, 'evento_id');
+    }
+
+    public function declaracion(): HasOne
+    {
+        return $this->hasOne(SeccionKDeclaracion::class, 'evento_id');
+    }
+
+    public function estaCerrado(): bool
+    {
+        return (bool) $this->declaracion?->cerrado;
+    }
+
+    public function montoUtilizado(): float
+    {
+        return (float) ($this->declaracion?->monto_utilizado ?? 0);
     }
 
     public function esCuotaMensual(): bool

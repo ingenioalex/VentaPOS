@@ -2,6 +2,7 @@
 
 namespace App\Support;
 
+use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
@@ -75,6 +76,12 @@ class SeccionKEstadisticas
             return collect();
         }
 
+        $declaraciones = SeccionKDeclaracion::whereIn('evento_id', $ids)->get()->keyBy('evento_id');
+        $eventos->each(function ($evento) use ($declaraciones) {
+            if ($evento instanceof SeccionKEvento) {
+                $evento->setRelation('declaracion', $declaraciones->get($evento->id));
+            }
+        });
         $totalPromociones = SeccionKPromocion::activos()->count();
         $partes = SeccionKParticipacion::dePromocionesActivas()
             ->whereIn('evento_id', $ids)
@@ -85,11 +92,17 @@ class SeccionKEstadisticas
             $rows = $partes->get($evento->id) ?? collect();
             $pagos = $rows->where('pago', true);
 
+            $recaudado = (float) $pagos->sum('monto_aportado');
+            $utilizado = $evento->montoUtilizado();
+
             return [
                 $evento->id => [
                     'participantes' => $rows->where('participo', true)->count(),
                     'aportantes' => $pagos->count(),
-                    'recaudado' => (float) $pagos->sum('monto_aportado'),
+                    'recaudado' => $recaudado,
+                    'utilizado' => $utilizado,
+                    'saldo' => $recaudado - $utilizado,
+                    'cerrado' => $evento->estaCerrado(),
                     'total_promociones' => $totalPromociones,
                 ],
             ];
@@ -126,6 +139,9 @@ class SeccionKEstadisticas
 
         $participantes = $filas->where('participo', true);
         $aportantes = $filas->where('pago', true);
+        $recaudado = (float) $aportantes->sum('monto');
+        $evento->loadMissing('declaracion');
+        $utilizado = $evento->montoUtilizado();
 
         return [
             'evento' => $evento,
@@ -133,7 +149,65 @@ class SeccionKEstadisticas
             'total_promociones' => $promociones->count(),
             'participantes' => $participantes->count(),
             'aportantes' => $aportantes->count(),
-            'recaudado' => (float) $aportantes->sum('monto'),
+            'recaudado' => $recaudado,
+            'utilizado' => $utilizado,
+            'saldo' => $recaudado - $utilizado,
+            'cerrado' => $evento->estaCerrado(),
+        ];
+    }
+
+    public static function declaracionFondos(): array
+    {
+        $cuotas = SeccionKEvento::cuotasMensuales()->activos()->with('declaracion')->orderBy('fecha')->get();
+        $eventos = SeccionKEvento::eventos()->activos()->with('declaracion')->orderByDesc('fecha')->get();
+        $resumenCuotas = self::resumenPorEventos($cuotas);
+        $resumenEventos = self::resumenPorEventos($eventos);
+
+        $filasCuotas = $cuotas->map(fn (SeccionKEvento $item) => self::filaDeclaracion($item, $resumenCuotas->get($item->id)));
+        $filasEventos = $eventos->map(fn (SeccionKEvento $item) => self::filaDeclaracion($item, $resumenEventos->get($item->id)));
+
+        $totalesCuotas = self::totalesDeclaracion($filasCuotas);
+        $totalesEventos = self::totalesDeclaracion($filasEventos);
+
+        return [
+            'filas_cuotas' => $filasCuotas,
+            'filas_eventos' => $filasEventos,
+            'cuotas' => $totalesCuotas,
+            'eventos' => $totalesEventos,
+            'total' => [
+                'recaudado' => $totalesCuotas['recaudado'] + $totalesEventos['recaudado'],
+                'utilizado' => $totalesCuotas['utilizado'] + $totalesEventos['utilizado'],
+                'saldo' => $totalesCuotas['saldo'] + $totalesEventos['saldo'],
+                'cerrados' => $totalesCuotas['cerrados'] + $totalesEventos['cerrados'],
+                'abiertos' => $totalesCuotas['abiertos'] + $totalesEventos['abiertos'],
+            ],
+        ];
+    }
+
+    private static function filaDeclaracion(SeccionKEvento $evento, ?array $resumen): array
+    {
+        $resumen = $resumen ?? ['recaudado' => 0, 'utilizado' => 0, 'saldo' => 0, 'cerrado' => false, 'aportantes' => 0];
+
+        return [
+            'evento' => $evento,
+            'aportantes' => $resumen['aportantes'] ?? 0,
+            'recaudado' => (float) ($resumen['recaudado'] ?? 0),
+            'utilizado' => (float) ($resumen['utilizado'] ?? 0),
+            'saldo' => (float) ($resumen['saldo'] ?? 0),
+            'cerrado' => (bool) ($resumen['cerrado'] ?? false),
+            'fecha_cierre' => $evento->declaracion?->fecha_cierre,
+            'observaciones' => $evento->declaracion?->observaciones,
+        ];
+    }
+
+    private static function totalesDeclaracion(Collection $filas): array
+    {
+        return [
+            'recaudado' => (float) $filas->sum('recaudado'),
+            'utilizado' => (float) $filas->sum('utilizado'),
+            'saldo' => (float) $filas->sum('saldo'),
+            'cerrados' => $filas->where('cerrado', true)->count(),
+            'abiertos' => $filas->where('cerrado', false)->count(),
         ];
     }
 

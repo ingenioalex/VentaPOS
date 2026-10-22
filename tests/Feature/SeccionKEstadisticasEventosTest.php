@@ -71,7 +71,9 @@ class SeccionKEstadisticasEventosTest extends TestCase
         $respuesta->assertSee('Partido de Fútbol');
         $respuesta->assertSee('1/2');
         $respuesta->assertSee('Ver detalle');
+        $respuesta->assertSee('Declaración de fondos');
         $respuesta->assertSee(route('seccionk.admin.eventos.detalle', $evento), false);
+        $respuesta->assertSee(route('seccionk.admin.declaracion'), false);
     }
 
     public function test_el_detalle_del_evento_lista_aportes_y_el_total(): void
@@ -87,7 +89,7 @@ class SeccionKEstadisticasEventosTest extends TestCase
         $respuesta->assertSee('Ana López Díaz');
         $respuesta->assertSee('S/ 5.00');
         $respuesta->assertSee('Total del evento');
-        $respuesta->assertSee('Monto total del evento');
+        $respuesta->assertSee('Cerrar evento y declarar el dinero usado');
         $respuesta->assertDontSee('Elías Oculto Pérez');
     }
 

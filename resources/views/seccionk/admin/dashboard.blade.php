@@ -69,6 +69,11 @@
             <p class="text-xl font-bold mt-1">Resumen de cuotas</p>
             <p class="text-sm text-purple-100 mt-2">Detalle de pago por mes y por promoción</p>
         </a>
+        <a href="{{ route('seccionk.admin.declaracion') }}" class="block p-5 bg-gradient-to-r from-amber-500 to-orange-600 rounded-xl shadow-lg text-white hover:shadow-xl transition">
+            <p class="text-sm uppercase tracking-wide text-amber-100">Acceso directo</p>
+            <p class="text-xl font-bold mt-1">Declaración de fondos</p>
+            <p class="text-sm text-amber-100 mt-2">Recaudado vs utilizado en cuotas y eventos</p>
+        </a>
         <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
             <p class="text-gray-500 text-sm font-semibold">Participantes en eventos</p>
             <p class="text-3xl font-bold text-indigo-600 mt-1">{{ $participantesEventos }}</p>

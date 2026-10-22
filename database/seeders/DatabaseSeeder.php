@@ -137,5 +137,6 @@ class DatabaseSeeder extends Seeder
         ]);
 
         $this->call(ProductosDemoSeeder::class);
+        $this->call(SeccionKSeeder::class);
     }
 }

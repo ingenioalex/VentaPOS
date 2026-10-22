@@ -1,0 +1,214 @@
+```
+╔══════════════════════════════════════════════════════════════════════════╗
+║                 ESTRUCTURA DE DESPLIEGUE - VENTASAGIL.COM               ║
+╚══════════════════════════════════════════════════════════════════════════╝
+
+🌐 DOMINIO: ventasagil.com
+📦 VPS: Ubuntu 22.04 + Nginx + PHP 8.3 + MySQL
+🔒 SSL: Let's Encrypt (HTTPS automático)
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  ESTRUCTURA DE URLS                                                      │
+└──────────────────────────────────────────────────────────────────────────┘
+
+https://ventasagil.com/
+├── /                                    ← VentaPOS Principal
+├── /login                               ← Login VentaPOS
+├── /app                                 ← Dashboard VentaPOS
+├── /admin                               ← Admin VentaPOS
+│
+└── /seccionk/                           ← ⭐ MÓDULO SECCIONK
+    ├── /                                ← Búsqueda pública (DNI + Apellido)
+    ├── /perfil/{id}                     ← Perfil con timeline de cuotas
+    ├── /registro                        ← Registro de nuevos miembros
+    │
+    └── /admin/                          ← Panel Administrativo SeccionK
+        ├── /login                       ← Login admin
+        ├── /                            ← Dashboard con estadísticas
+        ├── /promociones                 ← Gestión de miembros
+        │   ├── /create                  ← Crear miembro
+        │   ├── /{id}                    ← Ver miembro
+        │   ├── /{id}/edit               ← Editar miembro
+        │   └── /{id}/delete             ← Ocultar miembro
+        │
+        └── /eventos                     ← Gestión de eventos
+            ├── /create                  ← Crear evento
+            ├── /{id}                    ← Ver evento
+            ├── /{id}/edit               ← Editar evento
+            ├── /{id}/participantes      ← Asignar participantes
+            └── /{id}/delete             ← Eliminar evento
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  BASE DE DATOS                                                           │
+└──────────────────────────────────────────────────────────────────────────┘
+
+MySQL: ventapos
+│
+├── VentaPOS (tablas existentes)
+│   ├── users
+│   ├── empresas
+│   ├── productos
+│   ├── ventas
+│   └── ... (otras tablas POS)
+│
+└── SeccionK (tablas nuevas - INDEPENDIENTES)
+    ├── seccionk_promociones           ← Miembros
+    ├── seccionk_eventos               ← Eventos deportivos/sociales
+    ├── seccionk_participaciones       ← Participación + Pagos
+    └── seccionk_usuarios              ← Admins del módulo
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SISTEMA DE AUTENTICACIÓN                                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+VentaPOS:
+├── Guard: 'web' (por defecto)
+├── Provider: 'users'
+├── Model: App\Models\User
+└── Tabla: users
+
+SeccionK:
+├── Guard: 'seccionk' (independiente)
+├── Provider: 'seccionk'
+├── Model: App\Models\SeccionKUsuario
+├── Tabla: seccionk_usuarios
+└── Middleware: 'seccionk.auth'
+
+🔐 Sin conflictos - Sistemas completamente separados
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  CREDENCIALES DE ACCESO                                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+┌─ VentaPOS ──────────────────────────┐
+│ URL:        /login                  │
+│ Usuario:    admin                   │
+│ Contraseña: admin123                │
+└─────────────────────────────────────┘
+
+┌─ SeccionK Admin ────────────────────┐
+│ URL:        /seccionk/admin/login   │
+│ Usuario:    admin                   │
+│ Contraseña: seccionk2026            │
+└─────────────────────────────────────┘
+
+┌─ SeccionK Público (datos prueba) ───┐
+│ URL:      /seccionk                 │
+│ DNI:      12345678                  │
+│ Apellido: García                    │
+└─────────────────────────────────────┘
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  ARCHIVOS IMPORTANTES                                                    │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📄 DESPLEGAR_AQUI.md              ← 🚀 GUÍA RÁPIDA (¡EMPIEZA AQUÍ!)
+📄 INSTRUCCIONES_DESPLIEGUE.md    ← Instrucciones completas en español
+📄 deploy-vps-ruta.sh             ← Script automatizado de despliegue
+📄 docs/DEPLOY_VPS_RUTA.md        ← Documentación técnica de despliegue
+📄 docs/SECCIONK_README.md        ← Documentación técnica del módulo
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  COMANDOS DE DESPLIEGUE                                                  │
+└──────────────────────────────────────────────────────────────────────────┘
+
+# 1️⃣ Conectar al VPS
+ssh root@TU_IP_DEL_VPS
+
+# 2️⃣ Descargar script
+curl -o deploy.sh https://raw.githubusercontent.com/ingenioalex/VentaPOS/cursor/seccionk-module-0c7c/deploy-vps-ruta.sh
+
+# 3️⃣ Ejecutar
+chmod +x deploy.sh
+./deploy.sh
+
+# ⏱️ Tiempo: 5-10 minutos
+# ✅ Resultado: Todo funcionando en https://ventasagil.com/seccionk
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  CARACTERÍSTICAS SECCIONK                                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+✨ PÚBLICO:
+  ✓ Búsqueda por DNI + Apellido
+  ✓ Perfil con timeline de 15 cuotas mensuales (Oct 2026 - Dic 2027)
+  ✓ Lista de eventos con participación y pagos
+  ✓ Estadísticas personales
+  ✓ Registro de nuevos miembros
+
+✨ ADMINISTRATIVO:
+  ✓ Dashboard con métricas en tiempo real
+  ✓ Gestión completa de miembros (CRUD)
+  ✓ Gestión de eventos deportivos/sociales
+  ✓ Asignación de participantes a eventos
+  ✓ Registro de pagos con comprobante
+  ✓ Sistema de autenticación independiente
+
+✨ DISEÑO:
+  ✓ Responsive (móvil, tablet, desktop)
+  ✓ Gradiente púrpura corporativo
+  ✓ Timeline interactivo
+  ✓ Iconos Font Awesome 6.4
+  ✓ Tailwind CSS 4.0
+  ✓ Interfaz profesional y moderna
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  VENTAJAS DEL CAMBIO (Subdominio → Ruta)                                │
+└──────────────────────────────────────────────────────────────────────────┘
+
+✅ Sin configuración DNS adicional
+✅ Un solo certificado SSL para todo
+✅ Configuración Nginx simplificada
+✅ Despliegue más rápido
+✅ Mantenimiento más fácil
+✅ VentaPOS sigue funcionando igual
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  SOPORTE                                                                 │
+└──────────────────────────────────────────────────────────────────────────┘
+
+📋 Ver logs Laravel:
+   tail -f /var/www/ventasagil/storage/logs/laravel.log
+
+📋 Ver logs Nginx:
+   tail -f /var/log/nginx/ventasagil-error.log
+
+🔄 Reiniciar servicios:
+   systemctl restart nginx php8.3-fpm mysql
+
+🧹 Limpiar caché:
+   cd /var/www/ventasagil
+   php artisan cache:clear
+   php artisan config:clear
+   php artisan route:clear
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  ESTADO DEL PROYECTO                                                     │
+└──────────────────────────────────────────────────────────────────────────┘
+
+✅ Código: Completo
+✅ Rutas: Configuradas para /seccionk
+✅ Base de datos: Migraciones + Seeders listos
+✅ Autenticación: Guard independiente funcionando
+✅ Frontend: Responsive y profesional
+✅ Despliegue: Script automatizado listo
+✅ Documentación: Completa en español
+✅ Testing: Validado localmente
+
+🎯 ESTADO: Listo para producción
+
+┌──────────────────────────────────────────────────────────────────────────┐
+│  PULL REQUEST                                                            │
+└──────────────────────────────────────────────────────────────────────────┘
+
+🔗 https://github.com/ingenioalex/VentaPOS/pull/4
+📦 Branch: cursor/seccionk-module-0c7c
+✅ Base: main
+
+╔══════════════════════════════════════════════════════════════════════════╗
+║                          🎉 ¡TODO LISTO!                                ║
+║                                                                          ║
+║  Siguiente paso: Ejecutar deploy.sh en tu VPS                          ║
+║  Resultado: https://ventasagil.com/seccionk funcionando                 ║
+╚══════════════════════════════════════════════════════════════════════════╝
+```

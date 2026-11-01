@@ -20,6 +20,7 @@
 | Documento | Contenido |
 |-----------|-----------|
 | [IDENTIDAD_MARCA.md](IDENTIDAD_MARCA.md) | Logo, icono, favicon, variantes y usos |
+| [ventasagil/](ventasagil/README.md) | Chats de Cursor exportados (trabajo ventasagil.com) |
 | [ARQUITECTURA.md](ARQUITECTURA.md) | Capas, módulos, multi-tenancy, flujos principales |
 | [METODOLOGIA.md](METODOLOGIA.md) | Cómo se desarrolla, ramas, pruebas, convenciones |
 | [CASOS_DE_USO.md](CASOS_DE_USO.md) | Actores, casos de uso por módulo |
@@ -72,6 +73,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-11-01 | Exportación del chat Cursor a `docs/ventasagil/` y copia en GitHub | ventasagil/README.md, Este índice |
 | 2026-10-10 | SSL producción: cert caducado (token Hostinger 401); renovado HTTP-01 + script de recuperación | PUESTA_EN_MARCHA.md, Este índice |
 | 2026-10-10 | BAT `recuperar-local.bat`: mata php.exe colgados, restaura web.php, Laragon + iniciar.ps1 | ARRANQUE_LOCAL.md, Este índice |
 | 2026-07-22 | Identidad de marca VentasÁgil: icono, wordmark, logos H/V, favicon, WhatsApp, OG | IDENTIDAD_MARCA.md, Este índice |

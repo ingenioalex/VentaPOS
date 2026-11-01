@@ -3,6 +3,7 @@
 @section('titulo', 'Entrada de stock')
 
 @section('contenido')
+@php $sel = old('producto_id', $productoPreseleccionado ?? null); @endphp
 <h1 style="margin-bottom:1rem">Entrada de mercadería</h1>
 
 @include('app.inventario._nav')
@@ -10,12 +11,15 @@
 <div class="card" style="max-width:520px">
     <form method="post" action="{{ route('inventario.entrada.guardar') }}">
         @csrf
+        @if($productoPreseleccionado)
+        <input type="hidden" name="return_kardex" value="1">
+        @endif
         <div style="margin-bottom:1rem">
             <label style="font-weight:600;display:block;margin-bottom:.35rem">Producto *</label>
             <select name="producto_id" id="producto_id" required style="width:100%;padding:.6rem;border:1px solid #cbd5e1;border-radius:.5rem">
                 <option value="">Seleccione...</option>
                 @foreach($productos as $p)
-                <option value="{{ $p->id }}" data-control-lote="{{ ($lotesActivo && $p->control_lote) ? '1' : '0' }}" @selected(old('producto_id') == $p->id)>
+                <option value="{{ $p->id }}" data-control-lote="{{ ($lotesActivo && $p->control_lote) ? '1' : '0' }}" @selected((string) $sel === (string) $p->id)>
                     {{ $p->nombre }} (stock: {{ $p->stock_disponible }})@if($lotesActivo && $p->control_lote) · lote @endif
                 </option>
                 @endforeach
@@ -53,7 +57,11 @@
             @endif
         </div>
         <button type="submit" class="btn btn-primary">Registrar entrada</button>
+        @if($productoPreseleccionado)
+        <a href="{{ route('inventario.kardex', $productoPreseleccionado) }}" style="margin-left:.5rem">Cancelar</a>
+        @else
         <a href="{{ route('inventario.index') }}" style="margin-left:.5rem">Cancelar</a>
+        @endif
     </form>
 </div>
 @if($lotesActivo)

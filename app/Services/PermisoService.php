@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Models\Empresa;
+use Illuminate\Support\Collection;
 
 class PermisoService
 {
@@ -16,6 +17,41 @@ class PermisoService
     public function modulosContratables(): array
     {
         return config('permisos.modulos_contratables', []);
+    }
+
+    /**
+     * Módulos contratables agrupados y ordenados para admin (contratación / tarifas).
+     *
+     * @return Collection<string, Collection<int, array<string, mixed>>>
+     */
+    public function contratablesAgrupados(): Collection
+    {
+        $orden = config('permisos.orden_grupos', []);
+        $porGrupo = collect($this->modulosContratables())
+            ->map(fn (array $info, string $clave) => array_merge($info, ['clave' => $clave]))
+            ->groupBy('grupo');
+
+        $resultado = collect();
+
+        foreach ($orden as $grupo) {
+            if ($porGrupo->has($grupo)) {
+                $resultado->put($grupo, $porGrupo->get($grupo));
+            }
+        }
+
+        foreach ($porGrupo->sortKeys() as $grupo => $items) {
+            if (! $resultado->has($grupo)) {
+                $resultado->put($grupo, $items);
+            }
+        }
+
+        return $resultado;
+    }
+
+    /** @return array<string, string> */
+    public function descripcionesGrupos(): array
+    {
+        return config('permisos.descripcion_grupos', []);
     }
 
     /** @return list<string> */

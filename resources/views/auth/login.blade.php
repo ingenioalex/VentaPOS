@@ -11,6 +11,18 @@
             Empresa: <strong>{{ $empresa->nombre }}</strong>
         </p>
         @endif
+        @if($modoBloqueo ?? false)
+        <div style="background:#fff7ed;border:1px solid #fdba74;color:#92400e;padding:.85rem 1rem;border-radius:.5rem;margin-bottom:1rem;font-size:.88rem;line-height:1.45">
+            <strong>Modo bloqueo.</strong>
+            @if($nombreBloqueo)
+            {{ $nombreBloqueo }}, su turno sigue abierto
+            @else
+            Su turno sigue abierto
+            @endif
+            (otra pestaña, cierre del navegador o inactividad).
+            Ingrese su <strong>contraseña</strong> para desbloquear y continuar en el POS.
+        </div>
+        @endif
         @if($errors->any())
             <div class="alert alert-error">{{ $errors->first() }}</div>
         @endif
@@ -40,7 +52,9 @@
             <label style="display:flex;align-items:center;gap:.5rem;margin-bottom:1rem;font-size:.9rem">
                 <input type="checkbox" name="recordar"> Recordarme
             </label>
-            <button type="submit" class="btn btn-primary" style="width:100%">Ingresar</button>
+            <button type="submit" class="btn btn-primary" style="width:100%">
+                {{ ($modoBloqueo ?? false) ? 'Desbloquear e ingresar' : 'Ingresar' }}
+            </button>
         </form>
         <p style="text-align:center;margin-top:1rem;font-size:.85rem;color:#64748b">
             <a href="{{ route('inicio') }}" style="color:#0f766e">← Volver al inicio</a>

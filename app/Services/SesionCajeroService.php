@@ -12,6 +12,28 @@ class SesionCajeroService
 {
     public function __construct(private CierreCajaService $cierreService) {}
 
+    public function reanudarSesion(Usuario $cajero, Request $request): void
+    {
+        if ($cajero->rol !== 'cajero') {
+            return;
+        }
+
+        if (! $cajero->en_sesion) {
+            throw new RuntimeException('No hay turno activo. Inicie sesión normalmente.');
+        }
+
+        $sesionAnterior = $cajero->sesion_laravel_id;
+        $sesionActual = $request->session()->getId();
+
+        if ($sesionAnterior && $sesionAnterior !== $sesionActual) {
+            DB::table('sessions')->where('id', $sesionAnterior)->delete();
+        }
+
+        $cajero->update([
+            'sesion_laravel_id' => $sesionActual,
+        ]);
+    }
+
     public function abrirSesion(Usuario $cajero, Request $request): void
     {
         if ($cajero->rol !== 'cajero') {

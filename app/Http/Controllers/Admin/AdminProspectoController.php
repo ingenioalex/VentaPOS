@@ -14,6 +14,9 @@ class AdminProspectoController extends Controller
         $q = trim((string) $request->get('q', ''));
         $estado = $request->get('estado');
         $origen = $request->get('origen');
+        $ocultarDescartados = $request->has('ocultar_descartados')
+            ? $request->boolean('ocultar_descartados')
+            : true;
 
         $prospectos = Prospecto::query()
             ->when($q !== '', function ($query) use ($q) {
@@ -26,6 +29,7 @@ class AdminProspectoController extends Controller
             })
             ->when($estado, fn ($query) => $query->where('estado', $estado))
             ->when($origen, fn ($query) => $query->where('origen', $origen))
+            ->when($ocultarDescartados && $estado !== 'descartado', fn ($query) => $query->where('estado', '!=', 'descartado'))
             ->orderByDesc('creado_en')
             ->paginate(25)
             ->withQueryString();
@@ -37,8 +41,13 @@ class AdminProspectoController extends Controller
         ];
 
         return view('admin.prospectos.index', compact(
-            'prospectos', 'q', 'estado', 'origen', 'stats'
+            'prospectos', 'q', 'estado', 'origen', 'stats', 'ocultarDescartados'
         ));
+    }
+
+    public function show(Prospecto $prospecto)
+    {
+        return view('admin.prospectos.show', compact('prospecto'));
     }
 
     public function actualizarEstado(Request $request, Prospecto $prospecto)

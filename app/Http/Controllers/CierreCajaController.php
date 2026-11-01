@@ -202,6 +202,7 @@ class CierreCajaController extends Controller
             abort(403);
         }
 
+        $rect = $this->datosRectificacionArqueo($request);
         $datos = $request->validate([
             'observaciones' => 'nullable|string|max:500',
         ]);
@@ -210,6 +211,8 @@ class CierreCajaController extends Controller
             $cierre = $this->cierreService->cerrarZ(
                 Auth::user(),
                 $datos['observaciones'] ?? null,
+                $rect['rectificar'],
+                $rect['motivo'],
             );
 
             return redirect()->route('cierres.index')
@@ -217,8 +220,60 @@ class CierreCajaController extends Controller
                 ->with('ticket_url', route('cierres.ticket', $cierre))
                 ->with('ultimo_cierre_id', $cierre->id);
         } catch (\Throwable $e) {
-            return back()->withErrors(['cierre_z' => $e->getMessage()]);
+            return back()->withErrors(['cierre_z' => $e->getMessage()])->withInput();
         }
+    }
+
+    public function rectificarArqueo(Request $request)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        $rect = $this->datosRectificacionArqueo($request);
+
+        if ($rect['rectificar'] === []) {
+            return back()->withErrors(['rectificar_arqueo' => 'Indique al menos un monto a rectificar.']);
+        }
+
+        try {
+            $n = $this->cierreService->aplicarRectificacionesArqueo(
+                Auth::user(),
+                $rect['rectificar'],
+                $rect['motivo'] ?: 'Rectificación manual antes del Cierre Z',
+            );
+
+            $msg = $n > 0
+                ? "Se rectificaron {$n} arqueo(s) de Cierre X."
+                : 'No hubo cambios en los montos indicados.';
+
+            return redirect()->route('cierres.index')->with('ok', $msg);
+        } catch (\Throwable $e) {
+            return back()->withErrors(['rectificar_arqueo' => $e->getMessage()])->withInput();
+        }
+    }
+
+    /** @return array{rectificar: array<int, float>, motivo: ?string} */
+    private function datosRectificacionArqueo(Request $request): array
+    {
+        $datos = $request->validate([
+            'rectificar' => 'nullable|array',
+            'rectificar.*' => 'nullable|numeric|min:0',
+            'motivo_rectificacion' => 'nullable|string|max:500',
+        ]);
+
+        $rectificar = [];
+        foreach ($datos['rectificar'] ?? [] as $id => $monto) {
+            if ($monto === '' || $monto === null) {
+                continue;
+            }
+            $rectificar[(int) $id] = (float) $monto;
+        }
+
+        return [
+            'rectificar' => $rectificar,
+            'motivo' => $datos['motivo_rectificacion'] ?? null,
+        ];
     }
 
     public function ticket(Request $request, CierreCaja $cierre)
@@ -276,6 +331,7 @@ class CierreCajaController extends Controller
             abort(403);
         }
 
+        $rect = $this->datosRectificacionArqueo($request);
         $datos = $request->validate([
             'observaciones' => 'nullable|string|max:500',
         ]);
@@ -285,6 +341,8 @@ class CierreCajaController extends Controller
                 Auth::user(),
                 $fecha,
                 $datos['observaciones'] ?? null,
+                $rect['rectificar'],
+                $rect['motivo'],
             );
 
             return redirect()->route('cierres.index')
@@ -292,7 +350,7 @@ class CierreCajaController extends Controller
                 ->with('ticket_url', route('cierres.ticket', $cierre))
                 ->with('ultimo_cierre_id', $cierre->id);
         } catch (\Throwable $e) {
-            return back()->withErrors(['cierre_z' => $e->getMessage()]);
+            return back()->withErrors(['cierre_z' => $e->getMessage()])->withInput();
         }
     }
 

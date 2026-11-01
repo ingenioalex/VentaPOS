@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 180 200" fill="none" role="img" aria-label="Ventas�gil">
+  <defs>
+    <linearGradient id="va-v-g" x1="50" y1="16" x2="130" y2="112" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#14b8a6"/>
+      <stop offset="1" stop-color="#0f766e"/>
+    </linearGradient>
+  </defs>
+  <!-- Imagotipo vertical: s�mbolo arriba, logotipo abajo -->
+  <rect x="42" y="12" width="96" height="96" rx="22" fill="url(#va-v-g)"/>
+  <path fill="#fff" transform="translate(42 12) scale(1.5)" d="M36.5 9.5 17.5 34.2h13.2l-5.1 20.3 23.4-28.4H35.4l1.1-16.6z"/>
+  <text x="90" y="148" text-anchor="middle" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="26" font-weight="700" fill="#0f172a">Ventas</text>
+  <text x="90" y="178" text-anchor="middle" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="26" font-weight="800" fill="#0f766e">&#193;gil</text>
+</svg>

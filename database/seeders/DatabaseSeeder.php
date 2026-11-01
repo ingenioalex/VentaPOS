@@ -1,4 +1,4 @@
-<?php
+﻿<?php
 
 namespace Database\Seeders;
 
@@ -14,6 +14,7 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(SeccionKSeeder::class);
         $extrasDemo = app(ExtrasEmpresaService::class)->defaultsParaTipo('bodega');
         $extrasDemo['flejes'] = true;
         $extrasDemo['categorias_jerarquicas'] = true;
@@ -139,3 +140,4 @@ class DatabaseSeeder extends Seeder
         $this->call(ProductosDemoSeeder::class);
     }
 }
+

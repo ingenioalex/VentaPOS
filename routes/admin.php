@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\AdminAuthController;
+use App\Http\Controllers\Admin\AdminRecuperacionController;
 use App\Http\Controllers\Admin\AdminBackupController;
 use App\Http\Controllers\Admin\AdminContratacionController;
 use App\Http\Controllers\Admin\AdminEmpresaLimiteUsuarioController;
@@ -8,16 +9,30 @@ use App\Http\Controllers\Admin\AdminEmpresaController;
 use App\Http\Controllers\Admin\AdminEmpresaUsuarioController;
 use App\Http\Controllers\Admin\AdminProspectoController;
 use App\Http\Controllers\Admin\AdminSuperUsuarioController;
+use App\Http\Controllers\Admin\AdminGuiaController;
 use App\Http\Controllers\Admin\AdminTarifaController;
 use Illuminate\Support\Facades\Route;
 
-Route::prefix('admin')->name('admin.')->group(function () {
-    Route::get('/login', [AdminAuthController::class, 'mostrarLogin'])->name('login');
-    Route::post('/login', [AdminAuthController::class, 'login']);
+$adminPath = trim((string) config('admin.panel_path', 'admin'), '/');
 
-    Route::middleware(['auth', 'super_admin'])->group(function () {
+Route::prefix($adminPath)->name('admin.')->group(function () use ($adminPath) {
+    Route::get('/login', [AdminAuthController::class, 'mostrarLogin'])->name('login');
+    Route::post('/login', [AdminAuthController::class, 'login'])->middleware('throttle:admin-login');
+
+    Route::middleware('throttle:admin-recuperar')->group(function () {
+        Route::get('/recuperar', [AdminRecuperacionController::class, 'mostrarSolicitud'])->name('recuperar.solicitud');
+        Route::post('/recuperar', [AdminRecuperacionController::class, 'solicitar'])->name('recuperar.solicitar');
+        Route::get('/recuperar/pregunta', [AdminRecuperacionController::class, 'mostrarPregunta'])->name('recuperar.pregunta');
+        Route::post('/recuperar/verificar-correo', [AdminRecuperacionController::class, 'verificarCorreo'])->name('recuperar.verificar-correo');
+        Route::post('/recuperar/pregunta', [AdminRecuperacionController::class, 'verificarPregunta'])->name('recuperar.verificar');
+        Route::get('/recuperar/enlace', [AdminRecuperacionController::class, 'mostrarEnlace'])->name('recuperar.enlace');
+        Route::get('/recuperar/nueva-clave/{token}', [AdminRecuperacionController::class, 'mostrarRestablecer'])->name('recuperar.restablecer');
+        Route::post('/recuperar/nueva-clave/{token}', [AdminRecuperacionController::class, 'restablecer'])->name('recuperar.restablecer.guardar');
+    });
+
+    Route::middleware(['auth', 'super_admin'])->group(function () use ($adminPath) {
         Route::post('/logout', [AdminAuthController::class, 'logout'])->name('logout');
-        Route::redirect('/', '/admin/empresas')->name('inicio');
+        Route::redirect('/', '/'.$adminPath.'/empresas')->name('inicio');
 
         Route::get('/empresas', [AdminEmpresaController::class, 'index'])->name('empresas.index');
         Route::get('/empresas/nueva', [AdminEmpresaController::class, 'crear'])->name('empresas.crear');
@@ -63,8 +78,12 @@ Route::prefix('admin')->name('admin.')->group(function () {
         Route::post('/tarifas/restaurar', [AdminTarifaController::class, 'restaurar'])->name('tarifas.restaurar');
 
         Route::get('/prospectos', [AdminProspectoController::class, 'index'])->name('prospectos.index');
+        Route::get('/prospectos/{prospecto}', [AdminProspectoController::class, 'show'])->name('prospectos.show');
         Route::patch('/prospectos/{prospecto}/estado', [AdminProspectoController::class, 'actualizarEstado'])
             ->name('prospectos.estado');
+
+        Route::get('/guia', [AdminGuiaController::class, 'index'])->name('guia.index');
+        Route::get('/guia/imprimir', [AdminGuiaController::class, 'imprimir'])->name('guia.imprimir');
 
         Route::get('/super-usuarios', [AdminSuperUsuarioController::class, 'index'])->name('super-usuarios.index');
         Route::get('/super-usuarios/nuevo', [AdminSuperUsuarioController::class, 'crear'])->name('super-usuarios.crear');

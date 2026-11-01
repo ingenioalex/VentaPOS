@@ -14,6 +14,21 @@
         .top { background: var(--primary); color: #fff; padding: .65rem .85rem; padding-top: max(.65rem, env(safe-area-inset-top)); }
         .top-row { display: flex; align-items: center; gap: .5rem; margin-bottom: .45rem; }
         .top h1 { font-size: 1rem; flex: 1; }
+        .btn-volver {
+            display: inline-flex; align-items: center; justify-content: center;
+            min-width: 40px; height: 40px; padding: 0 .55rem;
+            border-radius: .45rem; background: rgba(255,255,255,.18); color: #fff;
+            text-decoration: none; font-size: 1.15rem; font-weight: 700; flex-shrink: 0;
+            border: 1px solid rgba(255,255,255,.25);
+        }
+        .btn-volver:active { background: rgba(255,255,255,.28); }
+        .top-nav { display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .45rem; }
+        .top-nav a {
+            color: #ccfbf1; font-size: .78rem; text-decoration: none;
+            padding: .25rem .55rem; border-radius: .35rem;
+            background: rgba(255,255,255,.12); border: 1px solid rgba(255,255,255,.2);
+        }
+        .top-nav a:active { background: rgba(255,255,255,.22); }
         .top a { color: #ccfbf1; font-size: .8rem; text-decoration: none; }
         .badge { background: rgba(255,255,255,.2); padding: .2rem .5rem; border-radius: .35rem; font-size: .72rem; font-weight: 700; }
         .buscar-row { display: flex; gap: .45rem; }
@@ -37,17 +52,44 @@
         .barra-carrito button { width: 100%; padding: .9rem; border: none; border-radius: .6rem; background: var(--primary); color: #fff; font-size: 1.05rem; font-weight: 800; cursor: pointer; }
         .barra-carrito .resumen { display: flex; justify-content: space-between; align-items: center; margin-bottom: .45rem; font-size: .9rem; }
         .barra-carrito .total { font-size: 1.35rem; font-weight: 800; color: var(--primary); }
-        .panel { display: none; position: fixed; inset: 0; background: #fff; z-index: 60; flex-direction: column; }
+        .panel {
+            display: none; position: fixed; inset: 0; background: #fff; z-index: 60;
+            flex-direction: column; height: 100dvh; max-height: 100dvh; overflow: hidden;
+        }
         .panel.activo { display: flex; }
-        .panel-head { background: var(--primary); color: #fff; padding: .85rem; display: flex; align-items: center; gap: .5rem; }
+        .panel-head {
+            background: var(--primary); color: #fff; padding: .85rem;
+            padding-top: max(.85rem, env(safe-area-inset-top));
+            display: flex; align-items: center; gap: .5rem;
+            flex-shrink: 0; position: relative; z-index: 3;
+        }
         .panel-head h2 { flex: 1; font-size: 1rem; }
-        .panel-body { flex: 1; overflow-y: auto; padding: .85rem; }
+        .panel-body {
+            flex: 1; min-height: 0; overflow-y: auto; overflow-x: hidden;
+            padding: .85rem; -webkit-overflow-scrolling: touch; overscroll-behavior: contain;
+        }
+        .panel-foot {
+            flex-shrink: 0; padding: .65rem .85rem;
+            padding-bottom: calc(.65rem + var(--safe-b));
+            border-top: 1px solid #e2e8f0; background: #fff;
+        }
+        .panel-foot .msg { margin-top: .5rem; margin-bottom: 0; }
         .linea { display: flex; gap: .5rem; align-items: center; padding: .65rem 0; border-bottom: 1px solid #e2e8f0; }
         .linea-info { flex: 1; }
         .linea-info small { color: #64748b; }
         .qty { display: flex; align-items: center; gap: .35rem; }
         .qty button { width: 36px; height: 36px; border: 1px solid #cbd5e1; background: #f8fafc; border-radius: .4rem; font-size: 1.1rem; cursor: pointer; }
         .pago select, .pago input { width: 100%; padding: .7rem; border: 1px solid #cbd5e1; border-radius: .5rem; font-size: 1rem; margin-bottom: .5rem; }
+        .mixto-grid { display: grid; grid-template-columns: 1fr 1fr; gap: .45rem; margin: .35rem 0 .5rem; }
+        .mixto-grid label { font-size: .75rem; color: #64748b; display: block; margin-bottom: .15rem; }
+        .mixto-grid input { width: 100%; padding: .55rem; border: 1px solid #cbd5e1; border-radius: .4rem; font-size: .95rem; margin-bottom: 0; }
+        .mixto-ayuda { font-size: .72rem; color: #64748b; margin: .35rem 0; line-height: 1.35; }
+        .mixto-total { font-size: .8rem; color: #64748b; margin-bottom: .35rem; }
+        .mixto-total.ok { color: #065f46; }
+        .mixto-total.err { color: #991b1b; }
+        #fila-efectivo { display: none; grid-template-columns: 1fr 1fr; gap: .45rem; margin-top: .25rem; }
+        #fila-efectivo.visible { display: grid; }
+        #fila-efectivo input { margin-bottom: 0; }
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,.55); z-index: 80; align-items: center; justify-content: center; padding: 1rem; }
         .modal.activo { display: flex; }
         .modal-box { background: #fff; border-radius: .75rem; padding: 1rem; width: 100%; max-width: 400px; }
@@ -57,13 +99,26 @@
 <body>
 <div class="app">
     <header class="top">
+        @php
+            $panelUrl = $usuario->rutaInicio();
+            $panelEtiqueta = $usuario->tieneModulo('inicio') ? 'Panel principal' : 'POS Escritorio';
+        @endphp
         <div class="top-row">
+            <a href="{{ $panelUrl }}" class="btn-volver" title="Volver a {{ $panelEtiqueta }}" aria-label="Volver a {{ $panelEtiqueta }}">←</a>
             <h1>POS Móvil</h1>
-            @if($usuario->tieneModulo('pos'))
-            <a href="{{ route('pos.index') }}">Escritorio</a>
-            @endif
             <span class="badge">{{ $preview['serie'] }}-{{ str_pad($preview['numero'], 6, '0', STR_PAD_LEFT) }}</span>
         </div>
+        <nav class="top-nav" aria-label="Navegación POS">
+            @if($usuario->tieneModulo('inicio'))
+            <a href="{{ route('app.inicio') }}">Panel principal</a>
+            @endif
+            @if($usuario->tieneModulo('pos'))
+            <a href="{{ route('pos.index') }}">POS Escritorio</a>
+            @endif
+            @if($usuario->tieneModulo('cierres'))
+            <a href="{{ route('cierres.index') }}">Cierres</a>
+            @endif
+        </nav>
         <div class="buscar-row">
             <input type="search" id="buscar" placeholder="Buscar o escanear código..." autocomplete="off" enterkeyhint="search">
             <button type="button" class="btn-icon" id="btn-escanear" title="Cámara">📷</button>
@@ -103,15 +158,30 @@
             <label style="font-weight:600;font-size:.85rem;display:block;margin-bottom:.35rem">Medio de pago</label>
             <select id="medio-pago">
                 <option value="efectivo">Efectivo</option>
+                <option value="yape">Yape</option>
+                <option value="plin">Plin</option>
                 <option value="tarjeta">Tarjeta</option>
-                <option value="yape">Yape / Plin</option>
-                <option value="transferencia">Transferencia</option>
+                <option value="mixto">Mixto</option>
             </select>
-            <label style="font-weight:600;font-size:.85rem;display:block;margin-bottom:.35rem">Monto recibido (efectivo)</label>
-            <input type="number" id="monto-recibido" step="0.01" min="0" placeholder="Opcional">
+            <div id="fila-mixto" style="display:none">
+                <p class="mixto-ayuda">Yape, Plin y Tarjeta: monto exacto (sin vuelto). Efectivo: puede incluir vuelto si la suma supera el total.</p>
+                <div class="mixto-grid">
+                    <div><label>Efectivo</label><input type="number" id="mix_efectivo" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                    <div><label>Yape</label><input type="number" id="mix_yape" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                    <div><label>Plin</label><input type="number" id="mix_plin" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                    <div><label>Tarjeta</label><input type="number" id="mix_tarjeta" min="0" step="0.01" inputmode="decimal" placeholder="0.00"></div>
+                </div>
+                <div class="mixto-total" id="mixto-estado">Distribuya el total entre los medios de pago.</div>
+            </div>
+            <div id="fila-efectivo">
+                <input type="text" id="monto-recibido" placeholder="Recibido S/" inputmode="decimal" autocomplete="off">
+                <input type="text" id="vuelto" placeholder="Vuelto" readonly style="background:#f1f5f9">
+            </div>
         </div>
-        <button type="button" id="btn-cobrar" style="width:100%;margin-top:1rem;padding:.95rem;border:none;border-radius:.6rem;background:#0f766e;color:#fff;font-size:1.05rem;font-weight:800">Cobrar boleta</button>
-        <p class="msg" id="msg-cobro" style="margin-top:.75rem"></p>
+    </div>
+    <div class="panel-foot">
+        <button type="button" id="btn-cobrar" style="width:100%;padding:.95rem;border:none;border-radius:.6rem;background:#0f766e;color:#fff;font-size:1.05rem;font-weight:800">Cobrar boleta</button>
+        <p class="msg" id="msg-cobro"></p>
     </div>
 </div>
 
@@ -135,6 +205,7 @@ let topFetchSeq = 0;
 let topFetchAbort = null;
 const topCacheCliente = new Map();
 const topInicial = @json($topProductosInicial ?? []);
+const impresoraPrefs = @json($impresoraPrefs ?? ['auto_imprimir' => true]);
 
 const buscar = document.getElementById('buscar');
 const resultados = document.getElementById('resultados');
@@ -196,6 +267,136 @@ function pintarCarrito() {
                 <button type="button" data-i="${i}" data-d="1">+</button>`}
             </div>
         </div>`).join('') || '<p style="color:#64748b">Carrito vacío</p>';
+    actualizarMixtoEstado();
+}
+
+function parseMontoRecibido(val) {
+    const n = parseFloat(String(val || '').replace(',', '.').trim());
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function leerMontoRecibido() {
+    return parseMontoRecibido(document.getElementById('monto-recibido').value);
+}
+
+function leerMontosMixto() {
+    return {
+        efectivo: +document.getElementById('mix_efectivo').value || 0,
+        yape: +document.getElementById('mix_yape').value || 0,
+        plin: +document.getElementById('mix_plin').value || 0,
+        tarjeta: +document.getElementById('mix_tarjeta').value || 0,
+    };
+}
+
+function analizarPagoMixto(total) {
+    const m = leerMontosMixto();
+    const noEfectivo = m.yape + m.plin + m.tarjeta;
+    const suma = noEfectivo + m.efectivo;
+    const tol = 0.01;
+    const efectivoNecesario = Math.max(0, total - noEfectivo);
+
+    if (suma <= tol) {
+        return { ok: false, estado: 'pendiente', mensaje: `Total a distribuir: S/ ${total.toFixed(2)}`, suma, vuelto: 0, pagos: [] };
+    }
+    if (m.yape > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Yape no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (m.plin > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Plin no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (m.tarjeta > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Tarjeta no puede superar el total (S/ ${total.toFixed(2)}).` };
+    }
+    if (noEfectivo > total + tol) {
+        return { ok: false, estado: 'err', mensaje: `Yape/Plin/Tarjeta superan el total. No hay vuelto en medios digitales.` };
+    }
+    if (suma < total - tol) {
+        return { ok: false, estado: 'err', mensaje: `Faltan S/ ${(total - suma).toFixed(2)}`, suma, vuelto: 0, pagos: [] };
+    }
+
+    let vuelto = 0;
+    let montoRecibido = null;
+    const pagos = [];
+
+    if (suma > total + tol) {
+        if (m.efectivo <= 0) {
+            return { ok: false, estado: 'err', mensaje: 'Solo el efectivo genera vuelto; reduzca otros medios o indique efectivo.' };
+        }
+        vuelto = +(suma - total).toFixed(2);
+        if (m.efectivo + tol < vuelto) {
+            return { ok: false, estado: 'err', mensaje: `El vuelto debe salir del efectivo entregado.` };
+        }
+        montoRecibido = m.efectivo;
+    } else if (m.efectivo > 0) {
+        const rec = leerMontoRecibido();
+        if (rec > 0) {
+            if (rec + tol < m.efectivo) {
+                return { ok: false, estado: 'err', mensaje: 'Efectivo recibido insuficiente.' };
+            }
+            montoRecibido = rec;
+            vuelto = +(rec - m.efectivo).toFixed(2);
+        } else {
+            montoRecibido = m.efectivo;
+        }
+    }
+
+    if (efectivoNecesario > tol) {
+        pagos.push({ medio: 'efectivo', monto: +efectivoNecesario.toFixed(2) });
+    }
+    if (m.yape > 0) pagos.push({ medio: 'yape', monto: +m.yape.toFixed(2) });
+    if (m.plin > 0) pagos.push({ medio: 'plin', monto: +m.plin.toFixed(2) });
+    if (m.tarjeta > 0) pagos.push({ medio: 'tarjeta', monto: +m.tarjeta.toFixed(2) });
+
+    let mensaje = vuelto > tol
+        ? `Vuelto S/ ${vuelto.toFixed(2)}`
+        : `Pagos cuadran: S/ ${total.toFixed(2)}`;
+
+    return { ok: true, estado: 'ok', mensaje, suma, vuelto, montoRecibido, pagos, excedente: suma > total + tol };
+}
+
+function calcularVuelto() {
+    const total = totales().total;
+    const medio = document.getElementById('medio-pago').value;
+    const vueltoEl = document.getElementById('vuelto');
+    if (medio === 'mixto') {
+        const analisis = analizarPagoMixto(total);
+        vueltoEl.value = analisis.vuelto > 0.01 ? analisis.vuelto.toFixed(2) : '';
+        return;
+    }
+    const rec = leerMontoRecibido();
+    vueltoEl.value = rec > 0 ? Math.max(0, rec - total).toFixed(2) : '';
+}
+
+function actualizarMixtoEstado() {
+    const el = document.getElementById('mixto-estado');
+    if (!el || document.getElementById('medio-pago').value !== 'mixto') return;
+    const analisis = analizarPagoMixto(totales().total);
+    el.textContent = analisis.mensaje;
+    el.className = 'mixto-total' + (analisis.estado === 'ok' ? ' ok' : analisis.estado === 'err' ? ' err' : '');
+    calcularVuelto();
+}
+
+function actualizarFilasPago() {
+    const medio = document.getElementById('medio-pago').value;
+    document.getElementById('fila-mixto').style.display = medio === 'mixto' ? 'block' : 'none';
+
+    const muestraEfectivo = medio === 'efectivo';
+
+    const filaEf = document.getElementById('fila-efectivo');
+    filaEf.classList.toggle('visible', muestraEfectivo);
+
+    if (medio !== 'mixto') {
+        ['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta'].forEach(id => {
+            const inp = document.getElementById(id);
+            if (inp) inp.value = '';
+        });
+    }
+    if (!muestraEfectivo) {
+        document.getElementById('monto-recibido').value = '';
+        document.getElementById('vuelto').value = '';
+    }
+    actualizarMixtoEstado();
+    calcularVuelto();
 }
 
 function productoApiValido(p) {
@@ -377,10 +578,35 @@ document.getElementById('lista-carrito').addEventListener('change', e => {
 document.getElementById('btn-ver-carrito').onclick = () => document.getElementById('panel-carrito').classList.add('activo');
 document.getElementById('btn-cerrar-carrito').onclick = () => document.getElementById('panel-carrito').classList.remove('activo');
 
+document.getElementById('medio-pago').addEventListener('change', actualizarFilasPago);
+document.getElementById('monto-recibido').addEventListener('input', () => { calcularVuelto(); actualizarMixtoEstado(); });
+['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta'].forEach(id => {
+    document.getElementById(id).addEventListener('input', () => { actualizarFilasPago(); actualizarMixtoEstado(); });
+});
+actualizarFilasPago();
+
 document.getElementById('btn-cobrar').onclick = async () => {
     if (!carrito.length) return;
     const medio = document.getElementById('medio-pago').value;
-    const recibido = parseFloat(document.getElementById('monto-recibido').value) || null;
+    const total = totales().total;
+    let montoRecibidoEnvio = medio === 'efectivo' ? leerMontoRecibido() : null;
+    let pagosMixtos = null;
+
+    if (medio === 'efectivo' && montoRecibidoEnvio > 0 && montoRecibidoEnvio + 0.01 < total) {
+        alert('Monto recibido insuficiente');
+        return;
+    }
+
+    if (medio === 'mixto') {
+        const analisis = analizarPagoMixto(total);
+        if (!analisis.ok) {
+            alert(analisis.mensaje || 'Revise los montos del pago mixto');
+            return;
+        }
+        pagosMixtos = analisis.pagos;
+        montoRecibidoEnvio = analisis.montoRecibido;
+    }
+
     const msg = document.getElementById('msg-cobro');
     msg.textContent = 'Procesando...';
     msg.style.color = '#64748b';
@@ -392,16 +618,26 @@ document.getElementById('btn-cobrar').onclick = async () => {
             tipo_documento: 'boleta',
             cliente_id: null,
             descuento_global: 0,
-            monto_recibido: medio === 'efectivo' ? recibido : null,
+            monto_recibido: (medio === 'efectivo' || (medio === 'mixto' && pagosMixtos?.some(p => p.medio === 'efectivo')))
+                ? montoRecibidoEnvio || null
+                : null,
+            pagos_mixtos: pagosMixtos,
         })
     });
     const data = await res.json();
     if (data.ok) {
         msg.style.color = '#065f46';
-        msg.textContent = `✓ Boleta ${data.numero} — S/ ${data.total}` + etiquetaSunatCobro(data);
+        msg.textContent = `✓ Boleta ${data.numero} — S/ ${data.total}` + (data.vuelto != null ? ` · Vuelto S/ ${data.vuelto}` : '') + etiquetaSunatCobro(data);
         if (data.preview) preview = data.preview;
-        if (data.ticket_url) window.open(data.ticket_url, '_blank');
+        if (data.ticket_url) window.open(
+            impresoraPrefs.auto_imprimir
+                ? data.ticket_url + (data.ticket_url.includes('?') ? '&' : '?') + 'imprimir=1'
+                : data.ticket_url,
+            '_blank'
+        );
         carrito.length = 0;
+        document.getElementById('medio-pago').value = 'efectivo';
+        actualizarFilasPago();
         pintarCarrito();
         setTimeout(() => document.getElementById('panel-carrito').classList.remove('activo'), 800);
     } else {

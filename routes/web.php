@@ -4,10 +4,12 @@ use App\Http\Controllers\AppController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\LandingController;
 use App\Http\Controllers\CategoriaController;
+use App\Http\Controllers\ChatbotController;
 use App\Http\Controllers\CierreCajaController;
 use App\Http\Controllers\ClienteController;
 use App\Http\Controllers\ConfiguracionEmpresaController;
 use App\Http\Controllers\FlejeController;
+use App\Http\Controllers\ImpresoraController;
 use App\Http\Controllers\GuiaController;
 use App\Http\Controllers\InventarioController;
 use App\Http\Controllers\OnboardingController;
@@ -18,6 +20,7 @@ use App\Http\Controllers\ProspectoController;
 use App\Http\Controllers\CompraController;
 use App\Http\Controllers\ProveedorController;
 use App\Http\Controllers\ReporteController;
+use App\Http\Controllers\SeoController;
 use App\Http\Controllers\SunatController;
 use App\Http\Controllers\TerminalController;
 use App\Http\Controllers\UsuarioController;
@@ -28,7 +31,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', [LandingController::class, 'inicio'])->name('inicio');
 Route::get('/precios', [LandingController::class, 'precios'])->name('precios');
 Route::get('/contacto', [LandingController::class, 'contacto'])->name('contacto');
+Route::get('/faq', [LandingController::class, 'faq'])->name('faq');
 Route::post('/beta', [ProspectoController::class, 'beta'])->name('beta.store');
+Route::post('/chatbot', [ChatbotController::class, 'ask'])->name('chatbot.ask');
+Route::get('/sitemap.xml', [SeoController::class, 'sitemap'])->name('seo.sitemap');
+Route::get('/robots.txt', [SeoController::class, 'robots'])->name('seo.robots');
 
 Route::get('/login', [AuthController::class, 'mostrarLogin'])->name('login');
 Route::post('/login', [AuthController::class, 'login']);
@@ -198,6 +205,15 @@ Route::middleware(['auth', 'empresa'])->prefix('app')->group(function () {
         Route::post('/sunat/comprobantes/{comprobante}/reenviar', [SunatController::class, 'reenviar'])->name('sunat.reenviar');
         Route::get('/sunat/comprobantes/{comprobante}/xml', [SunatController::class, 'descargarXml'])->name('sunat.xml');
         Route::get('/sunat/comprobantes/{comprobante}/cdr', [SunatController::class, 'descargarCdr'])->name('sunat.cdr');
+    });
+
+    Route::middleware('modulo:impresora')->group(function () {
+        Route::get('/impresora', [ImpresoraController::class, 'index'])->name('impresora.index');
+        Route::put('/impresora', [ImpresoraController::class, 'guardarUsuario'])->name('impresora.usuario');
+        Route::put('/impresora/usuario/{usuario}', [ImpresoraController::class, 'guardarUsuarioGestionado'])->name('impresora.usuario.gestionar');
+        Route::put('/impresora/empresa', [ImpresoraController::class, 'guardarEmpresa'])->name('impresora.empresa');
+        Route::get('/impresora/prueba', [ImpresoraController::class, 'prueba'])->name('impresora.prueba');
+        Route::get('/impresora/prueba/{usuario}', [ImpresoraController::class, 'pruebaUsuario'])->name('impresora.prueba.usuario');
     });
 
     Route::middleware(['dueno', 'modulo:terminales'])->group(function () {

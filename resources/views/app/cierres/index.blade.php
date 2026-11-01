@@ -139,6 +139,12 @@
 @error('cierre_z')
 <p style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:.75rem 1rem;border-radius:.5rem;margin-bottom:1rem;font-size:.9rem">{{ $message }}</p>
 @enderror
+@error('jornada_directa')
+<p style="background:#fef2f2;border:1px solid #fecaca;color:#991b1b;padding:.75rem 1rem;border-radius:.5rem;margin-bottom:1rem;font-size:.9rem">
+    <strong>No se pudo cerrar el día:</strong> {{ $message }}
+    <a href="#jornadas-pendientes" style="display:block;margin-top:.35rem;color:#b91c1c">Ver días sin cerrar ↓</a>
+</p>
+@enderror
 
 @if($rt)
 @include('app.cierres._resumen-dual', [
@@ -248,9 +254,18 @@
         </div>
 
         @if(($resumenZ['dias_pendientes'] ?? 0) > 0)
+        @php
+            $proximoPend = $resumenZ['proximo_dia_pendiente'] ?? null;
+            $proximoEtiqueta = $proximoPend
+                ? \Carbon\Carbon::parse($proximoPend, config('app.timezone', 'America/Lima'))->format('d/m/Y')
+                : null;
+        @endphp
         <div style="background:#fff7ed;border:1px solid #fdba74;border-radius:.5rem;padding:.75rem;margin-bottom:1rem;font-size:.85rem;color:#92400e">
-            <strong>Hay {{ $resumenZ['dias_pendientes'] }} día(s) anterior(es) sin cerrar.</strong>
-            Debe cerrarlos primero en «Días sin cerrar» (abajo) antes de generar el Z de hoy.
+            <strong>Hay {{ $resumenZ['dias_pendientes'] }} día(s) anterior(es) sin Cierre Z.</strong>
+            @if($proximoEtiqueta)
+            El más antiguo pendiente es <strong>{{ $proximoEtiqueta }}</strong>.
+            @endif
+            Puede cerrar el Z de hoy igualmente; los días viejos ciérrelos cuando pueda en «Días sin cerrar» (abajo).
             <a href="#jornadas-pendientes" style="display:inline-block;margin-top:.35rem;color:#b45309;font-weight:600">Ir a días sin cerrar ↓</a>
         </div>
         @endif
@@ -265,6 +280,8 @@
             'efectivoSistema' => $resumenZ['efectivo_sistema_arqueo'] ?? $resumenZ['totales_x']['total_efectivo'],
             'efectivoContado' => $resumenZ['total_contado'],
             'diferencia' => $resumenZ['total_diferencia'],
+            'idArqueoContado' => 'z-arqueo-contado',
+            'idArqueoDif' => 'z-arqueo-dif',
         ])
 
         @if($resumenZ['cierres_x']->count())
@@ -272,108 +289,77 @@
         <p style="font-size:.78rem;color:#64748b;margin:-.25rem 0 .65rem">
             Las columnas de ventas suman tickets y montos por medio de pago. El arqueo compara solo el efectivo físico contado vs. las ventas en efectivo del sistema.
         </p>
-        <div class="tabla-wrap">
-        <table class="data" style="font-size:.82rem;margin-bottom:1rem">
-            <thead>
-                <tr>
-                    <th colspan="4"></th>
-                    <th colspan="4" class="grupo-th col-ventas">Ventas del turno</th>
-                    <th colspan="3" class="grupo-th col-arqueo">Arqueo (solo efectivo)</th>
-                </tr>
-                <tr>
-                    <th>#</th>
-                    <th>Registro</th>
-                    <th>Período del turno</th>
-                    <th>Cajero</th>
-                    <th class="col-money col-ventas">Tk</th>
-                    <th class="col-money">Ef. ventas</th>
-                    <th class="col-money">Tarjeta</th>
-                    <th class="col-money">Otros</th>
-                    <th class="col-money col-arqueo">Ef. sistema</th>
-                    <th class="col-money">Ef. contado</th>
-                    <th class="col-money">Dif.</th>
-                </tr>
-            </thead>
-            <tbody>
-                @php $tz = config('app.timezone', 'America/Lima'); $n = 0; @endphp
-                @foreach($resumenZ['cierres_x'] as $cx)
-                @php
-                    $n++;
-                    $ini = $cx->fecha_inicio->timezone($tz);
-                    $fin = $cx->fecha_fin->timezone($tz);
-                    $efSist = (float) $cx->total_efectivo;
-                    $efCont = (float) ($cx->monto_efectivo_contado ?? 0);
-                    $difCalc = round($efCont - $efSist, 2);
-                    $tieneDif = abs($difCalc) > 0.001;
-                @endphp
-                <tr>
-                    <td>{{ $n }}</td>
-                    <td>{{ $fin->format('d/m/Y H:i') }}</td>
-                    <td class="col-periodo">{{ $ini->format('d/m H:i') }} — {{ $fin->format('d/m H:i') }}</td>
-                    <td>{{ $cx->usuario->nombre }}</td>
-                    <td class="col-money col-ventas">{{ $cx->cantidad_ventas }}</td>
-                    <td class="col-money">S/ {{ number_format($efSist, 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($cx->total_tarjeta, 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($cx->total_otros, 2) }}</td>
-                    <td class="col-money col-arqueo">S/ {{ number_format($efSist, 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($efCont, 2) }}</td>
-                    <td class="col-money" style="color:{{ $tieneDif ? '#dc2626' : 'inherit' }}">S/ {{ number_format($difCalc, 2) }}</td>
-                </tr>
-                @endforeach
-            </tbody>
-            <tfoot>
-                @php
-                    $tx = $resumenZ['totales_x'];
-                    $efSistTot = (float) $tx['total_efectivo'];
-                    $efContTot = (float) $resumenZ['total_contado'];
-                    $difTot = round($efContTot - $efSistTot, 2);
-                @endphp
-                <tr style="font-weight:700;background:#f8fafc">
-                    <td colspan="4">Total ventas ({{ $resumenZ['cantidad_cierres_x'] }} X)</td>
-                    <td class="col-money col-ventas">{{ $tx['cantidad_ventas'] }}</td>
-                    <td class="col-money">S/ {{ number_format($tx['total_efectivo'], 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($tx['total_tarjeta'], 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($tx['total_otros'], 2) }}</td>
-                    <td class="col-money col-arqueo" colspan="3" style="text-align:left;font-weight:500;font-size:.78rem;color:#64748b">
-                        Total ventas S/ {{ number_format($tx['total_ventas'], 2) }}
-                    </td>
-                </tr>
-                <tr style="font-weight:700;background:#fffbeb">
-                    <td colspan="8" style="text-align:right;font-size:.8rem;color:#92400e">Arqueo acumulado de los X</td>
-                    <td class="col-money col-arqueo">S/ {{ number_format($efSistTot, 2) }}</td>
-                    <td class="col-money">S/ {{ number_format($efContTot, 2) }}</td>
-                    <td class="col-money" style="color:{{ abs($difTot) > 0.001 ? '#dc2626' : 'inherit' }}">S/ {{ number_format($difTot, 2) }}</td>
-                </tr>
-            </tfoot>
-        </table>
-        </div>
-        @else
-        <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem">Aún no hay cierres X en este período.</p>
         @endif
 
-        @if($resumenZ['cantidad_cajeros_en_sesion'] > 0)
+        @if($resumenZ['cantidad_cajeros_en_sesion'] > 0 && !($resumenZ['puede_cerrar_z_hoy'] ?? false))
         <div style="background:#eff6ff;border:1px solid #bfdbfe;border-radius:.5rem;padding:.75rem;margin-bottom:1rem;font-size:.85rem;color:#1e40af">
-            Hay {{ $resumenZ['cantidad_cajeros_en_sesion'] }} cajero(s) con sesión abierta en el POS.
-            Al pulsar <strong>Cerrar hoy</strong> se registrarán sus Cierre X automáticamente.
+            Hay {{ $resumenZ['cantidad_cajeros_en_sesion'] }} cajero(s) con sesión abierta.
+            Deben registrar su Cierre X antes de cerrar el día con Z.
         </div>
         @endif
         @error('cierre_z')
         <p style="color:#b91c1c;font-size:.85rem;margin-bottom:.75rem">{{ $message }}</p>
         @enderror
+        @error('rectificar_arqueo')
+        <p style="color:#b91c1c;font-size:.85rem;margin-bottom:.75rem">{{ $message }}</p>
+        @enderror
+
+        @if($resumenZ['cierres_x']->count())
+            @if($resumenZ['puede_cerrar_z_hoy'] ?? false)
+            <form method="post" action="{{ route('cierres.z') }}" id="form-cierre-z"
+                onsubmit="return confirm('¿Cerrar el día de hoy?\n\nSe aplicarán rectificaciones de arqueo si las indicó.') && (function(f){var b=f.querySelector('#btn-cierre-z');if(b){b.disabled=true;b.textContent='Cerrando…';}return true;})(this)">
+                @csrf
+                @include('app.cierres._tabla-cierres-x', [
+                    'cierresX' => $resumenZ['cierres_x'],
+                    'totalesX' => $resumenZ['totales_x'],
+                    'totalContado' => $resumenZ['total_contado'],
+                    'editable' => true,
+                ])
+                <input name="motivo_rectificacion" placeholder="Motivo de rectificación (opcional, si corrige montos)"
+                    style="width:100%;padding:.5rem;margin-bottom:.5rem;border:1px solid #cbd5e1;border-radius:.4rem;font-size:.85rem">
+                <input name="observaciones" placeholder="Observaciones del Cierre Z (opcional)"
+                    style="width:100%;padding:.5rem;margin-bottom:.75rem;border:1px solid #cbd5e1;border-radius:.4rem">
+                <div style="display:flex;flex-wrap:wrap;gap:.5rem;margin-bottom:.5rem">
+                    <button type="submit" class="btn" id="btn-cierre-z"
+                        style="flex:1;min-width:200px;background:#ea580c;color:#fff;font-weight:600;border:none;padding:.65rem 1rem;border-radius:.4rem">
+                        Cerrar hoy (Cierre Z)
+                    </button>
+                    <button type="submit" class="btn" formaction="{{ route('cierres.rectificar-arqueo') }}" formmethod="post"
+                        style="background:#fff;color:#92400e;border:1px solid #fdba74;padding:.65rem 1rem;border-radius:.4rem;font-weight:600"
+                        onclick="return confirm('¿Guardar las rectificaciones de arqueo sin cerrar el día?')">
+                        Guardar rectificaciones
+                    </button>
+                </div>
+                <p class="tabla-leyenda">El Z consolida los totales de los Cierres X. Corrija el efectivo contado si hubo error al digitar.</p>
+            </form>
+            @else
+            @include('app.cierres._tabla-cierres-x', [
+                'cierresX' => $resumenZ['cierres_x'],
+                'totalesX' => $resumenZ['totales_x'],
+                'totalContado' => $resumenZ['total_contado'],
+                'editable' => false,
+            ])
+            @endif
+        @else
+        <p style="font-size:.85rem;color:#64748b;margin-bottom:1rem">Aún no hay cierres X en este período.</p>
+        @endif
+
+        @if(!($resumenZ['puede_cerrar_z_hoy'] ?? false))
         @php
-            $sinActividad = $resumenZ['cantidad_ventas'] === 0;
-            $bloqueadoPorDias = ($resumenZ['dias_pendientes'] ?? 0) > 0;
+            $etiquetaBotonZ = match (true) {
+                ($resumenZ['z_hoy_cerrado'] ?? false) => 'Cierre Z de hoy ya registrado',
+                ($resumenZ['cantidad_cierres_x'] ?? 0) === 0 => 'Registre Cierres X antes del Z',
+                ($resumenZ['cajeros_pendientes_x'] ?? collect())->isNotEmpty() => 'Faltan Cierres X de cajeros',
+                default => 'Cierre Z no disponible',
+            };
         @endphp
-        <form method="post" action="{{ route('cierres.z') }}" onsubmit="return confirm('¿Cerrar el día de hoy?\n\nSe completarán los Cierre X pendientes y luego el Cierre Z.')">
-            @csrf
-            <input name="observaciones" placeholder="Observaciones (opcional)" style="width:100%;padding:.5rem;margin-bottom:.75rem;border:1px solid #cbd5e1;border-radius:.4rem"
-                {{ ($sinActividad || $bloqueadoPorDias) ? 'disabled' : '' }}>
-            <button type="submit" class="btn btn-danger"
-                {{ ($sinActividad || $bloqueadoPorDias) ? 'disabled' : '' }}>
-                Cerrar hoy (Cierre Z)
-            </button>
-        </form>
-        <p class="tabla-leyenda">Cierra el día completo. Los Cierre X de cada vendedor se generan solos; usted solo confirma el Z.</p>
+        <button type="button" class="btn" disabled style="width:100%;background:#e2e8f0;color:#64748b;cursor:not-allowed;font-weight:600">
+            {{ $etiquetaBotonZ }}
+        </button>
+        @if(!empty($resumenZ['motivo_no_z']))
+        <p class="tabla-leyenda" style="margin-top:.65rem">{{ $resumenZ['motivo_no_z'] }}</p>
+        @endif
+        @endif
     </div>
     @endif
 </div>
@@ -563,8 +549,11 @@
     </nav>
     @endif
     @else
-    <p style="font-size:.85rem;color:#065f46;margin:0 0 .75rem">
-        ✓ No hay días anteriores pendientes. Puede cerrar hoy con el Cierre Z de arriba.
+    <p style="font-size:.85rem;color:#64748b;margin:0 0 .75rem">
+        ✓ No hay días anteriores pendientes.
+        @if($resumenZ['puede_cerrar_z_hoy'] ?? false)
+        Puede cerrar hoy con el Cierre Z de arriba.
+        @endif
     </p>
     @endif
 </div>
@@ -588,6 +577,56 @@
     if (fila) {
         fila.scrollIntoView({ behavior: 'smooth', block: 'center' });
     }
+})();
+</script>
+@endif
+@if($usuario->puedeGestionar() && ($resumenZ['puede_cerrar_z_hoy'] ?? false))
+<script>
+(function () {
+    const form = document.getElementById('form-cierre-z');
+    if (!form) return;
+
+    const tabla = form.querySelector('.tabla-cierres-x');
+    const efSistTot = parseFloat(tabla?.dataset.arqueoSistema || '0');
+    const fmt = (n) => 'S/ ' + n.toFixed(2);
+    const fmtColor = (n) => Math.abs(n) > 0.001 ? '#dc2626' : 'inherit';
+
+    function actualizarArqueo() {
+        let contado = 0;
+        form.querySelectorAll('[data-rectificar-arqueo]').forEach((inp) => {
+            const val = parseFloat(inp.value);
+            const efSist = parseFloat(inp.dataset.efSistema || '0');
+            const dif = (isNaN(val) ? 0 : val) - efSist;
+            contado += isNaN(val) ? 0 : val;
+            const celda = inp.closest('tr')?.querySelector('[data-dif-arqueo]');
+            if (celda) {
+                celda.textContent = fmt(Math.round(dif * 100) / 100);
+                celda.style.color = fmtColor(dif);
+            }
+        });
+        contado = Math.round(contado * 100) / 100;
+        const difTot = Math.round((contado - efSistTot) * 100) / 100;
+
+        const elCont = tabla?.querySelector('[data-arqueo-contado-tot]');
+        const elDif = tabla?.querySelector('[data-arqueo-dif-tot]');
+        if (elCont) elCont.textContent = fmt(contado);
+        if (elDif) {
+            elDif.textContent = fmt(difTot);
+            elDif.style.color = fmtColor(difTot);
+        }
+
+        const resCont = document.getElementById('z-arqueo-contado');
+        const resDif = document.getElementById('z-arqueo-dif');
+        if (resCont) resCont.textContent = fmt(contado);
+        if (resDif) {
+            resDif.textContent = fmt(difTot);
+            resDif.closest('tr')?.classList.toggle('resumen-arqueo__dif--alerta', Math.abs(difTot) > 0.001);
+        }
+    }
+
+    form.querySelectorAll('[data-rectificar-arqueo]').forEach((inp) => {
+        inp.addEventListener('input', actualizarArqueo);
+    });
 })();
 </script>
 @endif

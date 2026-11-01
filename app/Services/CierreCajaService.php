@@ -203,7 +203,20 @@ class CierreCajaService
         $cierresX = $this->deduplicarCierres($cierresX);
 
         $totalesX = $this->sumarTotalesCierres($cierresX);
-        $totalesComprobantes = $this->ventasEnPeriodo($empresaId, null, $fechaDesde, $fechaHasta);
+        $hoyYmd = $this->inicioHoy()->toDateString();
+        $cajerosPendientes = $this->cajerosPendientesX($empresaId, $fechaDesde, $fechaHasta);
+        $zHoyCerrado = $this->diaCubiertoPorZ($empresaId, $hoyYmd);
+        $diasPendientes = $this->cantidadDiasPendientes($empresaId);
+        $proximoDiaPendiente = $diasPendientes > 0 ? $this->proximoDiaPendiente($empresaId) : null;
+
+        $motivoNoZ = match (true) {
+            $zHoyCerrado => 'El día de hoy ya tiene Cierre Z registrado.',
+            $totalesX['cantidad_ventas'] === 0 => 'No hay Cierres X registrados hoy.',
+            $cajerosPendientes->isNotEmpty() => 'Faltan Cierre X de: '.$cajerosPendientes->pluck('cajero.nombre')->join(', ').'.',
+            default => '',
+        };
+
+        $puedeCerrarZHoy = $motivoNoZ === '';
 
         $porCajero = $cierresX
             ->groupBy('usuario_id')
@@ -229,10 +242,9 @@ class CierreCajaService
 
         $totalContado = round((float) $cierresX->sum('monto_efectivo_contado'), 2);
         $efectivoSistemaX = $totalesX['total_efectivo'];
-        $diasPendientes = $this->cantidadDiasPendientes($empresaId);
 
         return array_merge(
-            $totalesComprobantes,
+            $totalesX,
             $this->metadatosPeriodo($fechaDesde),
             [
                 'ultimo_cierre' => $ultimoZ,
@@ -245,16 +257,18 @@ class CierreCajaService
                 'cantidad_cajeros' => $porCajero->count(),
                 'cantidad_cierres_x' => $cierresX->count(),
                 'totales_x' => $totalesX,
-                'totales_comprobantes' => $totalesComprobantes,
-                'coincide_x_comprobantes' => abs($totalesX['total_ventas'] - $totalesComprobantes['total_ventas']) < 0.02
-                    && $totalesX['cantidad_ventas'] === $totalesComprobantes['cantidad_ventas'],
+                'cajeros_pendientes_x' => $cajerosPendientes,
+                'z_hoy_cerrado' => $zHoyCerrado,
                 'efectivo_sistema_arqueo' => $efectivoSistemaX,
                 'total_contado' => $totalContado,
                 'total_diferencia' => $this->diferenciaArqueo($totalContado, $efectivoSistemaX),
                 'cajeros_en_sesion' => $cajerosEnSesion,
                 'cantidad_cajeros_en_sesion' => $cajerosEnSesion->count(),
                 'dias_pendientes' => $diasPendientes,
+                'proximo_dia_pendiente' => $proximoDiaPendiente,
                 'puede_cerrar_z' => $diasPendientes === 0,
+                'puede_cerrar_z_hoy' => $puedeCerrarZHoy,
+                'motivo_no_z' => $motivoNoZ,
             ]
         );
     }
@@ -297,7 +311,12 @@ class CierreCajaService
     {
         $tz = $this->zonaHoraria();
         $ahora = $this->ahora();
-        $query = CierreCaja::query()->orderBy('id');
+        $query = CierreCaja::query()
+            ->where(function ($q) use ($ahora) {
+                $q->where('fecha_fin', '>', $ahora)
+                    ->orWhereColumn('fecha_inicio', '>', 'fecha_fin');
+            })
+            ->orderBy('id');
         if ($empresaId !== null) {
             $query->where('empresa_id', $empresaId);
         }
@@ -404,11 +423,14 @@ class CierreCajaService
      *
      * @return array{reparados: int}
      */
-    public function repararPeriodosYTotales(?int $empresaId = null): array
+    public function repararPeriodosYTotales(?int $empresaId = null, ?Carbon $desde = null): array
     {
         $query = CierreCaja::query()->orderBy('fecha_fin');
         if ($empresaId !== null) {
             $query->where('empresa_id', $empresaId);
+        }
+        if ($desde !== null) {
+            $query->where('fecha_fin', '>=', $desde->copy()->timezone($this->zonaHoraria()));
         }
 
         $reparados = 0;
@@ -472,8 +494,9 @@ class CierreCajaService
             return;
         }
 
+        $desdeReciente = $this->inicioHoy()->copy()->subDays(7);
         $this->repararFechasInconsistentes($empresaId);
-        $this->repararPeriodosYTotales($empresaId);
+        $this->repararPeriodosYTotales($empresaId, $desdeReciente);
         Cache::put($cacheKey, true, now()->addMinutes(15));
     }
 
@@ -555,25 +578,131 @@ class CierreCajaService
         );
     }
 
-    public function cerrarZ(Usuario $supervisor, ?string $observaciones = null): CierreCaja
-    {
-        $this->prepararModuloCierres($supervisor->empresa_id, true);
+    /**
+     * Corrige el efectivo contado de un Cierre X antes del Cierre Z del día.
+     *
+     * @param  array<int, float|int|string>  $rectificaciones  cierre_id => monto contado
+     */
+    public function aplicarRectificacionesArqueo(
+        Usuario $supervisor,
+        array $rectificaciones,
+        ?string $motivo = null,
+    ): int {
+        $aplicadas = 0;
 
-        $hoy = $this->inicioHoy()->toDateString();
-        $this->assertSinDiasPendientesAnteriores($supervisor->empresa_id, $this->ahora());
-        $this->assertDiaSinZCierre($supervisor->empresa_id, $hoy);
+        foreach ($rectificaciones as $cierreId => $monto) {
+            if ($monto === '' || $monto === null) {
+                continue;
+            }
 
-        $this->registrarXAutomaticosDelDia($supervisor, $hoy);
+            $cierre = CierreCaja::where('empresa_id', $supervisor->empresa_id)
+                ->where('id', (int) $cierreId)
+                ->where('tipo_cierre', 'X')
+                ->first();
 
-        $resumen = $this->resumenZCierre($supervisor->empresa_id);
+            if (! $cierre) {
+                throw new RuntimeException("Cierre X #{$cierreId} no encontrado.");
+            }
 
-        if ($resumen['cantidad_ventas'] === 0) {
-            throw new RuntimeException('No hay ventas hoy para cerrar.');
+            $montoPrevio = round((float) $cierre->monto_efectivo_contado, 2);
+            $actualizado = $this->rectificarArqueoCierreX($cierre, $supervisor, (float) $monto, $motivo);
+            if (abs($montoPrevio - (float) $actualizado->monto_efectivo_contado) >= 0.005) {
+                $aplicadas++;
+            }
         }
 
-        $totales = $resumen['totales_comprobantes'];
-        $paraGuardar = array_merge($resumen, $totales);
-        $paraGuardar['total_diferencia'] = $resumen['total_diferencia'];
+        return $aplicadas;
+    }
+
+    public function rectificarArqueoCierreX(
+        CierreCaja $cierre,
+        Usuario $supervisor,
+        float $nuevoMontoContado,
+        ?string $motivo = null,
+    ): CierreCaja {
+        if (! $supervisor->puedeGestionar()) {
+            throw new RuntimeException('Sin permiso para rectificar arqueos.');
+        }
+
+        if ($cierre->empresa_id !== $supervisor->empresa_id) {
+            throw new RuntimeException('Cierre no encontrado.');
+        }
+
+        if ($cierre->tipo_cierre !== 'X') {
+            throw new RuntimeException('Solo se puede rectificar un Cierre X.');
+        }
+
+        if ($nuevoMontoContado < 0) {
+            throw new RuntimeException('El monto contado no puede ser negativo.');
+        }
+
+        $diaCierre = $cierre->fecha_fin->copy()->timezone($this->zonaHoraria())->toDateString();
+        if ($this->diaCubiertoPorZ($cierre->empresa_id, $diaCierre)) {
+            throw new RuntimeException('Ese día ya tiene Cierre Z; no se puede rectificar el arqueo.');
+        }
+
+        $anterior = round((float) $cierre->monto_efectivo_contado, 2);
+        $nuevoMontoContado = round($nuevoMontoContado, 2);
+
+        if (abs($anterior - $nuevoMontoContado) < 0.005) {
+            return $cierre;
+        }
+
+        $efectivoSistema = round((float) $cierre->total_efectivo, 2);
+        $nuevaDiferencia = round($nuevoMontoContado - $efectivoSistema, 2);
+
+        $notaRect = sprintf(
+            '[Rectificación arqueo %s por %s: S/ %.2f → S/ %.2f%s]',
+            $this->ahora()->format('d/m/Y H:i'),
+            $supervisor->nombre,
+            $anterior,
+            $nuevoMontoContado,
+            $motivo ? ' — '.$motivo : '',
+        );
+
+        $obs = trim(($cierre->observaciones ?? '')."\n".$notaRect);
+
+        $cierre->update([
+            'monto_efectivo_contado' => $nuevoMontoContado,
+            'diferencia_efectivo' => $nuevaDiferencia,
+            'supervisor_usuario_id' => $supervisor->id,
+            'observaciones' => $obs,
+        ]);
+
+        Cache::forget("ventapos:cierres:sync:{$cierre->empresa_id}");
+
+        return $cierre->fresh();
+    }
+
+    public function cerrarZ(
+        Usuario $supervisor,
+        ?string $observaciones = null,
+        array $rectificaciones = [],
+        ?string $motivoRectificacion = null,
+    ): CierreCaja {
+        $empresaId = $supervisor->empresa_id;
+        $hoy = $this->inicioHoy()->toDateString();
+
+        $this->assertDiaSinZCierre($empresaId, $hoy);
+
+        if ($rectificaciones !== []) {
+            $this->aplicarRectificacionesArqueo(
+                $supervisor,
+                $rectificaciones,
+                $motivoRectificacion ?: 'Antes del Cierre Z de hoy',
+            );
+        }
+
+        $resumen = $this->resumenZCierre($empresaId);
+
+        if (! $resumen['puede_cerrar_z_hoy']) {
+            throw new RuntimeException($resumen['motivo_no_z'] ?: 'No se puede registrar el Cierre Z.');
+        }
+
+        $totales = $resumen['totales_x'];
+        $paraGuardar = array_merge($resumen, $totales, [
+            'total_diferencia' => $resumen['total_diferencia'],
+        ]);
 
         return $this->guardarCierre(
             $supervisor,
@@ -581,7 +710,7 @@ class CierreCajaService
             $resumen['periodo_desde'],
             $this->ahora(),
             $paraGuardar,
-            (float) ($resumen['total_contado'] > 0 ? $resumen['total_contado'] : $totales['total_efectivo']),
+            (float) $resumen['total_contado'],
             $observaciones,
             $supervisor,
         );
@@ -600,16 +729,12 @@ class CierreCajaService
 
         $procesados = [];
 
-        for ($i = 0; $i < 20; $i++) {
-            $pendientes = $this->cajerosPendientesX($empresaId, $inicio, $fin);
-            if ($pendientes->isEmpty()) {
-                break;
-            }
+        $pendientes = $this->cajerosPendientesX($empresaId, $inicio, $fin);
 
-            $item = $pendientes->first();
+        foreach ($pendientes as $item) {
             $vendedorId = $item['cajero']->id;
             if (in_array($vendedorId, $procesados, true)) {
-                break;
+                continue;
             }
 
             try {
@@ -622,8 +747,6 @@ class CierreCajaService
                 );
             } catch (RuntimeException $e) {
                 if (str_contains($e->getMessage(), 'Ya existe un Cierre X')) {
-                    $procesados[] = $vendedorId;
-
                     continue;
                 }
                 throw $e;
@@ -786,14 +909,33 @@ class CierreCajaService
 
     public function proximoDiaPendiente(int $empresaId): ?string
     {
-        $pendientes = $this->jornadasPendientes($empresaId);
-
-        return $pendientes[0]['fecha'] ?? null;
+        return $this->proximoDiaConVentasSinZ($empresaId, $this->ahora());
     }
 
     public function cantidadDiasPendientes(int $empresaId): int
     {
-        return count($this->jornadasPendientes($empresaId));
+        $tz = $this->zonaHoraria();
+        $hoy = $this->inicioHoy();
+        $limite = $hoy->copy()->subDays(90);
+
+        $dias = Comprobante::query()
+            ->where('empresa_id', $empresaId)
+            ->where('estado', 'emitido')
+            ->where('emitido_en', '>=', $limite)
+            ->where('emitido_en', '<', $hoy)
+            ->selectRaw('DATE(emitido_en) as dia')
+            ->groupBy(DB::raw('DATE(emitido_en)'))
+            ->pluck('dia');
+
+        $pendientes = 0;
+        foreach ($dias as $dia) {
+            $fechaYmd = Carbon::parse($dia, $tz)->toDateString();
+            if (! $this->diaCubiertoPorZ($empresaId, $fechaYmd)) {
+                $pendientes++;
+            }
+        }
+
+        return $pendientes;
     }
 
     private function assertPeriodoZNoSolapa(
@@ -840,13 +982,31 @@ class CierreCajaService
         }
     }
 
-    private function assertSinDiasPendientesAnteriores(int $empresaId, Carbon $momento): void
+    /** Primer día con ventas y sin Z, anterior al día indicado (consulta ligera). */
+    private function proximoDiaConVentasSinZ(int $empresaId, Carbon $momento): ?string
     {
-        if ($this->cantidadDiasPendientes($empresaId) > 0) {
-            throw new RuntimeException(
-                'Hay días anteriores sin Cierre Z. Ciérrelos en la sección «Días sin cerrar» antes del Z de hoy.'
-            );
+        $tz = $this->zonaHoraria();
+        $hoy = $momento->copy()->timezone($tz)->startOfDay();
+        $limite = $hoy->copy()->subDays(90);
+
+        $dias = Comprobante::query()
+            ->where('empresa_id', $empresaId)
+            ->where('estado', 'emitido')
+            ->where('emitido_en', '>=', $limite)
+            ->where('emitido_en', '<', $hoy)
+            ->selectRaw('DATE(emitido_en) as dia')
+            ->groupBy(DB::raw('DATE(emitido_en)'))
+            ->orderBy('dia')
+            ->pluck('dia');
+
+        foreach ($dias as $dia) {
+            $fechaYmd = Carbon::parse($dia, $tz)->toDateString();
+            if (! $this->diaCubiertoPorZ($empresaId, $fechaYmd)) {
+                return $fechaYmd;
+            }
         }
+
+        return null;
     }
 
     /** @return array<string, mixed> */
@@ -906,10 +1066,24 @@ class CierreCajaService
             ->distinct()
             ->pluck('usuario_id');
 
+        if ($usuarioIds->isEmpty()) {
+            return collect();
+        }
+
+        $cajeros = Usuario::whereIn('id', $usuarioIds)->get()->keyBy('id');
+
+        $cierresX = CierreCaja::where('empresa_id', $empresaId)
+            ->where('tipo_cierre', 'X')
+            ->whereIn('usuario_id', $usuarioIds)
+            ->where('fecha_fin', '>', $desde)
+            ->where('fecha_fin', '<=', $hasta)
+            ->get()
+            ->groupBy('usuario_id');
+
         $pendientes = collect();
 
         foreach ($usuarioIds as $usuarioId) {
-            $cajero = Usuario::find($usuarioId);
+            $cajero = $cajeros->get($usuarioId);
             if (! $cajero) {
                 continue;
             }
@@ -919,26 +1093,45 @@ class CierreCajaService
                 continue;
             }
 
-            $cierresX = CierreCaja::where('empresa_id', $empresaId)
+            $ultimoX = CierreCaja::where('empresa_id', $empresaId)
                 ->where('usuario_id', $usuarioId)
                 ->where('tipo_cierre', 'X')
                 ->where('fecha_fin', '>', $desde)
                 ->where('fecha_fin', '<=', $hasta)
-                ->get();
+                ->orderByDesc('fecha_fin')
+                ->first();
 
-            $totalesX = $this->sumarTotalesCierres($this->deduplicarCierres($cierresX));
-
-            $cubierto = $totalesX['cantidad_ventas'] >= $ventas['cantidad_ventas']
-                && abs($totalesX['total_ventas'] - $ventas['total_ventas']) < 0.02;
-
-            if (! $cubierto) {
+            if ($ultimoX === null) {
                 $pendientes->push([
                     'cajero' => $cajero,
                     'ventas' => $ventas,
-                    'totales_x' => $totalesX,
-                    'faltan_tickets' => max(0, $ventas['cantidad_ventas'] - $totalesX['cantidad_ventas']),
+                    'totales_x' => $this->sumarTotalesCierres(collect()),
+                    'faltan_tickets' => $ventas['cantidad_ventas'],
                 ]);
+
+                continue;
             }
+
+            $ventasPendientes = $this->ventasEnPeriodo(
+                $empresaId,
+                (int) $usuarioId,
+                $ultimoX->fecha_fin->copy()->timezone($this->zonaHoraria()),
+                $hasta,
+            );
+
+            if ($ventasPendientes['cantidad_ventas'] === 0) {
+                continue;
+            }
+
+            $grupoX = $cierresX->get($usuarioId, collect());
+            $totalesX = $this->sumarTotalesCierres($this->deduplicarCierres($grupoX));
+
+            $pendientes->push([
+                'cajero' => $cajero,
+                'ventas' => $ventasPendientes,
+                'totales_x' => $totalesX,
+                'faltan_tickets' => $ventasPendientes['cantidad_ventas'],
+            ]);
         }
 
         return $pendientes->sortBy(fn ($f) => $f['cajero']->nombre)->values();
@@ -1058,6 +1251,19 @@ class CierreCajaService
         return $this->cerrarJornadaExcepcionalDirecta($supervisor, $fechaYmd, $observaciones);
     }
 
+    private function eliminarCierresXDelDia(int $empresaId, string $fechaYmd): void
+    {
+        $dia = Carbon::parse($fechaYmd, $this->zonaHoraria());
+        $inicio = $dia->copy()->startOfDay();
+        $fin = $dia->copy()->endOfDay();
+
+        CierreCaja::where('empresa_id', $empresaId)
+            ->where('tipo_cierre', 'X')
+            ->where('fecha_fin', '>=', $inicio)
+            ->where('fecha_fin', '<=', $fin)
+            ->delete();
+    }
+
     /** @deprecated Use cerrarDiaPendiente */
     public function cerrarJornadaExcepcionalDirecta(
         Usuario $supervisor,
@@ -1066,6 +1272,7 @@ class CierreCajaService
     ): CierreCaja {
         $empresaId = $supervisor->empresa_id;
 
+        $this->eliminarCierresXDelDia($empresaId, $fechaYmd);
         $this->registrarXAutomaticosDelDia($supervisor, $fechaYmd);
 
         $resumen = $this->resumenJornadaPendiente($empresaId, $fechaYmd);
@@ -1075,7 +1282,11 @@ class CierreCajaService
 
         $nota = trim(($observaciones ?? '').' Cierre directo excepcional.');
 
-        return $this->cerrarZExcepcional($supervisor, $fechaYmd, $nota !== '' ? $nota : 'Cierre directo excepcional.');
+        return $this->cerrarZExcepcional(
+            $supervisor,
+            $fechaYmd,
+            $nota !== '' ? $nota : 'Cierre directo excepcional.',
+        );
     }
 
     public function cerrarXExcepcional(
@@ -1143,8 +1354,18 @@ class CierreCajaService
         Usuario $supervisor,
         string $fechaYmd,
         ?string $observaciones = null,
+        array $rectificaciones = [],
+        ?string $motivoRectificacion = null,
     ): CierreCaja {
         $this->assertCierreEnOrden($supervisor->empresa_id, $fechaYmd);
+
+        if ($rectificaciones !== []) {
+            $this->aplicarRectificacionesArqueo(
+                $supervisor,
+                $rectificaciones,
+                $motivoRectificacion ?: 'Antes del Cierre Z del '.$fechaYmd,
+            );
+        }
 
         $resumen = $this->resumenJornadaPendiente($supervisor->empresa_id, $fechaYmd);
 

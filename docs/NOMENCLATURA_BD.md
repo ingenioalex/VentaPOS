@@ -36,6 +36,18 @@ Convención oficial para tablas y columnas. Alineada con `rms_db.sql` original d
 | `cash_closures` | **`cierre_caja`** | RMS original |
 | `cash_withdrawals` | **`retiro_efectivo`** | RMS original |
 | `leads` | **`prospectos`** | Landing / beta |
+| — | **`admin_recuperacion_tokens`** | Tokens de restablecimiento clave super admin |
+
+### `usuarios` — recuperación super admin
+
+| Columna | Tipo | Uso |
+|---------|------|-----|
+| `email_recuperacion` | varchar(150) | Correo secundario para enlace de restablecimiento |
+| `pregunta_secreta` | varchar(255) | Pregunta visible en flujo de recuperación |
+| `respuesta_secreta` | varchar(255) | Hash bcrypt de la respuesta (normalizada minúsculas) |
+| `preferencias` | json | Preferencias de usuario (p. ej. `impresora`, `impresora_usa_empresa`) |
+
+`empresa.configuracion.impresora` (JSON): defaults de impresión del negocio (ancho mm, auto-imprimir, etc.).
 
 ---
 

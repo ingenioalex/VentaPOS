@@ -42,6 +42,8 @@ SESSION_DRIVER=database
 # o redis en escala mayor
 
 VENTAPOS_WHATSAPP=51999999999
+# Perfil LinkedIn del fundador (página /contacto)
+VENTAPOS_LINKEDIN_FUNDADOR=https://www.linkedin.com/in/yuri-alexander-vargas-l-1774142b9/
 ```
 
 ## 4. SSL y subdominios multi-empresa
@@ -65,6 +67,25 @@ bash deploy/ventasagil-ssl-wildcard.sh wildcard
 
 Credenciales en el VPS: `/root/.secrets/hostinger.ini` (chmod 600). Certbot DNS en `/opt/certbot-dns/`. La renovación usa el plugin `dns-hostinger` automáticamente.
 
+Si el navegador muestra **NET::ERR_CERT_DATE_INVALID**, el certificado Let's Encrypt caducó. Causa habitual: el token API de Hostinger devolvió **401** y no pudo crear el TXT `_acme-challenge`. El DNS A/`*` puede estar bien y aun así el candado sale rojo.
+
+**Recuperación inmediata (dominio + www + subdominios ya dados de alta), sin token:**
+
+```bash
+bash /var/www/ventapos/deploy/vps-renovar-ssl-ahora.sh
+```
+
+Eso usa HTTP-01 (`certbot --webroot`). El `certbot.timer` del sistema lo renovará solo ~30 días antes de vencer.
+
+**Para volver al wildcard `*.ventasagil.com` (empresas nuevas sin tocar el cert):** hPanel → Perfil → API → generar token **nuevo** con permiso DNS, guardarlo en el VPS y:
+
+```bash
+export HOSTINGER_API_TOKEN="token-nuevo"
+bash /var/www/ventapos/deploy/ventasagil-ssl-wildcard.sh wildcard
+```
+
+No pulse «Restablecer registros DNS» en Hostinger: borra A/`*` y rompe el sitio.
+
 ## 5. Cron y backups automáticos
 
 En el VPS:
@@ -84,6 +105,19 @@ Instala `/etc/cron.d/ventapos` (cada minuto `schedule:run` como `www-data`).
 - Retención: 30 días (configurable en admin)
 - Log scheduler: `storage/logs/scheduler.log`
 - Requiere `APP_TIMEZONE=America/Lima` en `.env`
+
+## 5.1 Cola de trabajos (SUNAT / POS)
+
+Con `QUEUE_CONNECTION=database`, la emisión SUNAT al cobrar va a la cola. Sin worker activo, los CPE quedan en `pendiente`.
+
+```bash
+cp deploy/ventapos-queue.service /etc/systemd/system/
+systemctl daemon-reload
+systemctl enable --now ventapos-queue
+systemctl status ventapos-queue
+```
+
+Tras cada deploy que toque jobs: `systemctl restart ventapos-queue`.
 
 ## 6. Comandos de despliegue
 
@@ -106,7 +140,8 @@ sudo systemctl reload php8.3-fpm
 | Login empresa demo | Código + usuario |
 | POS cobrar boleta | Stock descuenta, ticket imprime |
 | SUNAT simulación | Activar en `/app/sunat`, cobrar, ver QR nítido |
-| Super admin | `/admin/login` |
+| Super admin | `/{ADMIN_PANEL_PATH}/login` (ver [SEGURIDAD.md](SEGURIDAD.md); no usar `/admin` en producción) |
+| SEO | `sitemap.xml`, `robots.txt`, `/preguntas-frecuentes` — despliegue: `bash deploy/seo-deploy.sh` |
 | HTTPS | Sin mixed content en ticket/logo |
 
 ## 8. SUNAT en producción

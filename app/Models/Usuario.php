@@ -17,11 +17,12 @@ class Usuario extends Authenticatable
     const UPDATED_AT = 'actualizado_en';
 
     protected $fillable = [
-        'empresa_id', 'nombre', 'usuario', 'email', 'password', 'rol', 'activo',
-        'en_sesion', 'sesion_inicio_en', 'sesion_laravel_id',
+        'empresa_id', 'nombre', 'usuario', 'email', 'email_recuperacion',
+        'pregunta_secreta', 'respuesta_secreta', 'password', 'rol', 'activo',
+        'en_sesion', 'sesion_inicio_en', 'sesion_laravel_id', 'preferencias',
     ];
 
-    protected $hidden = ['password', 'remember_token'];
+    protected $hidden = ['password', 'respuesta_secreta', 'remember_token'];
 
     protected function casts(): array
     {
@@ -30,6 +31,7 @@ class Usuario extends Authenticatable
             'en_sesion' => 'boolean',
             'sesion_inicio_en' => 'datetime',
             'password' => 'hashed',
+            'preferencias' => 'array',
         ];
     }
 
@@ -50,6 +52,14 @@ class Usuario extends Authenticatable
             ->where('terminales.activo', true)
             ->wherePivot('es_defecto', true)
             ->first();
+    }
+
+    public function tieneRecuperacionActiva(): bool
+    {
+        return $this->esSuperAdmin()
+            && filled($this->email_recuperacion)
+            && filled($this->pregunta_secreta)
+            && filled($this->respuesta_secreta);
     }
 
     public function esSuperAdmin(): bool

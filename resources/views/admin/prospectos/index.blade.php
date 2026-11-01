@@ -6,7 +6,7 @@
 <div style="display:flex;justify-content:space-between;align-items:flex-start;flex-wrap:wrap;gap:1rem;margin-bottom:1rem">
     <div>
         <h1 style="margin-bottom:.25rem">Prospectos</h1>
-        <p style="color:#64748b;font-size:.9rem">Solicitudes desde la landing, beta y contacto</p>
+        <p style="color:#64748b;font-size:.9rem">Solicitudes desde la landing y formulario beta (público en ventasagil.com). Revise spam con estado «descartado».</p>
     </div>
 </div>
 
@@ -25,7 +25,7 @@
     </div>
 </div>
 
-<form class="filtros card" method="get">
+<form class="filtros card" method="get" id="filtros-prospectos">
     <div>
         <label>Buscar</label>
         <input type="text" name="q" value="{{ $q }}" placeholder="Negocio, contacto, teléfono…" style="width:100%;min-width:200px">
@@ -48,11 +48,67 @@
             @endforeach
         </select>
     </div>
+    <div style="display:flex;flex-direction:column;justify-content:flex-end;min-width:180px">
+        <label style="margin-bottom:.35rem">Descartados</label>
+        <label class="switch-prospectos" title="Ocultar prospectos marcados como descartado">
+            <input type="hidden" name="ocultar_descartados" value="0">
+            <input type="checkbox" name="ocultar_descartados" value="1" @checked($ocultarDescartados) onchange="this.form.submit()">
+            <span class="switch-prospectos__track"></span>
+            <span class="switch-prospectos__label">{{ $ocultarDescartados ? 'Ocultos' : 'Visibles' }}</span>
+        </label>
+    </div>
     <button type="submit" class="btn btn-primary">Filtrar</button>
-    @if($q || $estado || $origen)
+    @if($q || $estado || $origen || ! $ocultarDescartados)
     <a href="{{ route('admin.prospectos.index') }}" class="btn" style="background:#e2e8f0;color:#334155">Limpiar</a>
     @endif
 </form>
+
+<style>
+.switch-prospectos {
+    display: inline-flex;
+    align-items: center;
+    gap: .5rem;
+    cursor: pointer;
+    user-select: none;
+}
+.switch-prospectos input[type="checkbox"] {
+    position: absolute;
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+.switch-prospectos__track {
+    position: relative;
+    width: 42px;
+    height: 24px;
+    background: #cbd5e1;
+    border-radius: 999px;
+    transition: background .2s;
+}
+.switch-prospectos__track::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    transition: transform .2s;
+    box-shadow: 0 1px 2px rgba(0,0,0,.15);
+}
+.switch-prospectos input:checked + .switch-prospectos__track {
+    background: #0f766e;
+}
+.switch-prospectos input:checked + .switch-prospectos__track::after {
+    transform: translateX(18px);
+}
+.switch-prospectos__label {
+    font-size: .85rem;
+    color: #475569;
+    font-weight: 600;
+}
+</style>
 
 <div class="card" style="overflow:auto">
     <table class="data">
@@ -107,6 +163,8 @@
                     </form>
                 </td>
                 <td style="white-space:nowrap">
+                    <a href="{{ route('admin.prospectos.show', $p) }}">Ver</a>
+                    ·
                     <a href="{{ $p->whatsappUrl() }}?text={{ rawurlencode('Hola, soy de VentasÁgil. Vi tu solicitud para '.$p->nombre_negocio.'.') }}" target="_blank" rel="noopener">WhatsApp</a>
                 </td>
             </tr>

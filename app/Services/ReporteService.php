@@ -2,6 +2,7 @@
 
 namespace App\Services;
 
+use App\Models\CierreCaja;
 use App\Models\Compra;
 use App\Models\CompraDetalle;
 use App\Models\Comprobante;
@@ -209,6 +210,49 @@ class ReporteService
             ->groupBy('productos.id', 'productos.nombre', 'productos.sku')
             ->orderByDesc('unidades')
             ->limit($limite)
+            ->get();
+    }
+
+    /** @return object{cierres: int, total_ventas: float, tickets: int, efectivo: float, diferencias: float} */
+    public function resumenCierres(int $empresaId, string $desde, string $hasta, string $tipo = 'todos'): object
+    {
+        return CierreCaja::where('empresa_id', $empresaId)
+            ->when($tipo !== 'todos', fn ($q) => $q->where('tipo_cierre', $tipo))
+            ->whereDate('fecha_fin', '>=', $desde)
+            ->whereDate('fecha_fin', '<=', $hasta)
+            ->selectRaw('
+                COUNT(*) as cierres,
+                COALESCE(SUM(total_ventas), 0) as total_ventas,
+                COALESCE(SUM(cantidad_ventas), 0) as tickets,
+                COALESCE(SUM(total_efectivo), 0) as efectivo,
+                COALESCE(SUM(ABS(diferencia_efectivo)), 0) as diferencias
+            ')
+            ->first();
+    }
+
+    public function cierresPorCajero(int $empresaId, string $desde, string $hasta, string $tipo = 'todos'): Collection
+    {
+        return CierreCaja::query()
+            ->where('cierres_caja.empresa_id', $empresaId)
+            ->when($tipo !== 'todos', fn ($q) => $q->where('cierres_caja.tipo_cierre', $tipo))
+            ->whereDate('cierres_caja.fecha_fin', '>=', $desde)
+            ->whereDate('cierres_caja.fecha_fin', '<=', $hasta)
+            ->join('usuarios', 'usuarios.id', '=', 'cierres_caja.usuario_id')
+            ->selectRaw('usuarios.nombre as cajero, COUNT(*) as cierres, SUM(cierres_caja.total_ventas) as monto')
+            ->groupBy('usuarios.id', 'usuarios.nombre')
+            ->orderByDesc('monto')
+            ->get();
+    }
+
+    public function listadoCierres(int $empresaId, string $desde, string $hasta, string $tipo = 'todos'): Collection
+    {
+        return CierreCaja::where('empresa_id', $empresaId)
+            ->with(['usuario:id,nombre'])
+            ->when($tipo !== 'todos', fn ($q) => $q->where('tipo_cierre', $tipo))
+            ->whereDate('fecha_fin', '>=', $desde)
+            ->whereDate('fecha_fin', '<=', $hasta)
+            ->orderByDesc('fecha_fin')
+            ->limit(100)
             ->get();
     }
 

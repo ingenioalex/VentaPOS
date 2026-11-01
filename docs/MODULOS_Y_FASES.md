@@ -6,21 +6,22 @@ Definición canónica en `config/permisos.php`. Cada módulo se activa por **pla
 
 | Módulo | Nombre UI | Grupo | Requiere |
 |--------|-----------|-------|----------|
-| `inicio` | Inicio | Base | — |
-| `pos` | POS Venta | Operación | — |
-| `pos_movil` | POS Móvil | Operación | `pos` |
-| `ventas` | Ventas | Operación | — |
-| `cierres` | Cierre de caja | Operación | — |
+| `inicio` | Inicio | Base (incluido) | — |
+| `pos` | POS Venta | Ventas y POS | — |
+| `pos_movil` | POS Móvil | Ventas y POS | `pos` |
+| `ventas` | Ventas | Ventas y POS | — |
+| `cierres` | Cierre de caja | Ventas y POS | — |
 | `productos` | Productos | Catálogo | — |
 | `categorias` | Categorías | Catálogo | — |
-| `clientes` | Clientes | CRM | — |
-| `inventario` | Inventario | Inventario | — |
-| `proveedores` | Proveedores | Compras | — |
-| `compras` | Compras | Compras | `inventario` |
-| `reportes` | Reportes | Análisis | — |
-| `terminales` | Terminales | Operación | — |
-| `usuario_terminales` | Usuarios y terminales | Operación | — |
-| `sunat` | Facturación SUNAT | Operación | `ventas` |
+| `clientes` | Clientes | Catálogo | — |
+| `inventario` | Inventario | Inventario y compras | — |
+| `proveedores` | Proveedores | Inventario y compras | — |
+| `compras` | Compras | Inventario y compras | `inventario` |
+| `reportes` | Reportes | Reportes | — |
+| `sunat` | Facturación SUNAT | Facturación electrónica | `ventas` |
+| `terminales` | Terminales | Infraestructura | — |
+| `usuario_terminales` | Usuarios y terminales | Infraestructura | — |
+| `impresora` | Config. impresora | Infraestructura | — |
 | `usuarios` | Usuarios | Base | — |
 | `permisos` | Permisos por rol | Base | — |
 | `configuracion` | Configuración | Base | — |
@@ -35,6 +36,8 @@ Ver `config/planes.php` y [MODELO_NEGOCIO.md](MODELO_NEGOCIO.md).
 | `basico` | POS, ventas, productos |
 | `negocio` | + inventario, clientes, reportes |
 | `pro` | + compras, SUNAT |
+
+Nota: la landing pública incluye un **chatbox de ayuda** (planes/módulos) para prospectos. No es un módulo contratables del panel; solo guía y deriva a WhatsApp/planes.
 
 ## Fases de implementación
 
@@ -70,8 +73,11 @@ Ver `config/planes.php` y [MODELO_NEGOCIO.md](MODELO_NEGOCIO.md).
 | Almacenamiento CDR | ✅ |
 | Anulación (simulación + stub producción) | ✅ |
 | Tests unitarios y feature simulación | ✅ |
-| Firma digital XML con certificado .pem | ⏳ Pendiente |
-| Adaptador OSE específico (Nubefact, etc.) | ⏳ Pendiente |
+| Firma digital XML con certificado .pem | ✅ Básica (genérico) |
+| Adaptador Nubefact (PSE Perú) | ✅ |
+| Adaptador OSE genérico JSON | ✅ |
+| Credenciales cifradas en BD | ✅ |
+| Reintentos automáticos SUNAT | ✅ `ventapos:reintentar-sunat` |
 | UBL 2.1 completo SUNAT | ⏳ Pendiente |
 
 ### Fase 4 — Producción y escala ⏳
@@ -89,7 +95,7 @@ Contratados **solo por el super admin** en `/admin/empresas/{id}/extras`, igual 
 |-------|-------|-----------------|
 | Resumen WhatsApp | `whatsapp_resumen` | ventas |
 | Lotes y vencimientos | `lotes_vencimiento` | inventario |
-| Categorías jerárquicas | `categorias_jerarquicas` | categorias |
+| Categorías jerárquicas | `categorias_jerarquicas` | categorias — padre/hijo en formulario y listado de productos (columnas Categoría + Subcategoría) |
 | Flejes / etiquetas | `flejes` | productos |
 
 **Incluido con módulo ventas (sin extra):** dashboard KPI en `/app/ventas`.
@@ -119,7 +125,7 @@ Cupo efectivo = **plan base** + **bonificados** (sin costo) + **extras de pago**
 | Negocio | 8 | Bonificados y add-on por empresa |
 | Pro | 15 | Bonificados y add-on por empresa |
 
-Ruta admin: `/admin/contratacion` con pestañas Resumen · Módulos · Extras · Cupos. Incluye plan **Beta** junto a Básico, Negocio y Pro (`planes_disponibles`).
+Ruta admin: `/admin/contratacion` con pestañas Resumen · Módulos · Extras · Cupos. En **Módulos**, los add-ons se muestran por sección (Ventas y POS, Catálogo, Inventario y compras, **Reportes**, Facturación electrónica, Infraestructura). El módulo **Reportes** es único e incluye todas las vistas R. Ventas / Inventario / Compras / Cierres / Productos.
 
 El dueño ve el desglose en Usuarios; no puede modificar cupos. Validación al crear o reactivar usuarios.
 

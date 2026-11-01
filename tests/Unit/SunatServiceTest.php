@@ -25,7 +25,7 @@ class SunatServiceTest extends TestCase
             'receptor' => ['tipo_doc' => '1', 'numero_doc' => '12345678', 'nombre' => 'Cliente'],
             'totales' => ['subtotal' => 10.0, 'igv' => 1.8, 'total' => 11.8],
             'lineas' => [
-                ['numero' => 1, 'descripcion' => 'Arroz', 'cantidad' => 1, 'precio_unitario' => 10, 'subtotal' => 10],
+                ['numero' => 1, 'descripcion' => 'Arroz', 'cantidad' => 1, 'precio_unitario' => 10, 'subtotal' => 10, 'afecto_igv' => true],
             ],
         ]);
 

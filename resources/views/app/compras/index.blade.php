@@ -9,7 +9,7 @@
     <h1 style="margin:0">Compras a proveedor</h1>
     @if(auth()->user()->puedeGestionar() && auth()->user()->tieneModulo('reportes'))
     <div>
-        <a href="{{ route('reportes.compras') }}" class="btn" style="background:#e2e8f0;color:#334155">Reporte</a>
+        <a href="{{ route('reportes.compras') }}" class="btn" style="background:#e2e8f0;color:#334155">R. Compras</a>
         <a href="{{ route('reportes.exportar-compras', request()->only(['desde','hasta','estado','tipo','proveedor_id'])) }}" class="btn" style="background:#64748b;color:#fff;margin-left:.35rem">CSV</a>
         <a href="{{ route('reportes.exportar-compras-excel', request()->only(['desde','hasta','estado','tipo','proveedor_id'])) }}" class="btn btn-primary" style="margin-left:.35rem">Excel</a>
     </div>

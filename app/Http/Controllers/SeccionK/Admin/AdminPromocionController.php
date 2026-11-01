@@ -1,0 +1,210 @@
+<?php
+
+namespace App\Http\Controllers\SeccionK\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\SeccionKEvento;
+use App\Models\SeccionKParticipacion;
+use App\Models\SeccionKPromocion;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
+
+class AdminPromocionController extends Controller
+{
+    public function index(Request $request)
+    {
+        $query = SeccionKPromocion::query();
+
+        if ($request->filled('buscar')) {
+            $buscar = $request->buscar;
+            $query->where(function ($q) use ($buscar) {
+                $q->where('dni', 'like', "%{$buscar}%")
+                    ->orWhere('nombre', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_paterno', 'like', "%{$buscar}%")
+                    ->orWhere('apellido_materno', 'like', "%{$buscar}%");
+            });
+        }
+
+        if ($request->filled('participa_cuotas')) {
+            $query->where('participa_cuotas', $request->participa_cuotas === '1');
+        }
+
+        if (!$request->has('mostrar_inactivos')) {
+            $query->where('activo', true);
+        }
+
+        $promociones = $query
+            ->withCount([
+                'participaciones as cuotas_pagadas' => function ($q) {
+                    $q->where('pago', true)
+                        ->whereHas('evento', function ($evento) {
+                            $evento->where('tipo', 'cuota_mensual')->where('activo', true);
+                        });
+                },
+                'participaciones as eventos_pagados' => function ($q) {
+                    $q->where('pago', true)
+                        ->whereHas('evento', function ($evento) {
+                            $evento->where('tipo', 'evento')->where('activo', true);
+                        });
+                },
+            ])
+            ->orderBy('apellido_paterno')
+            ->orderBy('apellido_materno')
+            ->paginate(20);
+
+        $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
+        $totalEventos = SeccionKEvento::eventos()->activos()->count();
+
+        return view('seccionk.admin.promociones.index', compact('promociones', 'totalCuotas', 'totalEventos'));
+    }
+
+    public function create()
+    {
+        return view('seccionk.admin.promociones.form');
+    }
+
+    public function store(Request $request)
+    {
+        $data = $request->validate([
+            'dni' => 'required|digits:8|unique:seccionk_promociones,dni',
+            'nombre' => 'required|string|max:100',
+            'apellido_paterno' => 'required|string|max:100',
+            'apellido_materno' => 'required|string|max:100',
+            'direccion' => 'nullable|string|max:255',
+            'celular' => 'nullable|string|max:15',
+            'participa_cuotas' => 'boolean',
+            'referencias' => 'nullable|string',
+        ]);
+
+        SeccionKPromocion::create($data);
+
+        return redirect()->route('seccionk.admin.promociones.index')
+            ->with('success', 'Promoción registrada exitosamente.');
+    }
+
+    public function edit(SeccionKPromocion $promocion)
+    {
+        return view('seccionk.admin.promociones.form', compact('promocion'));
+    }
+
+    public function show(SeccionKPromocion $promocion)
+    {
+        $promocion->load('participaciones.evento');
+        $participaciones = $promocion->participaciones->keyBy('evento_id');
+
+        $cuotas = SeccionKEvento::cuotasMensuales()->activos()->orderBy('fecha')->get()->map(function ($cuota) use ($participaciones) {
+            $part = $participaciones->get($cuota->id);
+
+            return [
+                'evento' => $cuota,
+                'pago' => $part?->pago ?? false,
+                'monto_aportado' => $part?->monto_aportado ?? 0,
+                'fecha_pago' => $part?->fecha_pago,
+                'comentario' => $part?->observaciones,
+                'imagen' => $part?->imagen_sustento,
+                'numero_transaccion' => $part?->numero_transaccion,
+            ];
+        });
+
+        $eventos = SeccionKEvento::eventos()->activos()->orderBy('fecha', 'desc')->get()->map(function ($evento) use ($participaciones) {
+            $part = $participaciones->get($evento->id);
+
+            return [
+                'evento' => $evento,
+                'participo' => $part?->participo ?? false,
+                'pago' => $part?->pago ?? false,
+                'monto_aportado' => $part?->monto_aportado ?? 0,
+                'fecha_pago' => $part?->fecha_pago,
+                'comentario' => $part?->observaciones,
+                'imagen' => $part?->imagen_sustento,
+                'numero_transaccion' => $part?->numero_transaccion,
+            ];
+        });
+
+        $cuotasPagadas = $cuotas->where('pago', true)->count();
+        $eventosPagados = $eventos->where('pago', true)->count();
+
+        return view('seccionk.admin.promociones.pagos', compact(
+            'promocion',
+            'cuotas',
+            'eventos',
+            'cuotasPagadas',
+            'eventosPagados'
+        ));
+    }
+
+    public function update(Request $request, SeccionKPromocion $promocion)
+    {
+        $data = $request->validate([
+            'dni' => 'required|digits:8|unique:seccionk_promociones,dni,' . $promocion->id,
+            'nombre' => 'required|string|max:100',
+            'apellido_paterno' => 'required|string|max:100',
+            'apellido_materno' => 'required|string|max:100',
+            'direccion' => 'nullable|string|max:255',
+            'celular' => 'nullable|string|max:15',
+            'participa_cuotas' => 'boolean',
+            'referencias' => 'nullable|string',
+            'activo' => 'boolean',
+        ]);
+
+        $promocion->update($data);
+
+        return redirect()->route('seccionk.admin.promociones.index')
+            ->with('success', 'Promoción actualizada exitosamente.');
+    }
+
+    public function registrarPago(Request $request, SeccionKPromocion $promocion, SeccionKEvento $evento)
+    {
+        $data = $request->validate([
+            'monto_aportado' => 'required|numeric|min:0',
+            'numero_transaccion' => 'nullable|string|max:100',
+            'fecha_pago' => 'nullable|date',
+            'observaciones' => 'nullable|string|max:1000',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+        ]);
+
+        $participacion = SeccionKParticipacion::firstOrNew([
+            'promocion_id' => $promocion->id,
+            'evento_id' => $evento->id,
+        ]);
+
+        $participacion->pago = true;
+        $participacion->participo = true;
+        $participacion->monto_aportado = $data['monto_aportado'];
+        $participacion->numero_transaccion = $data['numero_transaccion'] ?? $participacion->numero_transaccion;
+        $participacion->fecha_pago = $data['fecha_pago'] ?? now()->toDateString();
+        $participacion->observaciones = $data['observaciones'] ?? $participacion->observaciones;
+
+        if ($request->hasFile('imagen')) {
+            $directorio = public_path('uploads/seccionk');
+            File::ensureDirectoryExists($directorio);
+            $archivo = $request->file('imagen');
+            $nombre = $promocion->id.'_'.$evento->id.'_'.Str::random(8).'.'.$archivo->getClientOriginalExtension();
+            $archivo->move($directorio, $nombre);
+
+            if ($participacion->imagen_sustento) {
+                $anterior = public_path('uploads/seccionk/'.$participacion->imagen_sustento);
+                if (File::exists($anterior)) {
+                    File::delete($anterior);
+                }
+            }
+
+            $participacion->imagen_sustento = $nombre;
+        }
+
+        $participacion->save();
+
+        return redirect()
+            ->route('seccionk.admin.promociones.show', $promocion)
+            ->with('success', 'Pago registrado en '.$evento->nombre.'.');
+    }
+
+    public function destroy(SeccionKPromocion $promocion)
+    {
+        $promocion->update(['activo' => false]);
+
+        return redirect()->route('seccionk.admin.promociones.index')
+            ->with('success', 'Promoción ocultada exitosamente.');
+    }
+}

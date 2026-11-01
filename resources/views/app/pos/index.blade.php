@@ -23,6 +23,22 @@
     .tabs { display: flex; flex-wrap: wrap; gap: .4rem; }
     .tab { padding: .45rem .85rem; border: 1px solid #cbd5e1; background: #fff; border-radius: .4rem; cursor: pointer; font-size: .85rem; }
     .tab.activo { background: #0f766e; color: #fff; border-color: #0f766e; }
+    .tab-colapsada { display: none !important; }
+    .tabs-cat-block { margin-bottom: .15rem; }
+    .btn-tabs-mas {
+        display: none;
+        width: 100%;
+        margin-top: .35rem;
+        padding: .42rem .65rem;
+        border: 1px dashed #94a3b8;
+        background: #f8fafc;
+        color: #0f766e;
+        border-radius: .4rem;
+        font-size: .78rem;
+        font-weight: 700;
+        cursor: pointer;
+    }
+    .btn-tabs-mas.visible { display: block; }
     .grid-productos { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: .5rem; max-height: 320px; overflow-y: auto; }
     .grid-productos.grid-cargando { opacity: .55; pointer-events: none; }
     .prod-card { border: 1px solid #e2e8f0; border-radius: .5rem; padding: .6rem; cursor: pointer; background: #fff; transition: .15s; }
@@ -35,11 +51,14 @@
     #resultados div:hover { background: #f0fdfa; }
     .panel-derecho { display: flex; flex-direction: column; gap: .75rem; min-width: 0; }
     .card-detalle-venta { min-width: 0; }
-    #carrito { margin-top: .5rem; max-height: 280px; overflow: auto; min-width: 0; }
+    #carrito { margin-top: .5rem; max-height: 280px; overflow: auto; min-width: 0; -webkit-overflow-scrolling: touch; }
     #carrito table { width: 100%; border-collapse: collapse; font-size: .84rem; table-layout: fixed; }
     #carrito th, #carrito td { padding: .5rem .4rem; border-bottom: 1px solid #e2e8f0; vertical-align: middle; }
     #carrito th { font-size: .78rem; color: #64748b; font-weight: 700; }
-    #carrito .col-producto { width: 32%; word-break: break-word; line-height: 1.25; }
+    #carrito .col-producto { width: 32%; min-width: 0; word-break: normal; overflow-wrap: anywhere; line-height: 1.25; }
+    #carrito .col-producto > span:first-child,
+    #carrito .carrito-nombre { display: block; font-weight: 600; }
+    #carrito .carrito-meta { display: none; }
     #carrito .col-um { width: 2.5rem; text-align: center; font-size: .75rem; color: #64748b; text-transform: lowercase; }
     #carrito .col-pu,
     #carrito .col-sub { width: 4.5rem; text-align: right; white-space: nowrap; font-variant-numeric: tabular-nums; }
@@ -47,7 +66,7 @@
     #carrito .inp-cant-kg { width: 100%; max-width: 4.25rem; padding: .2rem .25rem; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; font-variant-numeric: tabular-nums; }
     #carrito .col-desc { width: 3.25rem; text-align: center; }
     #carrito .col-quitar { width: 1.75rem; text-align: center; padding: .35rem .15rem; }
-    #carrito .carrito-barra { display: block; margin-top: .2rem; font-family: ui-monospace, monospace; font-size: .7rem; color: #64748b; word-break: break-all; }
+    #carrito .carrito-barra { display: block; margin-top: .2rem; font-family: ui-monospace, monospace; font-size: .7rem; color: #64748b; word-break: break-all; overflow-wrap: anywhere; }
     #carrito .inp-desc { width: 100%; max-width: 3rem; padding: .2rem .25rem; text-align: center; border: 1px solid #cbd5e1; border-radius: 3px; }
     #carrito .celda-sub { font-weight: 600; color: #0f766e; }
     .qty-btn { width: 24px; height: 24px; border: 1px solid #cbd5e1; background: #f8fafc; cursor: pointer; border-radius: 3px; font-size: .9rem; line-height: 1; }
@@ -91,6 +110,159 @@
     .mixto-ayuda { font-size: .72rem; color: #64748b; margin: 0 0 .5rem; line-height: 1.35; }
     #qr-reader { width: 100%; border-radius: .5rem; overflow: hidden; }
     .modal-scanner { max-width: 480px; }
+
+    @media (max-width: 900px) {
+        .pos-header h1 { font-size: 1.1rem; width: 100%; margin-bottom: .15rem; }
+        .pos-header { gap: .35rem; margin-bottom: .65rem; }
+        .pos-badge { font-size: .72rem; padding: .25rem .5rem; font-weight: 600; }
+        .pos-actions { gap: .35rem; margin-bottom: .65rem; }
+        .pos-actions button { padding: .45rem .65rem; font-size: .75rem; flex: 1 1 calc(50% - .35rem); min-width: 0; }
+        #buscar { padding: .6rem; font-size: .92rem; }
+        .btn-escanear { padding: 0 .65rem; font-size: .8rem; }
+        .tabs { gap: .3rem; }
+        .tab { padding: .35rem .55rem; font-size: .75rem; }
+        .grid-productos { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); max-height: 220px; gap: .35rem; }
+        .prod-card { padding: .45rem; }
+        .prod-card strong { font-size: .75rem; }
+        .grid-titulo { font-size: .78rem; margin-bottom: .35rem; }
+        .total-grande { font-size: 1.2rem; }
+        #btn-cobrar { padding: .65rem; font-size: .92rem; }
+        .tipo-doc button { padding: .4rem; font-size: .78rem; }
+        .pago-row { flex-direction: column; }
+        .pago-row input, .pago-row select { width: 100%; padding: .55rem; font-size: .9rem; }
+        .cliente-row { flex-direction: column; }
+        .cliente-row .btn { width: 100%; text-align: center; }
+        .atajos { font-size: .68rem; }
+        .card { padding: .85rem; }
+
+        /* Detalle venta: tarjetas compactas en móvil */
+        #carrito { max-height: none; overflow: visible; }
+        #carrito table,
+        #carrito thead,
+        #carrito tbody,
+        #carrito tr,
+        #carrito td { display: block; width: 100%; }
+        #carrito table { table-layout: auto; border-collapse: separate; border-spacing: 0 .45rem; }
+        #carrito thead { display: none; }
+        #carrito tbody tr {
+            display: grid;
+            grid-template-columns: 1fr auto auto auto;
+            grid-template-areas:
+                "prod prod prod quitar"
+                "cant desc sub sub";
+            gap: .35rem .45rem;
+            align-items: center;
+            padding: .6rem .65rem;
+            border: 1px solid #e2e8f0;
+            border-radius: .55rem;
+            background: #f8fafc;
+        }
+        #carrito tbody td { border: none; padding: 0; text-align: left; }
+        #carrito .col-producto {
+            grid-area: prod;
+            width: auto;
+            padding-right: 1.5rem;
+            margin: 0;
+        }
+        #carrito .carrito-nombre {
+            font-size: .9rem;
+            line-height: 1.25;
+            margin-bottom: .12rem;
+        }
+        #carrito .carrito-barra-desktop { display: none; }
+        #carrito .carrito-meta {
+            display: flex;
+            align-items: center;
+            gap: .35rem;
+            font-size: .72rem;
+            color: #64748b;
+            line-height: 1.3;
+            min-width: 0;
+        }
+        #carrito .carrito-barra-inline {
+            font-family: ui-monospace, monospace;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            flex: 1 1 auto;
+        }
+        #carrito .carrito-um-pu {
+            white-space: nowrap;
+            flex-shrink: 0;
+            font-weight: 700;
+            color: #475569;
+        }
+        #carrito .col-only-desktop { display: none !important; }
+        #carrito .col-quitar {
+            grid-area: quitar;
+            position: static;
+            width: auto;
+            padding: 0;
+            justify-self: end;
+            align-self: start;
+        }
+        #carrito .col-quitar .btn-quitar {
+            width: 30px;
+            height: 30px;
+            font-size: .95rem;
+            line-height: 1;
+        }
+        #carrito .col-cant {
+            grid-area: cant;
+            display: flex;
+            align-items: center;
+            gap: .25rem;
+            width: auto;
+            margin: 0;
+            font-size: .8rem;
+        }
+        #carrito .col-cant::before { content: none; }
+        #carrito .col-desc {
+            grid-area: desc;
+            display: flex;
+            align-items: center;
+            gap: .2rem;
+            width: auto;
+            margin: 0;
+            font-size: .75rem;
+            color: #64748b;
+        }
+        #carrito .col-desc::before { content: 'Desc'; font-size: .68rem; font-weight: 700; }
+        #carrito .col-sub {
+            grid-area: sub;
+            display: flex;
+            justify-content: flex-end;
+            align-items: center;
+            width: auto;
+            margin: 0;
+            padding: 0;
+            border: none;
+            font-size: .92rem;
+            font-weight: 700;
+        }
+        #carrito .col-sub::before { content: none; }
+        #carrito .col-cant .qty-btn { width: 28px; height: 28px; }
+        #carrito .col-cant .qty-num { min-width: 1.1rem; text-align: center; font-weight: 700; }
+        #carrito .inp-cant-kg,
+        #carrito .inp-desc { max-width: 3.5rem; padding: .3rem .35rem; font-size: .82rem; }
+        .totales .fila-descuento { flex-wrap: wrap; }
+        .totales .fila-descuento input { width: 6rem; }
+    }
+    @media (max-width: 480px) {
+        .pos-badge { font-size: .68rem; }
+        .pos-actions button { font-size: .7rem; padding: .4rem .5rem; }
+        .grid-productos { grid-template-columns: repeat(auto-fill, minmax(82px, 1fr)); }
+        #carrito tbody tr {
+            grid-template-columns: 1fr auto;
+            grid-template-areas:
+                "prod quitar"
+                "cant cant"
+                "desc sub";
+        }
+        #carrito .col-sub { justify-content: space-between; }
+        #carrito .col-sub::before { content: 'Sub'; font-size: .72rem; font-weight: 700; color: #64748b; }
+    }
 </style>
 @endpush
 
@@ -139,11 +311,14 @@
             <div id="resultados" style="max-height:160px;overflow:auto"></div>
         </div>
         <div class="card" style="margin:0">
-            <div class="tabs" id="tabs-cat">
-                <button type="button" class="tab activo" data-id="todos">Todos</button>
-                @foreach($categorias as $cat)
-                    <button type="button" class="tab" data-id="{{ $cat->id }}">{{ $cat->nombre }}</button>
-                @endforeach
+            <div class="tabs-cat-block">
+                <div class="tabs" id="tabs-cat">
+                    <button type="button" class="tab activo" data-id="todos">Todos</button>
+                    @foreach($categorias as $cat)
+                        <button type="button" class="tab" data-id="{{ $cat->id }}">{{ $cat->nombre }}</button>
+                    @endforeach
+                </div>
+                <button type="button" class="btn-tabs-mas" id="btn-tabs-mas" hidden>Ver más categorías</button>
             </div>
             <p class="grid-titulo" id="grid-titulo" style="margin-top:.75rem">Top 5 más vendidos</p>
             <div class="grid-productos" id="grid-productos"></div>
@@ -208,7 +383,7 @@
                 <div class="mixto-total" id="mixto-estado">Distribuya el total entre los medios de pago.</div>
             </div>
             <div class="pago-row" id="fila-efectivo">
-                <input type="number" id="monto_recibido" placeholder="Recibido S/" min="0" step="1" inputmode="numeric">
+                <input type="text" id="monto_recibido" placeholder="Recibido S/" inputmode="decimal" autocomplete="off" spellcheck="false">
                 <input type="text" id="vuelto" placeholder="Vuelto" readonly style="background:#f1f5f9">
             </div>
             <button type="button" id="btn-cobrar">COBRAR (F9)</button>
@@ -258,11 +433,18 @@ const buscar = document.getElementById('buscar');
 const resultados = document.getElementById('resultados');
 const grid = document.getElementById('grid-productos');
 let timer;
+let cobrando = false;
 let categoriaGridActiva = 'todos';
 let topFetchSeq = 0;
 let topFetchAbort = null;
 const topCacheCliente = new Map();
 const topInicial = @json($topProductosInicial ?? []);
+const impresoraPrefs = @json($impresoraPrefs ?? ['auto_imprimir' => true]);
+
+function urlTicketImpresion(url) {
+    if (!url || !impresoraPrefs.auto_imprimir) return url;
+    return url + (url.includes('?') ? '&' : '?') + 'imprimir=1';
+}
 
 function headers() {
     return { 'Content-Type': 'application/json', 'X-CSRF-TOKEN': csrf, 'Accept': 'application/json' };
@@ -404,14 +586,65 @@ function textoPrecioStockUm(p) {
     return `S/ ${(+p.precio_venta).toFixed(2)} · Stock: ${formatoStock(p.stock_disponible)} · ${um}`;
 }
 
-document.querySelectorAll('.tab').forEach(tab => {
+document.querySelectorAll('#tabs-cat .tab').forEach(tab => {
     tab.onclick = () => {
         if (tab.classList.contains('activo')) return;
-        document.querySelectorAll('.tab').forEach(t => t.classList.remove('activo'));
+        document.querySelectorAll('#tabs-cat .tab').forEach(t => t.classList.remove('activo'));
         tab.classList.add('activo');
         cargarMasVendidos(tab.dataset.id);
+        aplicarTabsCategorias();
     };
 });
+
+const TABS_VISIBLES_INICIO = 8;
+const TABS_PASO = 6;
+let tabsVisibles = TABS_VISIBLES_INICIO;
+
+function aplicarTabsCategorias() {
+    const btn = document.getElementById('btn-tabs-mas');
+    const tabs = [...document.querySelectorAll('#tabs-cat .tab')];
+    const esMovil = window.matchMedia('(max-width: 900px)').matches;
+
+    if (!btn || !tabs.length) return;
+
+    if (!esMovil) {
+        tabs.forEach(t => t.classList.remove('tab-colapsada'));
+        btn.hidden = true;
+        btn.classList.remove('visible');
+        return;
+    }
+
+    const activoIdx = tabs.findIndex(t => t.classList.contains('activo'));
+    tabs.forEach((t, i) => {
+        const visible = i < tabsVisibles || i === activoIdx;
+        t.classList.toggle('tab-colapsada', !visible);
+    });
+
+    const ocultas = tabs.filter(t => t.classList.contains('tab-colapsada')).length;
+    if (ocultas > 0) {
+        const paso = Math.min(TABS_PASO, ocultas);
+        btn.textContent = `Ver más categorías (+${paso})`;
+        btn.hidden = false;
+        btn.classList.add('visible');
+    } else {
+        btn.hidden = true;
+        btn.classList.remove('visible');
+    }
+}
+
+document.getElementById('btn-tabs-mas')?.addEventListener('click', () => {
+    tabsVisibles += TABS_PASO;
+    aplicarTabsCategorias();
+});
+
+window.addEventListener('resize', () => {
+    if (!window.matchMedia('(max-width: 900px)').matches) {
+        tabsVisibles = TABS_VISIBLES_INICIO;
+    }
+    aplicarTabsCategorias();
+});
+
+aplicarTabsCategorias();
 
 topCacheCliente.set('todos', topInicial);
 pintarGridTop(topInicial, 'todos');
@@ -548,6 +781,52 @@ function cantidadKgTexto(cantidad) {
     return n.toFixed(3).replace(/\.?0+$/, '');
 }
 
+function actualizarStockEnCache(lineas) {
+    topCacheCliente.forEach(items => {
+        lineas.forEach(l => {
+            const p = items.find(x => x.id === l.producto_id);
+            if (p) {
+                p.stock_disponible = Math.max(0, (+p.stock_disponible || 0) - (+l.cantidad || 0));
+            }
+        });
+    });
+}
+
+function actualizarStockEnGrid(lineas) {
+    actualizarStockEnCache(lineas);
+    lineas.forEach(l => {
+        grid.querySelectorAll(`.prod-card[data-id="${l.producto_id}"]`).forEach(card => {
+            const stock = Math.max(0, (+card.dataset.stock || 0) - (+l.cantidad || 0));
+            card.dataset.stock = stock;
+            const small = card.querySelector('small');
+            if (small) {
+                small.textContent = textoPrecioStockUm({
+                    precio_venta: +card.dataset.precio,
+                    stock_disponible: stock,
+                    unidad_medida: card.dataset.um || 'UND',
+                });
+            }
+        });
+    });
+}
+
+function parseMontoRecibido(val) {
+    const n = parseFloat(String(val || '').replace(',', '.').trim());
+    return Number.isFinite(n) && n >= 0 ? n : 0;
+}
+
+function leerMontoRecibido() {
+    return parseMontoRecibido(document.getElementById('monto_recibido').value);
+}
+
+function liberarCampoEfectivo() {
+    const inp = document.getElementById('monto_recibido');
+    inp.disabled = false;
+    inp.readOnly = false;
+    inp.value = '';
+    document.getElementById('vuelto').value = '';
+}
+
 function encolarTotales() {
     if (rafTotales) return;
     rafTotales = requestAnimationFrame(() => {
@@ -559,13 +838,19 @@ function encolarTotales() {
 function filaCarritoHtml(l, i) {
     const sub = subtotalLinea(l);
     const um = etiquetaUm(l.unidad_medida);
+    const barra = l.codigo_barra || '—';
+    const pu = `S/ ${l.precio.toFixed(2)}`;
     return `<tr data-idx="${i}">
         <td class="col-producto">
-            <span>${l.nombre}</span>
-            <span class="carrito-barra">${l.codigo_barra || '—'}</span>
+            <span class="carrito-nombre">${l.nombre}</span>
+            <span class="carrito-barra carrito-barra-desktop">${barra}</span>
+            <span class="carrito-meta">
+                <span class="carrito-barra-inline">${barra}</span>
+                <span class="carrito-um-pu">${um} · ${pu}</span>
+            </span>
         </td>
-        <td class="col-um">${um}</td>
-        <td class="col-pu">S/ ${l.precio.toFixed(2)}</td>
+        <td class="col-um col-only-desktop">${um}</td>
+        <td class="col-pu col-only-desktop">${pu}</td>
         <td class="col-cant">
             ${l.pesable
                 ? `<input type="number" class="inp-cant inp-cant-kg" data-i="${i}" value="${cantidadKgTexto(l.cantidad)}" min="0.001" step="0.01" inputmode="decimal">`
@@ -805,7 +1090,7 @@ function analizarPagoMixto(total) {
         }
         montoRecibido = m.efectivo;
     } else if (m.efectivo > 0) {
-        const rec = +document.getElementById('monto_recibido').value || 0;
+        const rec = leerMontoRecibido();
         if (rec > 0) {
             if (rec + tol < m.efectivo) {
                 return { ok: false, estado: 'err', mensaje: 'Efectivo recibido insuficiente para el monto en efectivo.' };
@@ -846,7 +1131,7 @@ function calcularVuelto() {
         return;
     }
 
-    const rec = +document.getElementById('monto_recibido').value || 0;
+    const rec = leerMontoRecibido();
     vueltoEl.value = rec > 0 ? Math.max(0, rec - t.total).toFixed(2) : '';
 }
 
@@ -860,7 +1145,7 @@ function actualizarBotonCobrar(analisisMixto = null) {
     let titulo = '';
 
     if (puede && medio === 'efectivo') {
-        const rec = +document.getElementById('monto_recibido').value || 0;
+        const rec = leerMontoRecibido();
         if (rec > 0 && rec + 0.01 < t.total) {
             puede = false;
             titulo = 'Monto recibido insuficiente';
@@ -920,7 +1205,8 @@ document.getElementById('monto_recibido').addEventListener('input', () => {
     actualizarBotonCobrar();
 });
 document.getElementById('monto_recibido').addEventListener('blur', function () {
-    if (this.value !== '') this.value = Math.max(0, Math.round(+this.value || 0));
+    const n = parseMontoRecibido(this.value);
+    this.value = n > 0 ? n.toFixed(2) : '';
     calcularVuelto();
     actualizarBotonCobrar();
 });
@@ -944,13 +1230,13 @@ function limpiarVenta() {
         setClienteEstado('Factura: ingrese RUC y razón social del cliente.', false);
     }
     document.getElementById('descuento-global').value = '0';
-    document.getElementById('monto_recibido').value = '';
-    document.getElementById('vuelto').value = '';
+    liberarCampoEfectivo();
     document.getElementById('medio_pago').value = 'efectivo';
     ['mix_efectivo', 'mix_yape', 'mix_plin', 'mix_tarjeta'].forEach(id => document.getElementById(id).value = '');
     actualizarFilasPago();
     document.getElementById('msg').textContent = '';
     render();
+    buscar.focus({ preventScroll: true });
 }
 
 document.getElementById('btn-iniciar').onclick = () => {
@@ -1082,12 +1368,12 @@ document.getElementById('btn-guardar-cliente').onclick = async () => {
 
 document.getElementById('btn-cobrar').onclick = async () => {
     const btn = document.getElementById('btn-cobrar');
-    if (!carrito.length || btn.disabled) return;
+    if (cobrando || !carrito.length || btn.disabled) return;
 
     const t = calcularTotales();
     const medio = document.getElementById('medio_pago').value;
     let montoRecibidoEnvio = medio === 'efectivo'
-        ? (+document.getElementById('monto_recibido').value || 0)
+        ? leerMontoRecibido()
         : null;
     let pagosMixtos = null;
 
@@ -1109,9 +1395,15 @@ document.getElementById('btn-cobrar').onclick = async () => {
         return alert('La factura requiere un cliente con RUC. Busque o registre el cliente.');
     }
 
+    const lineasVendidas = carrito.map(l => ({
+        producto_id: l.producto_id,
+        cantidad: l.cantidad,
+    }));
+
     const msg = document.getElementById('msg');
     msg.textContent = 'Procesando...';
     msg.style.color = '#64748b';
+    cobrando = true;
     btn.disabled = true;
 
     try {
@@ -1131,13 +1423,23 @@ document.getElementById('btn-cobrar').onclick = async () => {
         });
         const data = await res.json();
         if (data.ok) {
+            cobrando = false;
             msg.style.color = '#065f46';
             msg.textContent = `✓ ${data.tipo_etiqueta} ${data.numero} — Total S/ ${data.total}` + (data.vuelto != null ? ` · Vuelto S/ ${data.vuelto}` : '') + etiquetaSunatCobro(data);
-            if (data.preview_boleta) previews.boleta = data.preview_boleta;
-            if (data.preview_factura) previews.factura = data.preview_factura;
-            actualizarPreview(data.preview || previews[tipoDocumento]);
-            if (data.ticket_url) window.open(data.ticket_url, '_blank');
+            if (data.preview) {
+                previews[tipoDocumento] = data.preview;
+                actualizarPreview(data.preview);
+            }
+            actualizarStockEnGrid(lineasVendidas);
             limpiarVenta();
+            if (data.ticket_url) {
+                setTimeout(() => {
+                    const w = window.open(urlTicketImpresion(data.ticket_url), '_blank', 'noopener');
+                    if (!w) {
+                        msg.textContent += ' · Abra el ticket desde Ventas si el navegador bloqueó la ventana.';
+                    }
+                }, 150);
+            }
         } else {
             msg.style.color = '#991b1b';
             msg.textContent = data.error || 'Error al cobrar';
@@ -1146,6 +1448,7 @@ document.getElementById('btn-cobrar').onclick = async () => {
         msg.style.color = '#991b1b';
         msg.textContent = 'Error de conexión al cobrar. Intente de nuevo.';
     } finally {
+        cobrando = false;
         actualizarBotonCobrar();
     }
 };

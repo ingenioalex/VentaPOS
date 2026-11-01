@@ -22,8 +22,22 @@ class AuthController extends Controller
     public function mostrarLogin()
     {
         $empresa = app()->bound('empresaActual') ? app('empresaActual') : null;
+        $modoBloqueo = false;
+        $nombreBloqueo = null;
 
-        return view('auth.login', compact('empresa'));
+        if ($empresa && ($login = old('usuario'))) {
+            $pendiente = Usuario::where('usuario', $login)
+                ->where('empresa_id', $empresa->id)
+                ->where('activo', true)
+                ->first();
+
+            if ($pendiente?->rol === 'cajero' && $pendiente->en_sesion) {
+                $modoBloqueo = true;
+                $nombreBloqueo = $pendiente->nombre;
+            }
+        }
+
+        return view('auth.login', compact('empresa', 'modoBloqueo', 'nombreBloqueo'));
     }
 
     public function login(Request $request)
@@ -75,11 +89,7 @@ class AuthController extends Controller
             ])->onlyInput('usuario', 'empresa_codigo');
         }
 
-        if ($usuario->rol === 'cajero' && $usuario->en_sesion) {
-            return back()->withErrors([
-                'usuario' => 'Cajero ya en sesión. Solicite al supervisor el cierre de turno.',
-            ])->onlyInput('usuario', 'empresa_codigo');
-        }
+        $reanudarTurno = $usuario->rol === 'cajero' && $usuario->en_sesion;
 
         if ($usuario->rol !== 'dueno' && ! $this->onboarding->completado($empresa)) {
             return back()->withErrors([
@@ -96,7 +106,11 @@ class AuthController extends Controller
         ]);
 
         try {
-            $this->sesionCajero->abrirSesion($usuario, $request);
+            if ($reanudarTurno) {
+                $this->sesionCajero->reanudarSesion($usuario, $request);
+            } else {
+                $this->sesionCajero->abrirSesion($usuario, $request);
+            }
             $this->terminalSesion->inicializarSesion($usuario);
 
             if ($usuario->rol === 'cajero' && $this->terminalSesion->terminalesDisponibles($usuario)->isEmpty()) {

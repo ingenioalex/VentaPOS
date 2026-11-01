@@ -3,7 +3,10 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Prospecto;
+use App\Rules\ContrasenaSuperAdmin;
 use App\Models\Usuario;
+use App\Services\AdminRecuperacionService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\Rule;
@@ -11,6 +14,8 @@ use Illuminate\Validation\ValidationException;
 
 class AdminSuperUsuarioController extends Controller
 {
+    public function __construct(private AdminRecuperacionService $recuperacion) {}
+
     public function index()
     {
         $superUsuarios = Usuario::where('rol', 'super_admin')
@@ -72,10 +77,27 @@ class AdminSuperUsuarioController extends Controller
                     ->ignore($usuario?->id),
             ],
             'email' => 'nullable|email|max:150',
-            'password' => $usuario
-                ? 'nullable|string|min:6|confirmed'
-                : 'required|string|min:6|confirmed',
+            'email_recuperacion' => 'nullable|email|max:150',
+            'pregunta_secreta' => 'nullable|string|max:255',
+            'respuesta_secreta' => 'nullable|string|max:255|confirmed',
         ];
+
+        $quiereRecuperacion = $request->filled('email_recuperacion')
+            || $request->filled('pregunta_secreta')
+            || $request->filled('respuesta_secreta')
+            || ($usuario && $usuario->tieneRecuperacionActiva());
+
+        if ($quiereRecuperacion) {
+            $reglas['email_recuperacion'] = 'required|email|max:150';
+            $reglas['pregunta_secreta'] = 'required|string|max:255';
+            if ($request->filled('respuesta_secreta') || ! $usuario?->respuesta_secreta) {
+                $reglas['respuesta_secreta'] = 'required|string|max:255|confirmed';
+            }
+        }
+
+        if ($request->filled('password') || ! $usuario) {
+            $reglas['password'] = ['required', 'string', 'confirmed', new ContrasenaSuperAdmin];
+        }
 
         $datos = $request->validate($reglas);
 
@@ -91,6 +113,18 @@ class AdminSuperUsuarioController extends Controller
             if (empty($datos['password'])) {
                 unset($datos['password']);
             }
+        }
+
+        if ($request->filled('respuesta_secreta')) {
+            $datos['respuesta_secreta'] = $this->recuperacion->hashRespuesta($datos['respuesta_secreta']);
+        } else {
+            unset($datos['respuesta_secreta']);
+        }
+
+        unset($datos['respuesta_secreta_confirmation']);
+
+        if (! $quiereRecuperacion && $usuario) {
+            unset($datos['email_recuperacion'], $datos['pregunta_secreta']);
         }
 
         return $datos;

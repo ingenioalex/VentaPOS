@@ -3,6 +3,7 @@
 @section('titulo', 'Salida de stock')
 
 @section('contenido')
+@php $sel = old('producto_id', $productoPreseleccionado ?? null); @endphp
 <h1 style="margin-bottom:1rem">Salida de stock</h1>
 
 @include('app.inventario._nav')
@@ -11,12 +12,15 @@
     <p style="color:#64748b;font-size:.9rem;margin-bottom:1rem">Use para mermas, roturas, consumo interno o devoluciones a proveedor.</p>
     <form method="post" action="{{ route('inventario.salida.guardar') }}">
         @csrf
+        @if($productoPreseleccionado)
+        <input type="hidden" name="return_kardex" value="1">
+        @endif
         <div style="margin-bottom:1rem">
             <label style="font-weight:600;display:block;margin-bottom:.35rem">Producto *</label>
             <select name="producto_id" required style="width:100%;padding:.6rem;border:1px solid #cbd5e1;border-radius:.5rem">
                 <option value="">Seleccione...</option>
                 @foreach($productos as $p)
-                <option value="{{ $p->id }}" @selected(old('producto_id') == $p->id)>
+                <option value="{{ $p->id }}" @selected((string) $sel === (string) $p->id)>
                     {{ $p->nombre }} (stock: {{ $p->stock_disponible }})
                 </option>
                 @endforeach
@@ -34,7 +38,11 @@
                    style="width:100%;padding:.6rem;border:1px solid #cbd5e1;border-radius:.5rem">
         </div>
         <button type="submit" class="btn" style="background:#dc2626;color:#fff">Registrar salida</button>
+        @if($productoPreseleccionado)
+        <a href="{{ route('inventario.kardex', $productoPreseleccionado) }}" style="margin-left:.5rem">Cancelar</a>
+        @else
         <a href="{{ route('inventario.index') }}" style="margin-left:.5rem">Cancelar</a>
+        @endif
     </form>
 </div>
 @endsection

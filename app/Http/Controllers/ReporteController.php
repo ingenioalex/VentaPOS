@@ -85,6 +85,41 @@ class ReporteController extends Controller
         ));
     }
 
+    public function cierres(Request $request)
+    {
+        if (! Auth::user()->puedeGestionar() || ! Auth::user()->tieneModulo('cierres')) {
+            abort(403);
+        }
+
+        $empresaId = Auth::user()->empresa_id;
+        $desde = $request->get('desde', today()->startOfMonth()->toDateString());
+        $hasta = $request->get('hasta', today()->toDateString());
+        $tipo = $request->get('tipo', 'todos');
+
+        $resumen = $this->reportes->resumenCierres($empresaId, $desde, $hasta, $tipo);
+        $porCajero = $this->reportes->cierresPorCajero($empresaId, $desde, $hasta, $tipo);
+        $listado = $this->reportes->listadoCierres($empresaId, $desde, $hasta, $tipo);
+
+        return view('app.reportes.cierres', compact('desde', 'hasta', 'tipo', 'resumen', 'porCajero', 'listado'));
+    }
+
+    public function productos(Request $request)
+    {
+        if (! Auth::user()->puedeGestionar()) {
+            abort(403);
+        }
+
+        $empresaId = Auth::user()->empresa_id;
+        $desde = $request->get('desde', today()->startOfMonth()->toDateString());
+        $hasta = $request->get('hasta', today()->toDateString());
+        $limite = min(50, max(10, (int) $request->get('limite', 25)));
+
+        $topProductos = $this->reportes->topProductos($empresaId, $desde, $hasta, $limite);
+        $resumen = $this->reportes->resumenVentas($empresaId, $desde, $hasta);
+
+        return view('app.reportes.productos', compact('desde', 'hasta', 'limite', 'topProductos', 'resumen'));
+    }
+
     public function exportarCompras(Request $request): StreamedResponse
     {
         if (! Auth::user()->puedeGestionar() || ! Auth::user()->tieneModulo('compras')) {

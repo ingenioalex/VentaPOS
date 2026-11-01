@@ -22,23 +22,110 @@ class ProductoController extends Controller
     {
         $q = trim($request->get('q', ''));
         $soloStockBajo = $request->boolean('stock_bajo');
+        $categoriaId = $request->integer('categoria_id') ?: null;
+        $empresa = Auth::user()->empresa;
+        $jerarquicas = $empresa && $this->extras->activo($empresa, 'categorias_jerarquicas');
+        $orden = $this->normalizarOrdenProductos($request->get('orden', 'categoria'), $jerarquicas);
 
-        $productos = Producto::with('categoria')
+        $productos = Producto::with(['categoria.parent'])
             ->when($soloStockBajo, fn ($query) => $query->stockBajo())
+            ->when($categoriaId, fn ($query) => $query->where('categoria_id', $categoriaId))
             ->when($q !== '', function ($query) use ($q) {
                 $query->where(function ($sub) use ($q) {
-                    $sub->where('nombre', 'like', "%{$q}%")
-                        ->orWhere('codigo_barra', 'like', "%{$q}%")
-                        ->orWhere('sku', 'like', "%{$q}%");
+                    $sub->where('productos.nombre', 'like', "%{$q}%")
+                        ->orWhere('productos.codigo_barra', 'like', "%{$q}%")
+                        ->orWhere('productos.sku', 'like', "%{$q}%");
                 });
             })
-            ->orderBy('nombre')
+            ->leftJoin('categorias', 'categorias.id', '=', 'productos.categoria_id')
+            ->when($jerarquicas, fn ($query) => $query->leftJoin('categorias as cat_padre', 'cat_padre.id', '=', 'categorias.parent_id'))
+            ->tap(fn ($query) => $this->aplicarOrdenProductos($query, $orden, $jerarquicas))
+            ->select('productos.*')
             ->paginate(25)
             ->withQueryString();
 
         $stockBajoCount = Producto::stockBajo()->count();
+        $categoriasFiltro = $jerarquicas
+            ? Categoria::with('parent')->orderBy('orden')->orderBy('nombre')->get()
+            : collect();
+        $resumen = [
+            'total' => Producto::count(),
+            'activos' => Producto::where('activo', true)->count(),
+            'stock_bajo' => $stockBajoCount,
+        ];
 
-        return view('app.productos.index', compact('productos', 'q', 'soloStockBajo', 'stockBajoCount'));
+        return view('app.productos.index', compact(
+            'productos', 'q', 'soloStockBajo', 'stockBajoCount', 'jerarquicas', 'categoriasFiltro', 'categoriaId', 'orden', 'resumen'
+        ));
+    }
+
+    private function normalizarOrdenProductos(?string $orden, bool $jerarquicas): string
+    {
+        $validos = [
+            'categoria',
+            'nombre_asc', 'nombre_desc',
+            'sku_asc', 'sku_desc',
+            'barra_asc', 'barra_desc',
+            'categoria_asc', 'categoria_desc',
+            'precio_asc', 'precio_desc',
+            'costo_asc', 'costo_desc',
+            'stock_asc', 'stock_desc',
+            'um_asc', 'um_desc',
+            'estado_asc', 'estado_desc',
+        ];
+
+        if ($jerarquicas) {
+            $validos[] = 'subcategoria_asc';
+            $validos[] = 'subcategoria_desc';
+        }
+
+        return in_array($orden, $validos, true) ? $orden : 'categoria';
+    }
+
+    private function aplicarOrdenProductos($query, string $orden, bool $jerarquicas): void
+    {
+        match ($orden) {
+            'nombre_asc' => $query->orderBy('productos.nombre'),
+            'nombre_desc' => $query->orderByDesc('productos.nombre'),
+            'sku_asc' => $query->orderBy('productos.sku')->orderBy('productos.nombre'),
+            'sku_desc' => $query->orderByDesc('productos.sku')->orderBy('productos.nombre'),
+            'barra_asc' => $query->orderByRaw('COALESCE(productos.codigo_barra, \'\')')->orderBy('productos.nombre'),
+            'barra_desc' => $query->orderByRaw('COALESCE(productos.codigo_barra, \'\') DESC')->orderBy('productos.nombre'),
+            'categoria_asc' => $jerarquicas
+                ? $query->orderByRaw('COALESCE(cat_padre.nombre, categorias.nombre)')
+                    ->orderBy('categorias.nombre')
+                    ->orderBy('productos.nombre')
+                : $query->orderByRaw('COALESCE(categorias.nombre, \'\')')->orderBy('productos.nombre'),
+            'categoria_desc' => $jerarquicas
+                ? $query->orderByRaw('COALESCE(cat_padre.nombre, categorias.nombre) DESC')
+                    ->orderByDesc('categorias.nombre')
+                    ->orderBy('productos.nombre')
+                : $query->orderByRaw('COALESCE(categorias.nombre, \'\') DESC')->orderBy('productos.nombre'),
+            'subcategoria_asc' => $query->orderByRaw('CASE WHEN categorias.parent_id IS NULL THEN 1 ELSE 0 END')
+                ->orderBy('categorias.nombre')
+                ->orderBy('productos.nombre'),
+            'subcategoria_desc' => $query->orderByRaw('CASE WHEN categorias.parent_id IS NULL THEN 1 ELSE 0 END')
+                ->orderByDesc('categorias.nombre')
+                ->orderBy('productos.nombre'),
+            'precio_asc' => $query->orderBy('productos.precio_venta')->orderBy('productos.nombre'),
+            'precio_desc' => $query->orderByDesc('productos.precio_venta')->orderBy('productos.nombre'),
+            'costo_asc' => $query->orderBy('productos.costo_compra')->orderBy('productos.nombre'),
+            'costo_desc' => $query->orderByDesc('productos.costo_compra')->orderBy('productos.nombre'),
+            'stock_asc' => $query->orderBy('productos.stock_disponible')->orderBy('productos.nombre'),
+            'stock_desc' => $query->orderByDesc('productos.stock_disponible')->orderBy('productos.nombre'),
+            'um_asc' => $query->orderBy('productos.unidad_medida')->orderBy('productos.nombre'),
+            'um_desc' => $query->orderByDesc('productos.unidad_medida')->orderBy('productos.nombre'),
+            'estado_asc' => $query->orderBy('productos.activo')->orderBy('productos.nombre'),
+            'estado_desc' => $query->orderByDesc('productos.activo')->orderBy('productos.nombre'),
+            default => $jerarquicas
+                ? $query->orderByRaw('COALESCE(cat_padre.orden, categorias.orden, 999)')
+                    ->orderByRaw('COALESCE(cat_padre.nombre, categorias.nombre)')
+                    ->orderBy('categorias.nombre')
+                    ->orderBy('productos.nombre')
+                : $query->orderByRaw('COALESCE(categorias.orden, 999)')
+                    ->orderBy('categorias.nombre')
+                    ->orderBy('productos.nombre'),
+        };
     }
 
     public function crear(Request $request)

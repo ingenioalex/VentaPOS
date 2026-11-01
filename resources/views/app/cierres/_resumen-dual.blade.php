@@ -61,7 +61,7 @@
                 </tr>
                 <tr>
                     <td>Efectivo contado{{ $efectivoContado === null ? ' (pendiente)' : '' }}</td>
-                    <td class="col-money">
+                    <td class="col-money" @if(!empty($idArqueoContado)) id="{{ $idArqueoContado }}" @endif>
                         @if($efectivoContado !== null)
                         S/ {{ number_format($efectivoContado, 2) }}
                         @else
@@ -71,7 +71,7 @@
                 </tr>
                 <tr class="resumen-arqueo__dif {{ $tieneDif ? 'resumen-arqueo__dif--alerta' : '' }}">
                     <td>Diferencia (contado − sistema)</td>
-                    <td class="col-money">
+                    <td class="col-money" @if(!empty($idArqueoDif)) id="{{ $idArqueoDif }}" @endif>
                         @if($diferencia !== null)
                         S/ {{ number_format($diferencia, 2) }}
                         @else

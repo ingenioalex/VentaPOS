@@ -64,12 +64,16 @@ class PosTopProductosService
             ->get();
 
         if ($top->isEmpty()) {
-            $consulta = Producto::where('empresa_id', $empresaId)->where('activo', true);
-            if ($categoriaId && $categoriaId !== 'todos') {
-                $consulta->where('categoria_id', (int) $categoriaId);
-            }
-
-            return $consulta->orderBy('nombre')->limit($limite)->get($campos)
+            return Producto::query()
+                ->leftJoin('categorias', 'categorias.id', '=', 'productos.categoria_id')
+                ->where('productos.empresa_id', $empresaId)
+                ->where('productos.activo', true)
+                ->when($categoriaId && $categoriaId !== 'todos', fn ($q) => $q->where('productos.categoria_id', (int) $categoriaId))
+                ->orderByRaw('COALESCE(categorias.orden, 999)')
+                ->orderBy('categorias.nombre')
+                ->orderBy('productos.nombre')
+                ->limit($limite)
+                ->get($campos)
                 ->map(fn ($p) => array_merge($p->toArray(), ['total_vendido' => 0]))
                 ->values()
                 ->all();

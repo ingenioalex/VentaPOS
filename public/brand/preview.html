@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Kit de marca VentasÁgil — vista previa</title>
+  <style>
+    body { font-family: Segoe UI, system-ui, sans-serif; background: #f1f5f9; color: #0f172a; margin: 0; padding: 2rem; }
+    h1 { color: #0f766e; }
+    h2 { margin-top: 2rem; font-size: 1.1rem; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 1rem; }
+    .card { background: #fff; border-radius: .75rem; padding: 1rem; box-shadow: 0 1px 3px rgba(0,0,0,.08); }
+    .card.dark { background: #0f172a; color: #e2e8f0; }
+    .card img { max-width: 100%; height: auto; display: block; margin: .5rem auto; }
+    .card figcaption { font-size: .8rem; color: #64748b; margin-top: .5rem; word-break: break-all; }
+    .card.dark figcaption { color: #94a3b8; }
+    code { background: #e2e8f0; padding: .1rem .35rem; border-radius: .25rem; font-size: .85rem; }
+  </style>
+</head>
+<body>
+  <h1>VentasÁgil — kit de marca</h1>
+  <p>Abre este archivo en el navegador para revisar las variantes. Documentación: <code>docs/IDENTIDAD_MARCA.md</code></p>
+
+  <h2>Símbolo (icono)</h2>
+  <div class="grid">
+    <figure class="card"><img src="icon.svg" width="96" height="96" alt=""><figcaption>icon.svg — color</figcaption></figure>
+    <figure class="card"><img src="icon-mono.svg" width="96" height="96" alt=""><figcaption>icon-mono.svg</figcaption></figure>
+    <figure class="card"><img src="icon-light.svg" width="96" height="96" alt=""><figcaption>icon-light.svg</figcaption></figure>
+    <figure class="card"><img src="icon-stamp.svg" width="96" height="96" alt=""><figcaption>icon-stamp.svg — sello</figcaption></figure>
+    <figure class="card"><img src="png/whatsapp-profile-512.png" width="128" height="128" alt=""><figcaption>WhatsApp 512</figcaption></figure>
+    <figure class="card"><img src="png/icon-16.png" width="16" height="16" alt="" style="image-rendering:pixelated"><figcaption>favicon 16px</figcaption></figure>
+  </div>
+
+  <h2>Imagotipo horizontal</h2>
+  <div class="grid">
+    <figure class="card"><img src="logo-horizontal.svg" alt=""><figcaption>logo-horizontal.svg</figcaption></figure>
+    <figure class="card dark"><img src="logo-horizontal-on-dark.svg" alt=""><figcaption>on-dark</figcaption></figure>
+    <figure class="card"><img src="logo-horizontal-mono.svg" alt=""><figcaption>mono / factura</figcaption></figure>
+  </div>
+
+  <h2>Imagotipo vertical + wordmark</h2>
+  <div class="grid">
+    <figure class="card"><img src="logo-vertical.svg" width="160" alt=""><figcaption>logo-vertical.svg</figcaption></figure>
+    <figure class="card"><img src="wordmark.svg" alt=""><figcaption>wordmark.svg (solo texto)</figcaption></figure>
+    <figure class="card"><img src="og-image.png" alt=""><figcaption>og-image.png (1200×630)</figcaption></figure>
+  </div>
+</body>
+</html>

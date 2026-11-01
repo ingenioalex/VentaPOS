@@ -167,12 +167,11 @@ class AdminEmpresaController extends Controller
         $contratables = $this->permisoService->modulosContratables();
         $contratados = $this->permisoService->modulosContratados($empresa);
         $totalMensual = $this->permisoService->totalMensualContrato($contratados);
-        $porGrupo = collect($contratables)
-            ->map(fn ($info, $clave) => array_merge($info, ['clave' => $clave]))
-            ->groupBy('grupo');
+        $porGrupo = $this->permisoService->contratablesAgrupados();
+        $descripcionGrupos = $this->permisoService->descripcionesGrupos();
 
         return view('admin.empresas.modulos', compact(
-            'empresa', 'contratables', 'contratados', 'totalMensual', 'porGrupo'
+            'empresa', 'contratables', 'contratados', 'totalMensual', 'porGrupo', 'descripcionGrupos'
         ));
     }
 

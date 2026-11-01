@@ -10,4 +10,6 @@ if (-not (Test-Path $php)) {
 
 Write-Host "VentaPOS - http://127.0.0.1:8000" -ForegroundColor Green
 Write-Host "Login demo: admin - admin123  o  cajero - cajero123"
-& $php $artisan serve --host=127.0.0.1 --port=8000
+# Varios workers: sin esto, una petición lenta (o un bot) deja el login colgado.
+$env:PHP_CLI_SERVER_WORKERS = "4"
+& $php $artisan serve --host=127.0.0.1 --port=8000 --no-reload

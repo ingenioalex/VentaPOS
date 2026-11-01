@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 280 56" fill="none" role="img" aria-label="Ventas�gil">
+  <rect x="2" y="4" width="48" height="48" rx="11" fill="#000000"/>
+  <path fill="#ffffff" transform="translate(2 4) scale(0.75)" d="M36.5 9.5 17.5 34.2h13.2l-5.1 20.3 23.4-28.4H35.4l1.1-16.6z"/>
+  <text x="64" y="37" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="28" font-weight="700" fill="#000000">Ventas</text>
+  <text x="158" y="37" font-family="Segoe UI, Inter, system-ui, sans-serif" font-size="28" font-weight="800" fill="#000000">&#193;gil</text>
+</svg>

@@ -3,19 +3,20 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Services\PermisoService;
 use App\Services\TarifaService;
 use Illuminate\Http\Request;
 
 class AdminTarifaController extends Controller
 {
-    public function __construct(private TarifaService $tarifas) {}
+    public function __construct(
+        private TarifaService $tarifas,
+        private PermisoService $permisos,
+    ) {}
 
     public function index()
     {
-        $modulos = config('permisos.modulos_contratables', []);
-        $porGrupo = collect($modulos)
-            ->map(fn ($info, $clave) => array_merge($info, ['clave' => $clave]))
-            ->groupBy('grupo');
+        $porGrupo = $this->permisos->contratablesAgrupados();
 
         return view('admin.tarifas.index', [
             'arranque' => config('planes.arranque'),

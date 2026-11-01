@@ -131,6 +131,45 @@
         border-color: #fcd34d;
     }
     .info-card.amber h3 { color: #b45309; }
+    .info-card.teal {
+        background: linear-gradient(135deg, #ecfdf5, #ccfbf1);
+        border-color: #5eead4;
+    }
+    .info-card.teal h3 { color: #0f766e; }
+    .info-card.teal a { color: #0f766e; }
+    .fundador-card {
+        grid-column: 1 / -1;
+        background: linear-gradient(135deg, #f0fdfa 0%, #fff 50%, #f5f3ff 100%);
+        border: 2px solid #99f6e4;
+        border-radius: 1rem;
+        padding: 1.5rem 1.75rem;
+        margin-top: .5rem;
+        box-shadow: 0 8px 28px rgba(15,118,110,.08);
+    }
+    .fundador-card h3 { margin: 0 0 .5rem; font-size: 1.1rem; color: #0f766e; }
+    .fundador-card .fundador-tags {
+        display: flex; flex-wrap: wrap; gap: .4rem; margin: .75rem 0 1rem;
+    }
+    .fundador-card .fundador-tags span {
+        font-size: .75rem; font-weight: 700; padding: .2rem .55rem; border-radius: 999px;
+        background: #fff; border: 1px solid #99f6e4; color: #0f766e;
+    }
+    .fundador-card p { font-size: .88rem; color: #475569; line-height: 1.55; margin: 0 0 .65rem; }
+    .fundador-card .fundador-links { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: .85rem; }
+    .fundador-card .fundador-links a {
+        font-weight: 700; font-size: .88rem; color: #0f766e; text-decoration: none;
+    }
+    .info-card.wa a.btn-whatsapp {
+        margin-top: .85rem; padding: .55rem 1.1rem; border-radius: .55rem;
+        color: #fff !important; display: inline-flex; align-items: center; gap: .35rem;
+    }
+    .fundador-card .btn-wa-fundador {
+        display: inline-flex; align-items: center; gap: .35rem;
+        padding: .45rem .95rem; border-radius: .55rem; font-weight: 700; font-size: .88rem;
+        text-decoration: none; color: #fff; background: #25d366;
+        box-shadow: 0 4px 14px rgba(37,211,102,.35);
+    }
+    .fundador-card .btn-wa-fundador:hover { filter: brightness(1.05); text-decoration: none; }
     .info-card h3 {
         font-size: 1rem; margin-bottom: .5rem;
         display: flex; align-items: center; gap: .5rem;
@@ -213,8 +252,11 @@
                 <p>{{ $beta['nota'] }}</p>
             </div>
             <div class="form-card-body">
-                <form method="post" action="{{ route('beta.store') }}">
+                <form method="post" action="{{ route('beta.store') }}" id="form-beta">
                     @csrf
+                    <input type="text" name="empresa_web" value="" tabindex="-1" autocomplete="off"
+                           style="position:absolute;left:-9999px;width:1px;height:1px" aria-hidden="true">
+                    <input type="hidden" name="formulario_inicio" id="formulario_inicio" value="">
                     <div class="form-group">
                         <label for="nombre_negocio">Nombre del negocio *</label>
                         <input id="nombre_negocio" name="nombre_negocio" required
@@ -255,8 +297,8 @@
             <div class="info-card wa">
                 <h3>💬 WhatsApp directo</h3>
                 <p>Respuesta rápida para dudas sobre planes, beta o implementación en tu negocio.</p>
-                <a href="https://wa.me/{{ $wa }}" target="_blank" rel="noopener">
-                    +{{ $wa }} →
+                <a href="https://wa.me/{{ $wa }}" class="btn btn-whatsapp" target="_blank" rel="noopener">
+                    Escríbenos por WhatsApp
                 </a>
             </div>
             <div class="info-card purple">
@@ -273,6 +315,35 @@
                     POS completo, inventario, reportes y hasta {{ $beta['limites']['usuarios_max'] }} usuarios.
                     Sin cargo de arranque durante el periodo beta.
                 </p>
+            </div>
+            @php
+                $linkedinFundador = config('ventapos.linkedin_fundador', '');
+            @endphp
+            <div class="fundador-card reveal">
+                <h3>👤 Quién está detrás de VentasÁgil</h3>
+                <div class="fundador-tags">
+                    <span>Gerencia retail</span>
+                    <span>Ventas comerciales</span>
+                    <span>Liderazgo de equipos</span>
+                    <span>Ingeniería de sistemas</span>
+                </div>
+                <p>
+                    <strong>Yuri Alexander Vargas Lazo</strong> — Ingeniero de Sistemas (UNPRG),
+                    con más de <strong>20 años en retail</strong> en Chiclayo: desde piso de venta en
+                    El Súper hasta <strong>Gerente de Tienda</strong> en Hiperbodega Precio Uno (Falabella),
+                    pasando por jefaturas comerciales y control de existencias en Tottus.
+                </p>
+                <p>
+                    VentasÁgil nace de esa experiencia: un POS pensado para bodegas y negocios locales,
+                    con inventario, cierres de caja, reportes y acompañamiento cercano en la implementación.
+                </p>
+                <div class="fundador-links">
+                    @if($linkedinFundador)
+                    <a href="{{ $linkedinFundador }}" target="_blank" rel="noopener">Perfil en LinkedIn →</a>
+                    @endif
+                    <a href="mailto:ingeniovargas@gmail.com">ingeniovargas@gmail.com</a>
+                    <a href="https://wa.me/{{ $wa }}" class="btn-wa-fundador" target="_blank" rel="noopener">WhatsApp</a>
+                </div>
             </div>
         </aside>
     </div>
@@ -293,6 +364,9 @@
 @push('scripts')
 <script>
 (function () {
+    const inp = document.getElementById('formulario_inicio');
+    if (inp) inp.value = Math.floor(Date.now() / 1000);
+
     const io = new IntersectionObserver((entries) => {
         entries.forEach(e => {
             if (e.isIntersecting) {

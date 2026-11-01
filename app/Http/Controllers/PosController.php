@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Jobs\EmitirSunatComprobanteJob;
 use App\Models\Categoria;
 use App\Models\CierreCaja;
 use App\Models\Cliente;
@@ -10,6 +11,7 @@ use App\Models\Producto;
 use App\Services\AnulacionService;
 use App\Services\CierreCajaService;
 use App\Services\QrService;
+use App\Services\ImpresoraService;
 use App\Services\PosTopProductosService;
 use App\Services\SesionCajeroService;
 use App\Services\SunatService;
@@ -30,6 +32,7 @@ class PosController extends Controller
         private TerminalSesionService $terminalSesion,
         private SunatService $sunatService,
         private PosTopProductosService $topProductos,
+        private ImpresoraService $impresora,
     ) {}
 
     public function index()
@@ -73,6 +76,7 @@ class PosController extends Controller
     {
         $empresaId = $usuario->empresa_id;
         $categorias = Categoria::where('empresa_id', $empresaId)
+            ->whereHas('productos', fn ($q) => $q->where('activo', true))
             ->orderBy('orden')
             ->get(['id', 'nombre']);
 
@@ -81,6 +85,7 @@ class PosController extends Controller
         $terminalActiva = $this->terminalSesion->datosActivos();
         $terminalesDisponibles = $this->terminalSesion->terminalesDisponibles($usuario);
         $topProductosInicial = $this->topProductos->topMasVendidos($empresaId, 'todos');
+        $impresoraPrefs = $this->impresora->paraUsuario($usuario);
 
         return compact(
             'categorias',
@@ -90,6 +95,7 @@ class PosController extends Controller
             'terminalActiva',
             'terminalesDisponibles',
             'topProductosInicial',
+            'impresoraPrefs',
         );
     }
 
@@ -347,19 +353,28 @@ class PosController extends Controller
                 $datos['pagos_mixtos'] ?? null,
             );
 
-            try {
-                $comprobante = $this->sunatService->emitir($comprobante);
-            } catch (\Throwable $e) {
-                $comprobante->update([
-                    'sunat_estado' => 'error',
-                    'sunat_mensaje' => $e->getMessage(),
-                ]);
-                $comprobante = $comprobante->fresh();
+            $comprobante->load(['detalles.producto', 'cliente', 'empresa']);
+            if ($this->sunatService->estaActivo($comprobante->empresa)) {
+                try {
+                    $comprobante = $this->sunatService->asegurarHashQr($comprobante);
+                    if ($comprobante->sunat_estado === 'pendiente') {
+                        EmitirSunatComprobanteJob::dispatch($comprobante->id);
+                    }
+                } catch (\Throwable $e) {
+                    $comprobante->update([
+                        'sunat_estado' => 'error',
+                        'sunat_mensaje' => $e->getMessage(),
+                    ]);
+                }
+            } else {
+                $comprobante->update(['sunat_estado' => 'omitido']);
+                $this->topProductos->invalidarCacheEmpresa(Auth::user()->empresa_id);
             }
 
-            $tipoDoc = $datos['tipo_documento'];
+            $request->session()->save();
 
-            $this->topProductos->invalidarCacheEmpresa(Auth::user()->empresa_id);
+            $comprobante = $comprobante->fresh();
+            $tipoDoc = $datos['tipo_documento'];
 
             return response()->json([
                 'ok' => true,
@@ -374,8 +389,6 @@ class PosController extends Controller
                 'sunat_estado' => $comprobante->sunat_estado,
                 'sunat_mensaje' => $comprobante->sunat_mensaje,
                 'preview' => $this->ventaService->previewSiguiente(Auth::user(), $tipoDoc),
-                'preview_boleta' => $this->ventaService->previewSiguiente(Auth::user(), 'boleta'),
-                'preview_factura' => $this->ventaService->previewSiguiente(Auth::user(), 'factura'),
             ]);
         } catch (\Throwable $e) {
             return response()->json(['ok' => false, 'error' => $e->getMessage()], 422);
@@ -424,7 +437,7 @@ class PosController extends Controller
         );
     }
 
-    public function ticket(Comprobante $comprobante, QrService $qr)
+    public function ticket(Comprobante $comprobante, QrService $qr, SunatService $sunat, Request $request)
     {
         if ($comprobante->empresa_id !== Auth::user()->empresa_id) {
             abort(404);
@@ -432,15 +445,27 @@ class PosController extends Controller
 
         $comprobante->load(['detalles', 'cliente', 'empresa', 'usuario', 'terminal']);
 
-        $qrDataUri = null;
-        if ($comprobante->esComprobanteElectronico() && $comprobante->textoQrSunat()) {
-            $qrDataUri = $qr->pngDataUri($comprobante->textoQrSunat());
+        try {
+            $comprobante = $sunat->asegurarHashQr($comprobante);
+            $comprobante->load(['detalles', 'cliente', 'empresa', 'usuario', 'terminal']);
+        } catch (\Throwable) {
+            // El ticket se muestra aunque falle la preparación SUNAT.
         }
 
-        return view('app.pos.ticket', compact('comprobante', 'qrDataUri'));
+        $qrDataUri = null;
+        $textoQr = $comprobante->textoQrSunat();
+        if ($textoQr) {
+            $qrDataUri = $qr->pngDataUri($textoQr);
+        }
+
+        $impresora = $this->impresora->paraUsuario(Auth::user());
+        $estilos = $this->impresora->estilosTicket($impresora);
+        $autoImprimir = $impresora['auto_imprimir'] || $request->boolean('imprimir');
+
+        return view('app.pos.ticket', compact('comprobante', 'qrDataUri', 'impresora', 'estilos', 'autoImprimir'));
     }
 
-    public function qrComprobante(Comprobante $comprobante, QrService $qr)
+    public function qrComprobante(Comprobante $comprobante, QrService $qr, Request $request)
     {
         if ($comprobante->empresa_id !== Auth::user()->empresa_id) {
             abort(404);

@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Panel') — VentaPOS</title>
+    <title>@yield('titulo', 'Panel') — VentasÁgil</title>
+    @include('partials.brand-icons')
     <style>
         :root { --primary: #0f766e; --sidebar: #1e293b; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -44,6 +45,8 @@
         .cpe-no { background: #f1f5f9; color: #64748b; border: 1px solid #e2e8f0; }
         .cpe-leyenda { font-size: .8rem; color: #64748b; display: flex; flex-wrap: wrap; gap: .5rem 1rem; align-items: center; }
         .cpe-leyenda span { display: inline-flex; align-items: center; gap: .35rem; }
+
+        @include('partials.paginacion-styles')
 
         /* —— Móvil: barra superior + menú drawer —— */
         .app-topbar {
@@ -102,7 +105,7 @@
                 opacity: 1;
             }
             body.sidebar-open { overflow: hidden; }
-            main { padding: 1rem; }
+            main { padding: .75rem; }
             .filtros { flex-direction: column; align-items: stretch; }
             table.data { font-size: .82rem; }
             table.data th, table.data td { padding: .4rem .3rem; }
@@ -145,7 +148,7 @@
         <a href="{{ route('cierres.index') }}" class="{{ request()->routeIs('cierres.*') ? 'activo' : '' }}">Cierre de caja</a>
         @endif
 
-        @if($u->tieneModulo('productos') || $u->tieneModulo('categorias') || $u->tieneModulo('clientes'))
+        @if($u->tieneModulo('productos') || $u->tieneModulo('categorias') || $u->tieneModulo('clientes') || $u->tieneModulo('inventario'))
         <div class="seccion">Catálogo</div>
         @endif
         @if($u->tieneModulo('productos'))
@@ -158,6 +161,12 @@
         @if($u->empresa?->tieneExtra('flejes'))
         <a href="{{ route('flejes.index') }}" class="{{ request()->routeIs('flejes.*') ? 'activo' : '' }}">Flejes / etiquetas</a>
         @endif
+        @endif
+        @if($u->tieneModulo('categorias'))
+        <a href="{{ route('categorias.index') }}" class="{{ request()->routeIs('categorias.*') ? 'activo' : '' }}">Categorías</a>
+        @endif
+        @if($u->tieneModulo('clientes'))
+        <a href="{{ route('clientes.index') }}" class="{{ request()->routeIs('clientes.*') ? 'activo' : '' }}">Clientes</a>
         @endif
         @if($u->tieneModulo('inventario'))
         <a href="{{ route('inventario.index') }}" class="{{ request()->routeIs('inventario.*') ? 'activo' : '' }}">
@@ -176,38 +185,49 @@
         @if($u->tieneModulo('proveedores'))
         <a href="{{ route('proveedores.index') }}" class="{{ request()->routeIs('proveedores.*') ? 'activo' : '' }}">Proveedores</a>
         @endif
-        @if($u->tieneModulo('categorias'))
-        <a href="{{ route('categorias.index') }}" class="{{ request()->routeIs('categorias.*') ? 'activo' : '' }}">Categorías</a>
-        @endif
-        @if($u->tieneModulo('clientes'))
-        <a href="{{ route('clientes.index') }}" class="{{ request()->routeIs('clientes.*') ? 'activo' : '' }}">Clientes</a>
-        @endif
 
-        @if($u->tieneModulo('reportes'))
+        @if($u->tieneModulo('usuarios') || $u->tieneModulo('permisos') || $u->tieneModulo('terminales') || $u->tieneModulo('usuario_terminales'))
         <div class="seccion">Gestión</div>
-        <a href="{{ route('reportes.index') }}" class="{{ request()->routeIs('reportes.*') ? 'activo' : '' }}">Reportes</a>
-        @endif
-
-        @if($u->tieneModulo('usuarios') || $u->tieneModulo('permisos'))
-        <div class="seccion">Administración</div>
         @endif
         @if($u->tieneModulo('usuarios'))
         <a href="{{ route('usuarios.index') }}" class="{{ request()->routeIs('usuarios.*') ? 'activo' : '' }}">Usuarios</a>
         @endif
-        @if($u->tieneModulo('permisos'))
-        <a href="{{ route('permisos.index') }}" class="{{ request()->routeIs('permisos.*') ? 'activo' : '' }}">Permisos por rol</a>
-        @endif
-        @if($u->tieneModulo('configuracion'))
-        <a href="{{ route('configuracion.index') }}" class="{{ request()->routeIs('configuracion.*') ? 'activo' : '' }}">Configuración</a>
-        @endif
-        @if($u->tieneModulo('sunat'))
-        <a href="{{ route('sunat.index') }}" class="{{ request()->routeIs('sunat.*') ? 'activo' : '' }}">SUNAT</a>
-        @endif
         @if($u->tieneModulo('terminales'))
         <a href="{{ route('terminales.index') }}" class="{{ request()->routeIs('terminales.*') ? 'activo' : '' }}">Terminales</a>
         @endif
+        @if($u->tieneModulo('permisos'))
+        <a href="{{ route('permisos.index') }}" class="{{ request()->routeIs('permisos.*') ? 'activo' : '' }}">Permisos por rol</a>
+        @endif
         @if($u->tieneModulo('usuario_terminales'))
         <a href="{{ route('usuario-terminales.index') }}" class="{{ request()->routeIs('usuario-terminales.*') ? 'activo' : '' }}">Usuarios y terminales</a>
+        @endif
+
+        @if($u->tieneModulo('reportes'))
+        <div class="seccion">Reportes</div>
+        <a href="{{ route('reportes.index') }}" class="{{ request()->routeIs('reportes.index') ? 'activo' : '' }}">R. Ventas</a>
+        @if($u->tieneModulo('inventario'))
+        <a href="{{ route('reportes.inventario') }}" class="{{ request()->routeIs('reportes.inventario') ? 'activo' : '' }}">R. Inventario</a>
+        @endif
+        @if($u->tieneModulo('compras'))
+        <a href="{{ route('reportes.compras') }}" class="{{ request()->routeIs('reportes.compras') ? 'activo' : '' }}">R. Compras</a>
+        @endif
+        @if($u->tieneModulo('cierres'))
+        <a href="{{ route('reportes.cierres') }}" class="{{ request()->routeIs('reportes.cierres') ? 'activo' : '' }}">R. Cierres de caja</a>
+        @endif
+        <a href="{{ route('reportes.productos') }}" class="{{ request()->routeIs('reportes.productos') ? 'activo' : '' }}">R. Productos vendidos</a>
+        @endif
+
+        @if($u->tieneModulo('configuracion') || $u->tieneModulo('sunat') || $u->tieneModulo('impresora'))
+        <div class="seccion">Configuración</div>
+        @endif
+        @if($u->tieneModulo('configuracion'))
+        <a href="{{ route('configuracion.index') }}" class="{{ request()->routeIs('configuracion.*') ? 'activo' : '' }}">Empresa</a>
+        @endif
+        @if($u->tieneModulo('impresora'))
+        <a href="{{ route('impresora.index') }}" class="{{ request()->routeIs('impresora.*') ? 'activo' : '' }}">Impresora</a>
+        @endif
+        @if($u->tieneModulo('sunat'))
+        <a href="{{ route('sunat.index') }}" class="{{ request()->routeIs('sunat.*') ? 'activo' : '' }}">SUNAT</a>
         @endif
 
         @php

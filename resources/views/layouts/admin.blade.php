@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Admin') — VentaPOS</title>
+    <title>@yield('titulo', 'Admin') — VentasÁgil</title>
+    @include('partials.brand-icons')
     <style>
         :root { --primary: #7c3aed; --sidebar: #1e1b4b; }
         * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -28,6 +29,8 @@
         .filtros input, .filtros select { padding: .45rem; border: 1px solid #cbd5e1; border-radius: .4rem; }
         .stats { display:flex; flex-wrap:wrap; gap:1rem; }
         .stats .card strong { color:#1e293b; }
+
+        @include('partials.paginacion-styles')
 
         .app-topbar {
             display: none;
@@ -84,6 +87,7 @@
         <div style="font-size:.7rem;text-transform:uppercase;color:#64748b;margin:1rem 0 .35rem;letter-spacing:.05em">Comercial</div>
         <a href="{{ route('admin.contratacion.index') }}" class="{{ request()->routeIs('admin.contratacion.*') ? 'activo' : '' }}">Contratación</a>
         <a href="{{ route('admin.prospectos.index') }}" class="{{ request()->routeIs('admin.prospectos.*') ? 'activo' : '' }}">Prospectos</a>
+        <a href="{{ route('admin.guia.index') }}" class="{{ request()->routeIs('admin.guia.*') ? 'activo' : '' }}">Guía de respuesta</a>
         <a href="{{ route('admin.tarifas.index') }}" class="{{ request()->routeIs('admin.tarifas.*') ? 'activo' : '' }}">Tarifas y precios</a>
 
         <div style="font-size:.7rem;text-transform:uppercase;color:#64748b;margin:1rem 0 .35rem;letter-spacing:.05em">Sistema</div>

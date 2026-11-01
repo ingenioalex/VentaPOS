@@ -86,14 +86,15 @@ class InventarioController extends Controller
         return view('app.inventario.kardex', compact('producto', 'movimientos', 'desde', 'hasta'));
     }
 
-    public function entrada()
+    public function entrada(Request $request)
     {
         $empresa = Auth::user()->empresa;
         $lotesActivo = $empresa && $this->extras->activo($empresa, 'lotes_vencimiento');
         $productos = Producto::where('activo', true)->orderBy('nombre')
             ->get(['id', 'nombre', 'sku', 'stock_disponible', 'control_lote']);
+        $productoPreseleccionado = $this->productoPreseleccionado($request);
 
-        return view('app.inventario.entrada', compact('productos', 'lotesActivo'));
+        return view('app.inventario.entrada', compact('productos', 'lotesActivo', 'productoPreseleccionado'));
     }
 
     public function guardarEntrada(Request $request)
@@ -137,7 +138,7 @@ class InventarioController extends Controller
             return back()->withInput()->withErrors(['cantidad' => $e->getMessage()]);
         }
 
-        return redirect()->route('inventario.index')->with('ok', 'Entrada de stock registrada.');
+        return $this->redirectTrasMovimiento((int) $datos['producto_id'], 'Entrada de stock registrada.');
     }
 
     public function vencimientos()
@@ -151,11 +152,12 @@ class InventarioController extends Controller
         return view('app.inventario.vencimientos', compact('items', 'dias'));
     }
 
-    public function salida()
+    public function salida(Request $request)
     {
         $productos = Producto::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'sku', 'stock_disponible']);
+        $productoPreseleccionado = $this->productoPreseleccionado($request);
 
-        return view('app.inventario.salida', compact('productos'));
+        return view('app.inventario.salida', compact('productos', 'productoPreseleccionado'));
     }
 
     public function guardarSalida(Request $request)
@@ -177,14 +179,15 @@ class InventarioController extends Controller
             return back()->withInput()->withErrors(['cantidad' => $e->getMessage()]);
         }
 
-        return redirect()->route('inventario.index')->with('ok', 'Salida de stock registrada.');
+        return $this->redirectTrasMovimiento((int) $datos['producto_id'], 'Salida de stock registrada.');
     }
 
-    public function ajuste()
+    public function ajuste(Request $request)
     {
         $productos = Producto::where('activo', true)->orderBy('nombre')->get(['id', 'nombre', 'sku', 'stock_disponible']);
+        $productoPreseleccionado = $this->productoPreseleccionado($request);
 
-        return view('app.inventario.ajuste', compact('productos'));
+        return view('app.inventario.ajuste', compact('productos', 'productoPreseleccionado'));
     }
 
     public function guardarAjuste(Request $request)
@@ -206,7 +209,28 @@ class InventarioController extends Controller
             return back()->withInput()->withErrors(['stock_nuevo' => $e->getMessage()]);
         }
 
-        return redirect()->route('inventario.index')->with('ok', 'Ajuste de inventario registrado.');
+        return $this->redirectTrasMovimiento((int) $datos['producto_id'], 'Ajuste de inventario registrado.');
+    }
+
+    private function productoPreseleccionado(Request $request): ?int
+    {
+        $id = $request->integer('producto_id') ?: null;
+        if (! $id) {
+            return null;
+        }
+
+        return Producto::where('id', $id)->where('activo', true)->exists() ? $id : null;
+    }
+
+    private function redirectTrasMovimiento(int $productoId, string $mensaje)
+    {
+        if ($request = request()) {
+            if ($request->boolean('return_kardex') || $request->filled('return_kardex')) {
+                return redirect()->route('inventario.kardex', $productoId)->with('ok', $mensaje);
+            }
+        }
+
+        return redirect()->route('inventario.index')->with('ok', $mensaje);
     }
 
     public function exportarStock(): StreamedResponse

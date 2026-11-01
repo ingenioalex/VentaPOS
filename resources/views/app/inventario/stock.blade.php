@@ -3,6 +3,7 @@
 @section('titulo', 'Stock actual')
 
 @section('contenido')
+<div class="inv-page">
 <h1 style="margin-bottom:1rem">Stock actual</h1>
 
 @include('app.inventario._nav')
@@ -33,7 +34,8 @@
         <thead>
             <tr>
                 <th>SKU</th><th>Producto</th><th>Categoría</th><th>Stock</th><th>Mín.</th>
-                <th>Costo</th><th>Valor costo</th><th>Precio</th><th>Valor venta</th><th></th>
+                <th>Costo</th><th>Valor costo</th><th>Precio</th><th>Valor venta</th>
+                <th class="inv-col-acciones">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -48,12 +50,19 @@
                 <td>S/ {{ number_format($i->valor_costo, 2) }}</td>
                 <td>S/ {{ number_format($i->precio, 2) }}</td>
                 <td>S/ {{ number_format($i->valor_venta, 2) }}</td>
-                <td><a href="{{ route('inventario.kardex', $i->id) }}">Kardex</a></td>
+                <td class="inv-col-acciones">
+                    @include('app.inventario._acciones-movimiento', [
+                        'productoId' => $i->id,
+                        'simbolos' => true,
+                        'mostrarKardex' => true,
+                    ])
+                </td>
             </tr>
             @empty
             <tr><td colspan="10" style="color:#64748b">Sin productos.</td></tr>
             @endforelse
         </tbody>
     </table>
+</div>
 </div>
 @endsection

@@ -67,6 +67,7 @@
             <tr>
                 <th>Fecha</th><th>Producto</th><th>Tipo</th><th>Cant.</th>
                 <th>Stock ant.</th><th>Stock nuevo</th><th>Usuario</th><th>Referencia</th>
+                <th class="inv-col-acciones">Acciones</th>
             </tr>
         </thead>
         <tbody>
@@ -92,9 +93,20 @@
                 <td>{{ $m->stock_nuevo }}</td>
                 <td>{{ $m->usuario?->nombre ?? '—' }}</td>
                 <td>{{ $m->referencia ?? '—' }}</td>
+                <td class="inv-col-acciones">
+                    @if($m->producto_id)
+                    @include('app.inventario._acciones-movimiento', [
+                        'productoId' => $m->producto_id,
+                        'simbolos' => true,
+                        'mostrarKardex' => true,
+                    ])
+                    @else
+                    —
+                    @endif
+                </td>
             </tr>
             @empty
-            <tr><td colspan="8" style="color:#64748b">Sin movimientos en el período.</td></tr>
+            <tr><td colspan="9" style="color:#64748b">Sin movimientos en el período.</td></tr>
             @endforelse
         </tbody>
     </table>

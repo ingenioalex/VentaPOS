@@ -7,6 +7,7 @@ use App\Models\Usuario;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Log;
 
 class AdminAuthController extends Controller
 {
@@ -22,8 +23,8 @@ class AdminAuthController extends Controller
     public function login(Request $request)
     {
         $credenciales = $request->validate([
-            'usuario' => 'required|string',
-            'password' => 'required|string',
+            'usuario' => 'required|string|max:60',
+            'password' => 'required|string|max:255',
         ]);
 
         $usuario = Usuario::where('usuario', $credenciales['usuario'])
@@ -33,8 +34,14 @@ class AdminAuthController extends Controller
             ->first();
 
         if (! $usuario || ! Hash::check($credenciales['password'], $usuario->password)) {
+            Log::warning('Intento fallido panel admin', [
+                'usuario' => $credenciales['usuario'],
+                'ip' => $request->ip(),
+                'agent' => $request->userAgent(),
+            ]);
+
             return back()->withErrors([
-                'usuario' => 'Usuario o contraseña incorrectos.',
+                'usuario' => 'Credenciales incorrectas.',
             ])->onlyInput('usuario');
         }
 

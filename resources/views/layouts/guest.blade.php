@@ -3,10 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Inicio') — VentasÁgil</title>
-    <meta name="description" content="VentasÁgil — punto de venta e inventario en la nube para bodegas y negocios en Perú.">
-    <link rel="icon" href="{{ asset('brand/icon.svg') }}" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="{{ asset('brand/icon.svg') }}">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    @php
+        $seoCfg = $seoConfig ?? [];
+        $seoTitle = $seoCfg['title'] ?? trim(strip_tags((string) $__env->yieldContent('titulo', 'Inicio')));
+        $seoDescription = $seoCfg['description'] ?? config('seo.default_description');
+        $seoPath = $seoCfg['path'] ?? request()->path();
+        $seoPath = $seoPath === '' || $seoPath === '/' ? '/' : '/'.ltrim((string) $seoPath, '/');
+    @endphp
+    <title>{{ $seoTitle }} — {{ config('seo.site_name', 'VentasÁgil') }}</title>
+    @include('partials.seo-head', [
+        'seoTitle' => $seoTitle,
+        'seoDescription' => $seoDescription,
+        'seoPath' => $seoPath,
+        'jsonLd' => $jsonLd ?? null,
+    ])
+    @include('partials.brand-icons')
     <style>
         :root {
             --primary: #0f766e;
@@ -34,17 +46,46 @@
         }
         .header-inner {
             display: flex; justify-content: space-between; align-items: center;
-            flex-wrap: wrap; gap: .75rem; padding: .85rem 0;
+            gap: .75rem; padding: .85rem 0;
         }
-        .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; }
+        .brand { display: flex; align-items: center; gap: .6rem; text-decoration: none; flex-shrink: 0; }
         .brand img { height: 38px; width: auto; }
         .brand-icon { height: 36px; width: 36px; }
-        nav { display: flex; align-items: center; gap: 1.25rem; }
+        nav.nav-desktop { display: flex; align-items: center; gap: 1rem; flex-wrap: wrap; justify-content: flex-end; }
         nav a {
             text-decoration: none; color: var(--text); font-weight: 600; font-size: .92rem;
             transition: color .2s;
         }
         nav a:hover { color: var(--primary); }
+        .btn-menu-landing {
+            display: none;
+            width: 42px; height: 42px;
+            border: 1px solid #e2e8f0; border-radius: .5rem;
+            background: #fff; color: var(--text);
+            font-size: 1.25rem; cursor: pointer; flex-shrink: 0;
+        }
+        .nav-backdrop {
+            display: none; position: fixed; inset: 0;
+            background: rgba(15,23,42,.45); z-index: 150;
+        }
+        .nav-mobile-panel {
+            display: none; position: fixed; top: 0; right: 0; bottom: 0;
+            width: min(300px, 88vw); z-index: 160;
+            background: #fff; padding: 1.25rem;
+            box-shadow: -4px 0 24px rgba(0,0,0,.12);
+            transform: translateX(105%);
+            transition: transform .25s ease;
+            overflow-y: auto;
+        }
+        body.nav-open .nav-backdrop { display: block; }
+        body.nav-open .nav-mobile-panel { display: block; transform: translateX(0); }
+        body.nav-open { overflow: hidden; }
+        .nav-mobile-panel a {
+            display: block; padding: .75rem 0;
+            border-bottom: 1px solid #f1f5f9;
+            font-size: 1rem;
+        }
+        .nav-mobile-panel .btn { display: block; text-align: center; margin-top: 1rem; width: 100%; }
         .btn {
             display: inline-block; padding: .7rem 1.25rem; border-radius: .55rem;
             font-weight: 700; text-decoration: none; border: none; cursor: pointer;
@@ -71,7 +112,8 @@
         .alert-ok { background: #d1fae5; color: #065f46; }
 
         @media (max-width: 720px) {
-            nav .nav-link { display: none; }
+            .btn-menu-landing { display: block; }
+            nav.nav-desktop { display: none; }
             .footer-grid { grid-template-columns: 1fr; text-align: center; }
         }
     </style>
@@ -84,14 +126,25 @@
             <img src="{{ asset('brand/logo.svg') }}" alt="VentasÁgil" class="brand-logo-full">
             <img src="{{ asset('brand/icon.svg') }}" alt="" class="brand-icon brand-logo-icon" style="display:none">
         </a>
-        <nav>
-            <a href="{{ route('precios') }}" class="nav-link">Precios</a>
-            <a href="{{ route('contacto') }}" class="nav-link">Contacto</a>
-            <a href="{{ route('login') }}" class="nav-link">Acceso clientes</a>
+        <button type="button" class="btn-menu-landing" id="btn-nav-landing" aria-label="Abrir menú" aria-expanded="false">☰</button>
+        <nav class="nav-desktop" aria-label="Navegación principal">
+            <a href="{{ route('precios') }}">Precios</a>
+            <a href="{{ route('faq') }}">Preguntas</a>
+            <a href="{{ route('contacto') }}">Contacto</a>
+            <a href="{{ route('login') }}">Acceso</a>
             <a href="{{ route('contacto') }}#beta" class="btn btn-primary btn-sm">Probar gratis</a>
         </nav>
     </div>
 </header>
+<div class="nav-backdrop" id="nav-backdrop" aria-hidden="true"></div>
+<nav class="nav-mobile-panel" id="nav-mobile-panel" aria-label="Menú móvil">
+    <p style="font-weight:700;margin-bottom:.5rem;color:var(--primary)">VentasÁgil</p>
+    <a href="{{ route('precios') }}">Precios</a>
+    <a href="{{ route('faq') }}">Preguntas</a>
+    <a href="{{ route('contacto') }}">Contacto</a>
+    <a href="{{ route('login') }}">Acceso</a>
+    <a href="{{ route('contacto') }}#beta" class="btn btn-primary">Probar gratis</a>
+</nav>
 <main>
     @yield('contenido')
 </main>
@@ -107,6 +160,7 @@
         </div>
         <div style="text-align:right">
             <p><a href="{{ route('precios') }}">Planes</a></p>
+            <p style="margin-top:.35rem"><a href="{{ route('faq') }}">Preguntas frecuentes</a></p>
             <p style="margin-top:.35rem"><a href="{{ route('contacto') }}">Contacto</a></p>
             <p style="margin-top:.35rem"><a href="https://wa.me/{{ config('ventapos.whatsapp') }}" target="_blank" rel="noopener">WhatsApp</a></p>
         </div>
@@ -118,6 +172,24 @@
     .brand-logo-icon { display: block !important; }
 }
 </style>
+<script>
+(function () {
+    const btn = document.getElementById('btn-nav-landing');
+    const backdrop = document.getElementById('nav-backdrop');
+    const panel = document.getElementById('nav-mobile-panel');
+    if (!btn || !backdrop || !panel) return;
+    function setOpen(open) {
+        document.body.classList.toggle('nav-open', open);
+        btn.setAttribute('aria-expanded', open ? 'true' : 'false');
+    }
+    btn.addEventListener('click', () => setOpen(!document.body.classList.contains('nav-open')));
+    backdrop.addEventListener('click', () => setOpen(false));
+    panel.querySelectorAll('a').forEach(a => a.addEventListener('click', () => setOpen(false)));
+    window.addEventListener('keydown', e => { if (e.key === 'Escape') setOpen(false); });
+})();
+</script>
+
+@include('partials.chatbox')
 @stack('scripts')
 </body>
 </html>

@@ -34,8 +34,8 @@ flowchart TB
 
 | Capa | Ubicación | Responsabilidad |
 |------|-----------|-----------------|
-| Presentación | `resources/views/` | Blade, POS con JS inline |
-| HTTP | `app/Http/Controllers/` | Validación request, respuesta view/JSON |
+| Presentación | `resources/views/` | Blade, POS con JS inline; landing pública (incluye chatbox de ayuda) |
+| HTTP | `app/Http/Controllers/` | Validación request, respuesta view/JSON (incluye `ChatbotController` para landing) |
 | Middleware | `app/Http/Middleware/` | Auth, tenant, módulos, onboarding |
 | Dominio / aplicación | `app/Services/` | Lógica de negocio (ventas, inventario, SUNAT) |
 | Persistencia | `app/Models/` | Eloquent, scopes por empresa |
@@ -44,7 +44,8 @@ flowchart TB
 ## Multi-tenancy
 
 - Cada tabla operativa lleva `empresa_id`.
-- Trait `FiltraPorEmpresa` en modelos sensibles.
+- Trait `FiltraPorEmpresa` en modelos sensibles (global scope + `resolveRouteBinding` por empresa).
+- Middleware `auth` se ejecuta **antes** de route model binding para que el scope tenga usuario.
 - Login: código de empresa + usuario (único por empresa, no global).
 - Super admin (`rol = super_admin`, `empresa_id = null`) gestiona empresas en `/admin`.
 

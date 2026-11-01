@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Ventas�gil">
+  <!-- Blanco s�lido sobre transparente (fondos oscuros) -->
+  <path fill="#ffffff" d="M10 0h44a10 10 0 0 1 10 10v44a10 10 0 0 1-10 10H10A10 10 0 0 1 0 54V10A10 10 0 0 1 10 0z"/>
+  <path fill="#0f766e" d="M36.5 9.5 17.5 34.2h13.2l-5.1 20.3 23.4-28.4H35.4l1.1-16.6z"/>
+</svg>

@@ -3,6 +3,10 @@
 .env
 .env.backup
 .env.production
+*.tar.gz
+/public/uploads
+/storage/app/backups
+/storage/app/_boot_diag.php
 .phpactor.json
 .phpunit.result.cache
 /.codex

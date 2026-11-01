@@ -13,3 +13,5 @@ Schedule::command('ventapos:whatsapp-resumen')->dailyAt('20:00');
 Schedule::command('ventapos:backup-db --programado')
     ->dailyAt(config('backup.hora_automatica', '03:00'))
     ->when(fn () => (bool) config('backup.automatico_activo', true));
+
+Schedule::command('ventapos:reintentar-sunat --limite=15')->everyThirtyMinutes();

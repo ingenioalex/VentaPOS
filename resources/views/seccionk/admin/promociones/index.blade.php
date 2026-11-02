@@ -28,6 +28,9 @@
         <a href="{{ route('seccionk.admin.promociones.exportar', array_merge(request()->query(), ['formato' => 'whatsapp'])) }}" class="bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 text-center">
             <i class="fab fa-whatsapp mr-2"></i>WhatsApp
         </a>
+        <a href="{{ route('seccionk.admin.promociones.exportar', array_merge(request()->query(), ['formato' => 'nombres'])) }}" class="bg-teal-600 text-white px-4 py-2 rounded-lg hover:bg-teal-700 text-center">
+            <i class="fab fa-whatsapp mr-2"></i>WhatsApp nombres
+        </a>
         <a href="{{ route('seccionk.admin.promociones.create') }}" class="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 text-center">
             <i class="fas fa-plus mr-2"></i>Nueva Promoción
         </a>

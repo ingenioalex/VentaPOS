@@ -66,6 +66,9 @@ class AdminPromocionController extends Controller
         }
 
         $promociones = $this->aplicarFiltrosPromociones($query, $request->boolean('mostrar_inactivos'))->get();
+        $promociones->load(['participaciones' => function ($q) {
+            $q->where('pago', true)->with('evento');
+        }]);
         $totalCuotas = SeccionKEvento::cuotasMensuales()->activos()->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
 
@@ -95,6 +98,33 @@ class AdminPromocionController extends Controller
             );
         }
 
+        $soloNombres = in_array($request->get('formato'), ['nombres', 'nombres_txt'], true);
+        $texto = $soloNombres
+            ? $this->textoWhatsappNombres($promociones, $totalCuotas, $totalEventos)
+            : $this->textoWhatsappCompleto($promociones, $totalCuotas, $totalEventos);
+
+        if (in_array($request->get('formato'), ['descargar', 'nombres_txt'], true)) {
+            return SeccionKExport::texto(
+                $texto,
+                $soloNombres ? 'seccionk-promociones-nombres-whatsapp' : 'seccionk-promociones-whatsapp'
+            );
+        }
+
+        $query = $request->query();
+        unset($query['formato']);
+
+        return view('seccionk.admin.exportar-whatsapp', [
+            'titulo' => $soloNombres ? 'Promociones para WhatsApp (solo nombres)' : 'Promociones para WhatsApp',
+            'texto' => $texto,
+            'volver' => route('seccionk.admin.promociones.index', $query),
+            'descargar' => route('seccionk.admin.promociones.exportar', array_merge($query, [
+                'formato' => $soloNombres ? 'nombres_txt' : 'descargar',
+            ])),
+        ]);
+    }
+
+    private function textoWhatsappCompleto($promociones, int $totalCuotas, int $totalEventos): string
+    {
         $lineas = ["📋 *SECCIÓN K 2001 - PROMOCIONES*", 'Fecha: '.now()->format('d/m/Y H:i'), ''];
         foreach ($promociones as $promo) {
             $cuotasPagadas = (int) $promo->cuotas_pagadas;
@@ -110,18 +140,43 @@ class AdminPromocionController extends Controller
             $lineas[] = 'Eventos: '.$eventosPagados.'/'.$totalEventos.' pagados · '.$eventosFaltan.' por pagar';
             $lineas[] = '------------------------------';
         }
-        $texto = implode("\n", $lineas);
 
-        if ($request->get('formato') === 'descargar') {
-            return SeccionKExport::texto($texto, 'seccionk-promociones-whatsapp');
+        return implode("\n", $lineas);
+    }
+
+    private function textoWhatsappNombres($promociones, int $totalCuotas, int $totalEventos): string
+    {
+        $lineas = ["📋 *SECCIÓN K 2001 - PROMOCIONES*", 'Fecha: '.now()->format('d/m/Y H:i'), ''];
+        foreach ($promociones as $promo) {
+            $pagos = $promo->participaciones
+                ->filter(fn ($pago) => $pago->evento && $pago->evento->activo)
+                ->sortBy(fn ($pago) => $pago->evento->fecha?->timestamp ?? 0);
+
+            $meses = $pagos
+                ->filter(fn ($pago) => $pago->evento->esCuotaMensual())
+                ->map(fn ($pago) => $pago->evento->mesAbrev())
+                ->filter()
+                ->values();
+            $eventos = $pagos
+                ->filter(fn ($pago) => ! $pago->evento->esCuotaMensual())
+                ->map(fn ($pago) => trim($pago->evento->nombre).' '.$pago->evento->mesAbrev())
+                ->filter()
+                ->values();
+
+            $cuotasPagadas = (int) $promo->cuotas_pagadas;
+            $cuotasFaltan = max($totalCuotas - $cuotasPagadas, 0);
+            $eventosPagados = (int) $promo->eventos_pagados;
+            $eventosFaltan = max($totalEventos - $eventosPagados, 0);
+
+            $lineas[] = '👤 *'.$promo->nombreCompleto().'*';
+            $lineas[] = 'Cuotas: '.$cuotasPagadas.'/'.$totalCuotas.' pagadas · '.$cuotasFaltan.' por pagar';
+            $lineas[] = 'Mes pagado: '.($meses->isNotEmpty() ? $meses->implode(', ') : 'ninguno');
+            $lineas[] = 'Eventos: '.$eventosPagados.'/'.$totalEventos.' pagados · '.$eventosFaltan.' por pagar';
+            $lineas[] = 'evento: '.($eventos->isNotEmpty() ? $eventos->implode(', ') : 'ninguno');
+            $lineas[] = '------------------------------';
         }
 
-        return view('seccionk.admin.exportar-whatsapp', [
-            'titulo' => 'Promociones para WhatsApp',
-            'texto' => $texto,
-            'volver' => route('seccionk.admin.promociones.index', $request->query()),
-            'descargar' => route('seccionk.admin.promociones.exportar', array_merge($request->query(), ['formato' => 'descargar'])),
-        ]);
+        return implode("\n", $lineas);
     }
 
     private function aplicarFiltrosPromociones($query, bool $mostrarInactivos = false)

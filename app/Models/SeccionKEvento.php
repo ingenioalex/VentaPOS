@@ -121,6 +121,15 @@ class SeccionKEvento extends Model
         return $this->mes_cuota ?: '';
     }
 
+    public function mesAbrev(): string
+    {
+        if (preg_match('/^([A-ZÁÉÍÓÚÜ]+)/u', $this->mesCorto(), $partes)) {
+            return $partes[1];
+        }
+
+        return $this->mesCorto();
+    }
+
     public function scopeActivos($query)
     {
         return $query->where('activo', true);

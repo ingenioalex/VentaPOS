@@ -73,6 +73,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-11-01 | Continuación del chat y acuerdo de trabajo (local, GitHub, VPS sin cambios de BD) | ventasagil/CONTEXTO-TRABAJO.md, ventasagil/CHAT-CURSOR-2026-11-01.md, Este índice |
 | 2026-11-01 | Exportación del chat Cursor a `docs/ventasagil/` y copia en GitHub | ventasagil/README.md, Este índice |
 | 2026-10-10 | SSL producción: cert caducado (token Hostinger 401); renovado HTTP-01 + script de recuperación | PUESTA_EN_MARCHA.md, Este índice |
 | 2026-10-10 | BAT `recuperar-local.bat`: mata php.exe colgados, restaura web.php, Laragon + iniciar.ps1 | ARRANQUE_LOCAL.md, Este índice |

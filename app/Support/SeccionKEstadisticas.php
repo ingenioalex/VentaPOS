@@ -45,25 +45,38 @@ class SeccionKEstadisticas
 
     public static function resumenEventos(int $totalPromociones): Collection
     {
+        SeccionKEsquema::asegurarDeclaraciones();
+
         $eventos = SeccionKEvento::eventos()->activos()->orderByDesc('fecha')->orderByDesc('id')->get();
         if ($eventos->isEmpty()) {
             return collect();
         }
 
+        $ids = $eventos->pluck('id');
+        $declaraciones = SeccionKDeclaracion::whereIn('evento_id', $ids)->get()->keyBy('evento_id');
+        $eventos->each(function (SeccionKEvento $evento) use ($declaraciones) {
+            $evento->setRelation('declaracion', $declaraciones->get($evento->id));
+        });
+
         $partes = SeccionKParticipacion::dePromocionesActivas()
-            ->whereIn('evento_id', $eventos->pluck('id'))
+            ->whereIn('evento_id', $ids)
             ->get()
             ->groupBy('evento_id');
 
         return $eventos->map(function (SeccionKEvento $evento) use ($partes, $totalPromociones) {
             $rows = $partes->get($evento->id) ?? collect();
             $pagos = $rows->where('pago', true);
+            $recaudado = (float) $pagos->sum('monto_aportado');
+            $utilizado = $evento->montoUtilizado();
 
             return [
                 'evento' => $evento,
                 'participantes' => $rows->where('participo', true)->count(),
                 'aportantes' => $pagos->count(),
-                'recaudado' => (float) $pagos->sum('monto_aportado'),
+                'recaudado' => $recaudado,
+                'utilizado' => $utilizado,
+                'saldo' => $recaudado - $utilizado,
+                'cerrado' => $evento->estaCerrado(),
                 'total_promociones' => $totalPromociones,
             ];
         });

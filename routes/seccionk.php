@@ -38,6 +38,7 @@ Route::post('/admin/logout', [SeccionKAuthController::class, 'logout'])->name('a
 // Rutas del panel admin (protegidas)
 Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+    Route::get('/exportar', [AdminDashboardController::class, 'exportarDashboard'])->name('dashboard.exportar');
     Route::get('/resumen-cuotas', [AdminDashboardController::class, 'resumenCuotas'])->name('resumen.cuotas');
     Route::get('/resumen-cuotas/exportar', [AdminDashboardController::class, 'exportarResumen'])->name('resumen.cuotas.exportar');
     Route::get('/declaracion', [AdminDeclaracionController::class, 'index'])->name('declaracion');

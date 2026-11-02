@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKPromocion;
 use App\Models\SeccionKParticipacion;
+use App\Support\SeccionKEsquema;
 use App\Support\SeccionKEstadisticas;
 use App\Support\SeccionKExport;
 use Illuminate\Http\Request;
@@ -14,6 +15,8 @@ class AdminDashboardController extends Controller
 {
     public function index()
     {
+        SeccionKEsquema::asegurarDeclaraciones();
+
         $totalPromociones = SeccionKPromocion::activos()->count();
         $participanCuotas = SeccionKPromocion::activos()->where('participa_cuotas', true)->count();
         $totalEventos = SeccionKEvento::eventos()->activos()->count();
@@ -33,6 +36,8 @@ class AdminDashboardController extends Controller
 
         $resumenEventos = SeccionKEstadisticas::resumenEventos($totalPromociones);
         $montoRecaudadoEventos = $resumenEventos->sum('recaudado');
+        $montoUtilizadoEventos = $resumenEventos->sum('utilizado');
+        $montoSaldoEventos = $montoRecaudadoEventos - $montoUtilizadoEventos;
         $participantesEventos = $resumenEventos->sum('participantes');
         $aportantesEventos = SeccionKEstadisticas::comunidad()['aportando_eventos'];
 
@@ -62,6 +67,8 @@ class AdminDashboardController extends Controller
             'cuotasPagadasCount',
             'montoRecaudadoCuotas',
             'montoRecaudadoEventos',
+            'montoUtilizadoEventos',
+            'montoSaldoEventos',
             'participantesEventos',
             'aportantesEventos',
             'promocionesQuePagaron',
@@ -69,6 +76,32 @@ class AdminDashboardController extends Controller
             'resumenEventos',
             'resumenMeses'
         ));
+    }
+
+    public function exportarDashboard(Request $request)
+    {
+        SeccionKEsquema::asegurarDeclaraciones();
+
+        $orden = $request->get('orden', 'fecha') === 'nombre' ? 'nombre' : 'fecha';
+        $datos = $this->datosExportarDashboard($orden);
+        $params = ['orden' => $orden, 'formato' => 'descargar'];
+
+        if ($request->get('formato') === 'excel') {
+            return $this->excelDashboard($datos);
+        }
+
+        $texto = $this->textoDashboard($datos);
+
+        if ($request->get('formato') === 'descargar') {
+            return SeccionKExport::texto($texto, 'seccionk-dashboard-whatsapp');
+        }
+
+        return view('seccionk.admin.exportar-whatsapp', [
+            'titulo' => 'Dashboard Sección K para WhatsApp',
+            'texto' => $texto,
+            'volver' => route('seccionk.admin.dashboard'),
+            'descargar' => route('seccionk.admin.dashboard.exportar', $params),
+        ]);
     }
 
     public function resumenCuotas()
@@ -251,6 +284,124 @@ class AdminDashboardController extends Controller
 
         $total = $cuotas->sum(fn ($cuota) => $totalesMes[$cuota->id]['recaudado']);
         $lineas[] = '*Total recaudado: S/ '.number_format($total, 2).'*';
+
+        return implode("\n", $lineas);
+    }
+
+    private function datosExportarDashboard(string $orden): array
+    {
+        $participanCuotas = SeccionKPromocion::activos()->where('participa_cuotas', true)->count();
+        $totalPromociones = SeccionKPromocion::activos()->count();
+
+        $meses = SeccionKEvento::cuotasMensuales()
+            ->activos()
+            ->orderBy('fecha')
+            ->get()
+            ->map(function ($cuota) use ($participanCuotas) {
+                $pagos = SeccionKParticipacion::dePromocionesActivas()
+                    ->where('evento_id', $cuota->id)
+                    ->where('pago', true);
+                $pagaron = (clone $pagos)->count();
+
+                return [
+                    'nombre' => $cuota->mes_cuota ?: $cuota->nombre,
+                    'fecha' => $cuota->fecha,
+                    'pagaron' => $pagaron,
+                    'faltan' => max($participanCuotas - $pagaron, 0),
+                    'recaudado' => (float) (clone $pagos)->sum('monto_aportado'),
+                ];
+            });
+
+        $eventos = SeccionKEstadisticas::resumenEventos($totalPromociones);
+        $eventos = $orden === 'nombre'
+            ? $eventos->sortBy(fn ($fila) => mb_strtolower($fila['evento']->nombre), SORT_NATURAL)->values()
+            : $eventos->sortBy(fn ($fila) => $fila['evento']->fecha->timestamp)->values();
+
+        return [
+            'orden' => $orden,
+            'meses' => $meses,
+            'eventos' => $eventos,
+            'total_cuotas' => (float) $meses->sum('recaudado'),
+            'total_recaudado_eventos' => (float) $eventos->sum('recaudado'),
+            'total_utilizado_eventos' => (float) $eventos->sum('utilizado'),
+            'total_saldo_eventos' => (float) $eventos->sum('saldo'),
+        ];
+    }
+
+    private function excelDashboard(array $datos)
+    {
+        $filas = [
+            ['CUOTAS POR MES', '', '', '', '', '', ''],
+            ['Mes', 'Fecha', 'Pagaron', 'Faltan', 'Recaudado S/', '', ''],
+        ];
+        foreach ($datos['meses'] as $mes) {
+            $filas[] = [
+                $mes['nombre'],
+                $mes['fecha']->format('d/m/Y'),
+                $mes['pagaron'],
+                $mes['faltan'],
+                number_format($mes['recaudado'], 2, '.', ''),
+                '',
+                '',
+            ];
+        }
+        $filas[] = ['TOTAL CUOTAS', '', '', '', number_format($datos['total_cuotas'], 2, '.', ''), '', ''];
+        $filas[] = ['', '', '', '', '', '', ''];
+        $filas[] = ['EVENTOS (recaudado − declaración)', '', '', '', '', '', ''];
+        $filas[] = ['Evento', 'Fecha', 'Participantes', 'Aportes', 'Recaudado S/', 'Declarado S/', 'Saldo S/'];
+        foreach ($datos['eventos'] as $fila) {
+            $filas[] = [
+                $fila['evento']->nombre,
+                $fila['evento']->fecha->format('d/m/Y'),
+                $fila['participantes'].'/'.$fila['total_promociones'],
+                $fila['aportantes'],
+                number_format($fila['recaudado'], 2, '.', ''),
+                number_format($fila['utilizado'], 2, '.', ''),
+                number_format($fila['saldo'], 2, '.', ''),
+            ];
+        }
+        $filas[] = [
+            'TOTAL EVENTOS',
+            '',
+            '',
+            '',
+            number_format($datos['total_recaudado_eventos'], 2, '.', ''),
+            number_format($datos['total_utilizado_eventos'], 2, '.', ''),
+            number_format($datos['total_saldo_eventos'], 2, '.', ''),
+        ];
+
+        return SeccionKExport::excel(
+            'Dashboard',
+            ['Sección K 2001', 'Orden: '.($datos['orden'] === 'nombre' ? 'nombre' : 'fecha'), '', '', '', '', ''],
+            $filas,
+            'seccionk-dashboard'
+        );
+    }
+
+    private function textoDashboard(array $datos): string
+    {
+        $lineas = [
+            '📊 *SECCIÓN K 2001 - DASHBOARD*',
+            'Fecha: '.now()->format('d/m/Y H:i'),
+            'Eventos ordenados por '.($datos['orden'] === 'nombre' ? 'nombre' : 'fecha'),
+            '',
+            '📅 *CUOTAS POR MES*',
+        ];
+        foreach ($datos['meses'] as $mes) {
+            $lineas[] = $mes['fecha']->format('d/m/Y').' · *'.$mes['nombre'].'* · '.$mes['pagaron'].' pagaron · S/ '.number_format($mes['recaudado'], 2);
+        }
+        $lineas[] = '*Total cuotas: S/ '.number_format($datos['total_cuotas'], 2).'*';
+        $lineas[] = '';
+        $lineas[] = '⭐ *EVENTOS (recaudado − declaración)*';
+        foreach ($datos['eventos'] as $fila) {
+            $lineas[] = $fila['evento']->fecha->format('d/m/Y').' · *'.$fila['evento']->nombre.'*';
+            $lineas[] = $fila['participantes'].'/'.$fila['total_promociones'].' participaron · Recaudado S/ '.number_format($fila['recaudado'], 2)
+                .' · Declarado S/ '.number_format($fila['utilizado'], 2)
+                .' · Saldo S/ '.number_format($fila['saldo'], 2);
+        }
+        $lineas[] = '*Total eventos: Recaudado S/ '.number_format($datos['total_recaudado_eventos'], 2)
+            .' − Declarado S/ '.number_format($datos['total_utilizado_eventos'], 2)
+            .' = Saldo S/ '.number_format($datos['total_saldo_eventos'], 2).'*';
 
         return implode("\n", $lineas);
     }

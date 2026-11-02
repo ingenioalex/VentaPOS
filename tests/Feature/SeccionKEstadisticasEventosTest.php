@@ -2,6 +2,7 @@
 
 namespace Tests\Feature;
 
+use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
@@ -66,14 +67,82 @@ class SeccionKEstadisticasEventosTest extends TestCase
         $respuesta = $this->actingAs($admin, 'seccionk')->get(route('seccionk.admin.dashboard'));
 
         $respuesta->assertOk();
-        $respuesta->assertSee('Monto recaudado (eventos)');
+        $respuesta->assertSee('Eventos · recaudado − declarado');
         $respuesta->assertSee('S/ 5.00');
         $respuesta->assertSee('Partido de Fútbol');
         $respuesta->assertSee('1/2');
         $respuesta->assertSee('Ver detalle');
+        $respuesta->assertSee('Excel');
+        $respuesta->assertSee('WhatsApp');
+        $respuesta->assertSee('Ordenar por fecha');
         $respuesta->assertSee('Declaración de fondos');
         $respuesta->assertSee(route('seccionk.admin.eventos.detalle', $evento), false);
         $respuesta->assertSee(route('seccionk.admin.declaracion'), false);
+        $respuesta->assertSee(route('seccionk.admin.dashboard.exportar'), false);
+    }
+
+    public function test_el_dashboard_resta_la_declaracion_de_los_eventos(): void
+    {
+        $evento = $this->datosDemo();
+        SeccionKDeclaracion::registrarCierre($evento, 4);
+        $admin = $this->admin();
+
+        $respuesta = $this->actingAs($admin, 'seccionk')->get(route('seccionk.admin.dashboard'));
+
+        $respuesta->assertOk();
+        $respuesta->assertSee('Recaudado S/ 5.00');
+        $respuesta->assertSee('declarado S/ 4.00');
+        $respuesta->assertSee('S/ 1.00');
+    }
+
+    public function test_exportar_dashboard_excel_ordena_eventos_por_fecha(): void
+    {
+        $primero = $this->datosDemo();
+        $segundo = SeccionKEvento::create([
+            'nombre' => 'Asado de confraternidad',
+            'fecha' => '2026-11-02',
+            'monto' => 20,
+            'tipo' => 'evento',
+            'activo' => true,
+        ]);
+        $admin = $this->admin();
+
+        $respuesta = $this->actingAs($admin, 'seccionk')
+            ->get(route('seccionk.admin.dashboard.exportar', ['formato' => 'excel', 'orden' => 'fecha']));
+
+        $respuesta->assertOk();
+        $contenido = $respuesta->getContent();
+        $this->assertStringContainsString('Partido de Fútbol', $contenido);
+        $this->assertStringContainsString('Asado de confraternidad', $contenido);
+        $this->assertTrue(strpos($contenido, 'Partido de Fútbol') < strpos($contenido, 'Asado de confraternidad'));
+        $this->assertStringContainsString('Recaudado S/', $contenido);
+        $this->assertStringContainsString('Declarado S/', $contenido);
+        $this->assertStringContainsString('Saldo S/', $contenido);
+        $this->assertSame($primero->nombre, 'Partido de Fútbol');
+        $this->assertSame($segundo->tipo, 'evento');
+    }
+
+    public function test_exportar_dashboard_whatsapp_ordena_por_nombre(): void
+    {
+        $this->datosDemo();
+        SeccionKEvento::create([
+            'nombre' => 'Asado de confraternidad',
+            'fecha' => '2026-11-02',
+            'monto' => 20,
+            'tipo' => 'evento',
+            'activo' => true,
+        ]);
+        $admin = $this->admin();
+
+        $respuesta = $this->actingAs($admin, 'seccionk')
+            ->get(route('seccionk.admin.dashboard.exportar', ['formato' => 'whatsapp', 'orden' => 'nombre']));
+
+        $respuesta->assertOk();
+        $respuesta->assertSee('Dashboard Sección K para WhatsApp');
+        $texto = $respuesta->viewData('texto');
+        $this->assertStringContainsString('ordenados por nombre', $texto);
+        $this->assertTrue(strpos($texto, 'Asado de confraternidad') < strpos($texto, 'Partido de Fútbol'));
+        $this->assertStringContainsString('recaudado − declaración', $texto);
     }
 
     public function test_el_detalle_del_evento_lista_aportes_y_el_total(): void

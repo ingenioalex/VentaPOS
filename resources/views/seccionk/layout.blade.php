@@ -26,8 +26,14 @@
         }
         
         .card-hover:hover {
-            transform: translateY(-5px);
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+        }
+        @media (min-width: 768px) {
+            .card-hover:hover { transform: translateY(-5px); }
+        }
+        input, select, textarea, button { max-width: 100%; }
+        @media (max-width: 640px) {
+            input, select, textarea { font-size: 16px; }
         }
         
         .timeline-item::before {
@@ -45,29 +51,29 @@
         }
     </style>
 </head>
-<body class="bg-gray-50">
+<body class="bg-gray-50 overflow-x-hidden">
     <!-- Navbar -->
     <nav class="gradient-bg shadow-lg">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16">
-                <div class="flex items-center">
-                    <a href="{{ route('seccionk.index') }}" class="flex items-center space-x-3">
-                        <div class="bg-white rounded-lg p-2">
-                            <i class="fas fa-users text-purple-600 text-2xl"></i>
+        <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8">
+            <div class="flex justify-between items-center h-14 sm:h-16 gap-2">
+                <div class="flex items-center min-w-0">
+                    <a href="{{ route('seccionk.index') }}" class="flex items-center space-x-2 sm:space-x-3 min-w-0">
+                        <div class="bg-white rounded-lg p-1.5 sm:p-2 flex-shrink-0">
+                            <i class="fas fa-users text-purple-600 text-lg sm:text-2xl"></i>
                         </div>
-                        <div class="text-white">
-                            <div class="font-bold text-lg">Sección K</div>
-                            <div class="text-xs text-purple-200">Promoción 2001</div>
+                        <div class="text-white min-w-0">
+                            <div class="font-bold text-base sm:text-lg leading-tight">Sección K</div>
+                            <div class="text-[11px] sm:text-xs text-purple-200">Promoción 2001</div>
                         </div>
                     </a>
                 </div>
-                <div class="flex items-center space-x-4">
+                <div class="flex items-center gap-2 sm:gap-4 flex-shrink-0">
                     @yield('nav-actions')
-                    <a href="{{ route('seccionk.index') }}" class="text-white hover:text-purple-200 transition">
-                        <i class="fas fa-home mr-2"></i>Inicio
+                    <a href="{{ route('seccionk.index') }}" class="text-white hover:text-purple-200 transition px-2 py-2 text-sm">
+                        <i class="fas fa-home sm:mr-2"></i><span class="hidden sm:inline">Inicio</span>
                     </a>
-                    <a href="{{ route('seccionk.registro') }}" class="bg-white text-purple-600 px-4 py-2 rounded-lg font-semibold hover:bg-purple-50 transition">
-                        <i class="fas fa-user-plus mr-2"></i>Registrarse
+                    <a href="{{ route('seccionk.registro') }}" class="bg-white text-purple-600 px-3 sm:px-4 py-1.5 sm:py-2 rounded-lg font-semibold hover:bg-purple-50 transition text-sm whitespace-nowrap">
+                        <i class="fas fa-user-plus sm:mr-2"></i><span class="hidden xs:inline sm:inline">Registrarse</span>
                     </a>
                 </div>
             </div>
@@ -76,6 +82,13 @@
 
     <!-- Content -->
     <main>
+        @if(session('error'))
+            <div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 pt-6">
+                <div class="bg-red-50 border-l-4 border-red-500 p-4 rounded">
+                    <p class="text-red-700">{{ session('error') }}</p>
+                </div>
+            </div>
+        @endif
         @yield('content')
     </main>
 
@@ -111,6 +124,7 @@
         </div>
     </footer>
 
+    @include('seccionk.partials.comprimir-imagen')
     @yield('scripts')
 </body>
 </html>

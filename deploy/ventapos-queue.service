@@ -1,1 +1,17 @@
+[Unit]
+Description=VentaPOS queue worker
+After=network.target mysql.service
 
+[Service]
+Type=simple
+User=www-data
+Group=www-data
+WorkingDirectory=/var/www/ventapos
+ExecStart=/usr/bin/php artisan queue:work database --sleep=1 --tries=3 --timeout=120 --max-time=3600
+Restart=always
+RestartSec=3
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

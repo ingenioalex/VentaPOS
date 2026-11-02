@@ -3,7 +3,7 @@
 @section('title', 'Mi Perfil - ' . $promocion->nombreCompleto())
 
 @section('content')
-<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+<div class="max-w-7xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-8">
     <!-- Success Message -->
     @if(session('success'))
         <div class="bg-green-50 border-l-4 border-green-500 p-4 mb-6 rounded">
@@ -15,15 +15,15 @@
     @endif
 
     <!-- Header -->
-    <div class="bg-white rounded-2xl shadow-xl p-8 mb-8">
-        <div class="flex items-center space-x-6">
-            <div class="w-24 h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center">
-                <span class="text-white text-3xl font-bold">
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8 mb-8">
+        <div class="flex flex-col sm:flex-row sm:items-center gap-4 sm:space-x-6">
+            <div class="w-16 h-16 sm:w-24 sm:h-24 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center flex-shrink-0">
+                <span class="text-white text-2xl sm:text-3xl font-bold">
                     {{ substr($promocion->nombre, 0, 1) }}{{ substr($promocion->apellido_paterno, 0, 1) }}
                 </span>
             </div>
-            <div class="flex-1">
-                <h1 class="text-3xl font-bold text-gray-900">{{ $promocion->nombreCompleto() }}</h1>
+            <div class="flex-1 min-w-0">
+                <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 break-words">{{ $promocion->nombreCompleto() }}</h1>
                 <p class="text-gray-600">
                     <i class="fas fa-id-card mr-2"></i>DNI: {{ $promocion->dni }}
                 </p>
@@ -33,7 +33,7 @@
                     </p>
                 @endif
             </div>
-            <div class="text-right">
+            <div class="sm:text-right">
                 @if($promocion->participa_cuotas)
                     <span class="inline-flex items-center px-4 py-2 rounded-full bg-green-100 text-green-800 text-sm font-semibold">
                         <i class="fas fa-check-circle mr-2"></i>Participa en Cuotas
@@ -47,7 +47,11 @@
         </div>
     </div>
 
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Resumen de la Sección K</h2>
+    @include('seccionk.partials.resumen-comunidad', ['stats' => $stats])
+
     <!-- Statistics -->
+    <h2 class="text-lg sm:text-xl font-bold text-gray-900 mb-3">Tu participación</h2>
     <div class="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">
@@ -64,7 +68,7 @@
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-semibold mb-1">Total Aportado</p>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Aporte en cuotas</p>
                     <p class="text-3xl font-bold text-green-600">S/ {{ number_format($totalAportadoCuotas, 2) }}</p>
                 </div>
                 <div class="bg-green-100 rounded-full p-3">
@@ -76,8 +80,9 @@
         <div class="bg-white rounded-xl shadow-lg p-6 card-hover">
             <div class="flex items-center justify-between">
                 <div>
-                    <p class="text-gray-500 text-sm font-semibold mb-1">Eventos</p>
-                    <p class="text-3xl font-bold text-blue-600">{{ $eventosData->count() }}</p>
+                    <p class="text-gray-500 text-sm font-semibold mb-1">Aporte en eventos</p>
+                    <p class="text-3xl font-bold text-blue-600">S/ {{ number_format($totalAportadoEventos, 2) }}</p>
+                    <p class="text-xs text-gray-500 mt-1">{{ $eventosData->count() }} eventos</p>
                 </div>
                 <div class="bg-blue-100 rounded-full p-3">
                     <i class="fas fa-calendar-alt text-blue-600 text-2xl"></i>
@@ -101,8 +106,8 @@
     <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <!-- Timeline de Cuotas Mensuales -->
         <div class="lg:col-span-2">
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <i class="fas fa-calendar-check text-purple-600 mr-3"></i>
                     Línea de Tiempo - Cuotas Mensuales
                 </h2>
@@ -115,8 +120,8 @@
                             </div>
 
                             <div class="bg-gray-50 rounded-lg p-4 {{ $cuota['pago'] ? 'border-l-4 border-green-500' : '' }}">
-                                <div class="flex justify-between items-start mb-2">
-                                    <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mes_cuota }}</h3>
+                                <div class="flex flex-wrap justify-between items-start gap-2 mb-2">
+                                    <h3 class="font-semibold text-gray-900">{{ $cuota['evento']->mes_cuota ?: $cuota['evento']->nombre }}</h3>
                                     @if($cuota['pago'])
                                         <span class="px-3 py-1 rounded-full bg-green-100 text-green-800 text-xs font-semibold">
                                             Pagado
@@ -179,7 +184,7 @@
 
                                     <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                                         <label class="inline-flex items-center text-sm text-purple-700 cursor-pointer">
-                                            <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp" class="sr-only" onchange="this.nextElementSibling.querySelector('.nombre-archivo').textContent = this.files[0] ? this.files[0].name : 'Cargar imagen (opcional)'">
+                                            <input type="file" name="imagen" accept="image/jpeg,image/png,image/webp,image/*" class="sr-only">
                                             <span class="inline-flex items-center px-3 py-2 rounded-lg bg-white border border-purple-200 hover:bg-purple-50">
                                                 <i class="fas fa-image mr-2"></i>
                                                 <span class="nombre-archivo">Cargar imagen (opcional)</span>
@@ -199,8 +204,8 @@
 
         <!-- Eventos -->
         <div>
-            <div class="bg-white rounded-2xl shadow-xl p-8">
-                <h2 class="text-2xl font-bold text-gray-900 mb-6 flex items-center">
+            <div class="bg-white rounded-2xl shadow-xl p-4 sm:p-8">
+                <h2 class="text-xl sm:text-2xl font-bold text-gray-900 mb-6 flex items-center">
                     <i class="fas fa-star text-yellow-500 mr-3"></i>
                     Eventos
                 </h2>

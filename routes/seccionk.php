@@ -5,6 +5,7 @@ use App\Http\Controllers\SeccionK\SeccionKAuthController;
 use App\Http\Controllers\SeccionK\Admin\AdminDashboardController;
 use App\Http\Controllers\SeccionK\Admin\AdminPromocionController;
 use App\Http\Controllers\SeccionK\Admin\AdminEventoController;
+use App\Http\Controllers\SeccionK\Admin\AdminDeclaracionController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,8 +20,11 @@ use Illuminate\Support\Facades\Route;
 
 // Rutas públicas
 Route::get('/', [SeccionKPublicoController::class, 'index'])->name('index');
+Route::get('/error-subida', [SeccionKPublicoController::class, 'errorSubida'])->name('error-subida');
 Route::post('/buscar', [SeccionKPublicoController::class, 'buscar'])->name('buscar');
 Route::get('/perfil/{id}', [SeccionKPublicoController::class, 'perfil'])->name('perfil');
+Route::get('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'avisoComentarioIncompleto'])
+    ->name('perfil.cuota.comentario.aviso');
 Route::post('/perfil/{id}/cuota/{evento}/comentario', [SeccionKPublicoController::class, 'guardarComentarioCuota'])
     ->name('perfil.cuota.comentario');
 Route::get('/registro', [SeccionKPublicoController::class, 'registroForm'])->name('registro');
@@ -35,18 +39,33 @@ Route::post('/admin/logout', [SeccionKAuthController::class, 'logout'])->name('a
 Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(function () {
     Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
     Route::get('/resumen-cuotas', [AdminDashboardController::class, 'resumenCuotas'])->name('resumen.cuotas');
+    Route::get('/resumen-cuotas/exportar', [AdminDashboardController::class, 'exportarResumen'])->name('resumen.cuotas.exportar');
+    Route::get('/declaracion', [AdminDeclaracionController::class, 'index'])->name('declaracion');
+    Route::get('/referencias', [AdminPromocionController::class, 'referencias'])->name('referencias');
+    Route::get('/referencias/exportar', [AdminPromocionController::class, 'exportarReferencias'])->name('referencias.exportar');
     
     // Gestión de promociones
+    Route::get('promociones/exportar', [AdminPromocionController::class, 'exportar'])->name('promociones.exportar');
     Route::resource('promociones', AdminPromocionController::class)
         ->parameters(['promociones' => 'promocion']);
+    Route::get('promociones/{promocion}/pagos/{evento}', [AdminPromocionController::class, 'avisoPagoIncompleto'])
+        ->name('promociones.pagos.aviso');
     Route::post('promociones/{promocion}/pagos/{evento}', [AdminPromocionController::class, 'registrarPago'])
         ->name('promociones.pagos.store');
+    Route::post('promociones/{promocion}/restaurar', [AdminPromocionController::class, 'restaurar'])
+        ->name('promociones.restaurar');
+    Route::delete('promociones/{promocion}/eliminar', [AdminPromocionController::class, 'eliminar'])
+        ->name('promociones.eliminar');
     
     // Gestión de eventos
     Route::resource('eventos', AdminEventoController::class)
         ->parameters(['eventos' => 'evento']);
+    Route::get('eventos/{evento}/detalle', [AdminEventoController::class, 'detalle'])
+        ->name('eventos.detalle');
     Route::get('eventos/{evento}/participantes', [AdminEventoController::class, 'participantes'])
         ->name('eventos.participantes');
     Route::post('eventos/{evento}/participantes', [AdminEventoController::class, 'guardarParticipantes'])
         ->name('eventos.participantes.store');
+    Route::post('eventos/{evento}/cerrar', [AdminEventoController::class, 'cerrar'])
+        ->name('eventos.cerrar');
 });

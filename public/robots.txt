@@ -1,0 +1,7 @@
+User-agent: *
+Allow: /
+Disallow: /app/
+Disallow: /login
+Disallow: /223305@dey@/
+
+Sitemap: https://ventasagil.com/sitemap.xml

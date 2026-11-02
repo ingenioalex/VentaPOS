@@ -37,6 +37,7 @@ Convención oficial para tablas y columnas. Alineada con `rms_db.sql` original d
 | `cash_withdrawals` | **`retiro_efectivo`** | RMS original |
 | `leads` | **`prospectos`** | Landing / beta |
 | — | **`admin_recuperacion_tokens`** | Tokens de restablecimiento clave super admin |
+| — | **`seccionk_declaraciones`** | Cierre de un evento Sección K: monto utilizado, fecha y observaciones. Una fila por `evento_id` |
 
 ### `usuarios` — recuperación super admin
 

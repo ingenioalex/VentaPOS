@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEstadisticas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Str;
@@ -33,13 +34,24 @@ class SeccionKPublicoController extends Controller
             return back()->withErrors(['busqueda' => 'No se encontró ninguna promoción con esos datos.']);
         }
 
+        $this->recordarIdentidad($promocion);
+
         return redirect()->route('seccionk.perfil', $promocion->id);
     }
 
     public function perfil($id)
     {
-        $promocion = SeccionKPromocion::with(['participaciones.evento'])
+        $promocion = SeccionKPromocion::activos()
+            ->with(['participaciones.evento'])
             ->findOrFail($id);
+
+        if (! $this->estaIdentificado($promocion)) {
+            return redirect()
+                ->route('seccionk.index')
+                ->withErrors(['busqueda' => 'Identifícate con tu DNI y apellido para ver tu información.']);
+        }
+
+        $stats = SeccionKEstadisticas::comunidad();
 
         // Cuotas mensuales ordenadas por fecha
         $cuotasMensuales = SeccionKEvento::cuotasMensuales()
@@ -85,7 +97,8 @@ class SeccionKPublicoController extends Controller
         // Estadísticas
         $totalCuotas = $cuotasMensuales->count();
         $cuotasPagadas = $cuotasData->where('pago', true)->count();
-        $totalAportadoCuotas = $cuotasData->sum('monto_aportado');
+        $totalAportadoCuotas = $cuotasData->where('pago', true)->sum('monto_aportado');
+        $totalAportadoEventos = $eventosData->where('pago', true)->sum('monto_aportado');
 
         return view('seccionk.perfil', compact(
             'promocion',
@@ -93,7 +106,9 @@ class SeccionKPublicoController extends Controller
             'eventosData',
             'totalCuotas',
             'cuotasPagadas',
-            'totalAportadoCuotas'
+            'totalAportadoCuotas',
+            'totalAportadoEventos',
+            'stats'
         ));
     }
 
@@ -116,14 +131,40 @@ class SeccionKPublicoController extends Controller
         ]);
 
         $promocion = SeccionKPromocion::create($request->all());
+        $this->recordarIdentidad($promocion);
 
         return redirect()->route('seccionk.perfil', $promocion->id)
             ->with('success', '¡Registro exitoso! Bienvenido a la Sección K - Promoción 2001.');
     }
 
+    public function avisoComentarioIncompleto($id)
+    {
+        return redirect()
+            ->route('seccionk.perfil', $id)
+            ->with('error', 'No se pudo guardar. Si subiste una foto del celular, vuelve a intentar: la imagen se reduce sola y es opcional.');
+    }
+
+    public function errorSubida(Request $request)
+    {
+        $volver = $request->headers->get('referer') ?: route('seccionk.index');
+        if (str_contains((string) $volver, '/admin')) {
+            $volver = route('seccionk.admin.promociones.index');
+        }
+
+        return response()
+            ->view('seccionk.error-subida', ['volver' => $volver])
+            ->header('Cache-Control', 'no-store');
+    }
+
     public function guardarComentarioCuota(Request $request, $id, $eventoId)
     {
         $promocion = SeccionKPromocion::where('activo', true)->findOrFail($id);
+
+        if (! $this->estaIdentificado($promocion)) {
+            return redirect()
+                ->route('seccionk.index')
+                ->withErrors(['busqueda' => 'Identifícate con tu DNI y apellido para ver tu información.']);
+        }
 
         $evento = SeccionKEvento::cuotasMensuales()
             ->activos()
@@ -131,7 +172,7 @@ class SeccionKPublicoController extends Controller
 
         $request->validate([
             'comentario' => 'nullable|string|max:1000',
-            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:4096',
+            'imagen' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
         ]);
 
         if (! $request->filled('comentario') && ! $request->hasFile('imagen')) {
@@ -174,5 +215,19 @@ class SeccionKPublicoController extends Controller
             ->route('seccionk.perfil', $promocion->id)
             ->with('success', 'Comentario guardado en la cuota de '.$evento->mes_cuota.'.')
             ->withFragment('cuota-'.$evento->id);
+    }
+
+    private function recordarIdentidad(SeccionKPromocion $promocion): void
+    {
+        session(['seccionk_identificado' => $promocion->id]);
+    }
+
+    private function estaIdentificado(SeccionKPromocion $promocion): bool
+    {
+        if (auth('seccionk')->check()) {
+            return true;
+        }
+
+        return (int) session('seccionk_identificado') === (int) $promocion->id;
     }
 }

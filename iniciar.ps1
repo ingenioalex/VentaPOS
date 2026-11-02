@@ -1,10 +1,13 @@
 # VentaPOS - Arranque local con Laragon PHP 8.3
-$php = "C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe"
+$phpDir = Get-ChildItem "C:\laragon\bin\php" -Directory -ErrorAction SilentlyContinue |
+    Where-Object { $_.Name -like "php-8.3*" } |
+    Sort-Object Name -Descending |
+    Select-Object -First 1
+$php = if ($phpDir) { Join-Path $phpDir.FullName "php.exe" } else { $null }
 $artisan = Join-Path $PSScriptRoot "artisan"
 
-if (-not (Test-Path $php)) {
-    Write-Host "ERROR: No se encuentra PHP de Laragon en $php" -ForegroundColor Red
-    Write-Host "Ajusta la ruta en iniciar.ps1 segun tu version de PHP."
+if (-not $php -or -not (Test-Path $php)) {
+    Write-Host "ERROR: No se encuentra PHP 8.3 de Laragon en C:\laragon\bin\php" -ForegroundColor Red
     exit 1
 }
 

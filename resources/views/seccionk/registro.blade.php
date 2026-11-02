@@ -3,13 +3,13 @@
 @section('title', 'Registro - Sección K Promoción 2001')
 
 @section('content')
-<div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
-    <div class="bg-white rounded-2xl shadow-xl p-8">
+<div class="max-w-3xl mx-auto px-3 sm:px-6 lg:px-8 py-6 sm:py-12">
+    <div class="bg-white rounded-2xl shadow-xl p-5 sm:p-8">
         <div class="text-center mb-8">
-            <div class="mx-auto w-20 h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
-                <i class="fas fa-user-plus text-white text-3xl"></i>
+            <div class="mx-auto w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-purple-500 to-indigo-600 rounded-full flex items-center justify-center mb-4">
+                <i class="fas fa-user-plus text-white text-2xl sm:text-3xl"></i>
             </div>
-            <h1 class="text-3xl font-bold text-gray-900 mb-2">Registro de Miembro</h1>
+            <h1 class="text-2xl sm:text-3xl font-bold text-gray-900 mb-2">Registro de Miembro</h1>
             <p class="text-gray-600">Sección K - Promoción 2001</p>
         </div>
 
@@ -133,7 +133,7 @@
                         name="referencias" 
                         id="referencias" 
                         rows="2"
-                        placeholder="Ej: Sección A 2000, Sección B 2002"
+                        placeholder="Ej: Manuel Llauce Pizarro celular 909090678"
                         class="w-full px-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:ring focus:ring-purple-200 transition @error('referencias') border-red-500 @enderror"
                     >{{ old('referencias') }}</textarea>
                     @error('referencias')
@@ -155,20 +155,20 @@
                             <i class="fas fa-hand-holding-usd text-purple-600 mr-2"></i>
                             <strong>Deseo participar en las cuotas mensuales</strong>
                             <span class="block text-sm text-gray-500 ml-7">
-                                Aporte mensual de S/ 50.00 desde Octubre 2026 hasta Diciembre 2027
+                                Aporte mensual de S/ 10.00 desde Octubre 2026 hasta Diciembre 2027
                             </span>
                         </span>
                     </label>
                 </div>
             </div>
 
-            <div class="flex items-center justify-between pt-6 border-t border-gray-200">
-                <a href="{{ route('seccionk.index') }}" class="text-gray-600 hover:text-gray-900 font-semibold">
+            <div class="flex flex-col-reverse sm:flex-row sm:items-center sm:justify-between gap-3 pt-6 border-t border-gray-200">
+                <a href="{{ route('seccionk.index') }}" class="text-gray-600 hover:text-gray-900 font-semibold text-center py-2">
                     <i class="fas fa-arrow-left mr-2"></i>Volver
                 </a>
                 <button 
                     type="submit" 
-                    class="gradient-bg text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition transform hover:scale-105"
+                    class="gradient-bg text-white font-bold py-3 px-8 rounded-lg hover:opacity-90 transition w-full sm:w-auto"
                 >
                     <i class="fas fa-check mr-2"></i>
                     Registrarse

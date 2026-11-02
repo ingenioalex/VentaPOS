@@ -1,10 +1,11 @@
-﻿<?php
+<?php
 
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use Symfony\Component\HttpKernel\Exception\MethodNotAllowedHttpException;
 
 return Application::configure(basePath: dirname(__DIR__))
     ->withRouting(
@@ -13,8 +14,9 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
         then: function () {
             Route::middleware('web')
-                ->group(base_path('routes/admin.php'));            
-            // SeccionK en ruta /seccionk
+                ->group(base_path('routes/admin.php'));
+            
+            // SeccionK en ruta /seccionk en lugar de subdominio
             Route::middleware('web')
                 ->prefix('seccionk')
                 ->name('seccionk.')
@@ -25,17 +27,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(append: [
             \App\Http\Middleware\IdentificarEmpresa::class,
         ]);
-        // Auth antes de route model binding: FiltraPorEmpresa necesita usuario autenticado.
-        $middleware->priority([
-            \Illuminate\Foundation\Http\Middleware\HandlePrecognitiveRequests::class,
-            \Illuminate\Cookie\Middleware\EncryptCookies::class,
-            \Illuminate\Cookie\Middleware\AddQueuedCookiesToResponse::class,
-            \Illuminate\Session\Middleware\StartSession::class,
-            \Illuminate\View\Middleware\ShareErrorsFromSession::class,
-            \Illuminate\Contracts\Auth\Middleware\AuthenticatesRequests::class,
-            \Illuminate\Foundation\Http\Middleware\ValidateCsrfToken::class,
-            \Illuminate\Routing\Middleware\SubstituteBindings::class,
-        ]);
         $middleware->alias([
             'modulo' => \App\Http\Middleware\VerificarModulo::class,
             'empresa' => \App\Http\Middleware\AsegurarEmpresa::class,
@@ -44,21 +35,12 @@ return Application::configure(basePath: dirname(__DIR__))
             'onboarding' => \App\Http\Middleware\RequiereOnboarding::class,
             'seccionk.auth' => \App\Http\Middleware\SeccionKAuth::class,
         ]);
-        $middleware->redirectGuestsTo(function (Request $request) {
-            $adminPath = trim((string) config('admin.panel_path', 'admin'), '/');
-
-            if ($request->is($adminPath) || $request->is($adminPath.'/*')) {
-                return route('admin.login');
-            }
-
-            return '/login';
-        });
+        $middleware->redirectGuestsTo('/login');
         $middleware->redirectUsersTo(function () {
             $usuario = auth()->user();
-            $adminPath = trim((string) config('admin.panel_path', 'admin'), '/');
 
             if ($usuario?->esSuperAdmin()) {
-                return '/'.$adminPath;
+                return '/admin';
             }
 
             return $usuario?->rutaInicio() ?? '/app';
@@ -68,5 +50,19 @@ return Application::configure(basePath: dirname(__DIR__))
         $exceptions->shouldRenderJsonWhen(
             fn (Request $request) => $request->is('api/*'),
         );
-    })->create();
 
+        $exceptions->render(function (MethodNotAllowedHttpException $e, Request $request) {
+            if (! $request->is('seccionk') && ! $request->is('seccionk/*')) {
+                return null;
+            }
+
+            $mensaje = 'El envío no llegó completo. Si adjuntaste una foto del celular, registra el pago sin imagen: la foto es opcional.';
+            $referer = $request->headers->get('referer');
+
+            if ($request->is('seccionk/admin/*')) {
+                return redirect($referer ?: url('/seccionk/admin'))->with('error', $mensaje);
+            }
+
+            return redirect($referer ?: url('/seccionk'))->with('error', $mensaje);
+        });
+    })->create();

@@ -7,7 +7,7 @@
     <div class="container" style="max-width:400px">
         <h1 style="text-align:center;margin-bottom:.5rem">Recuperar acceso</h1>
         <p style="text-align:center;color:#64748b;font-size:.9rem;margin-bottom:1.5rem">
-            Ingrese su usuario de administrador
+            Ingrese su usuario de super administrador
         </p>
         @if($errors->any())
             <div class="alert alert-error">{{ $errors->first() }}</div>

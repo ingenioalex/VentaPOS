@@ -2,20 +2,20 @@
 
 ## Requisitos
 
-- Laragon con PHP **8.3** (ruta: `C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\`)
+- Laragon con PHP **8.3** (cualquier carpeta `C:\laragon\bin\php\php-8.3*`; `iniciar.ps1` elige la más reciente)
 - MySQL de Laragon activo
 
 ## Primera vez
 
 ```powershell
-cd D:\Proyectos\VentaPOS_build
+cd E:\Proyectos\VentaPOS_build
 
 # Crear base de datos (en HeidiSQL o terminal MySQL):
 # CREATE DATABASE ventapos CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 
-$php = "C:\laragon\bin\php\php-8.3.30-Win32-vs16-x64\php.exe"
-
-& $php artisan migrate:fresh --seed
+.\iniciar.ps1
+# Primera vez, en otra terminal, con el PHP de Laragon:
+# php artisan migrate --seed
 ```
 
 ## Iniciar servidor

@@ -3,17 +3,23 @@
 namespace App\Http\Controllers\SeccionK\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEsquema;
+use App\Support\SeccionKEstadisticas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Str;
 
 class AdminEventoController extends Controller
 {
     public function index(Request $request)
     {
+        SeccionKEsquema::asegurarDeclaraciones();
+
         $query = SeccionKEvento::query();
 
         if ($request->filled('tipo')) {
@@ -28,9 +34,10 @@ class AdminEventoController extends Controller
             $query->where('activo', true);
         }
 
-        $eventos = $query->orderBy('fecha', 'desc')->paginate(20);
+        $eventos = $query->with('declaracion')->orderBy('fecha', 'desc')->paginate(20);
+        $resumenPorEvento = SeccionKEstadisticas::resumenPorEventos(collect($eventos->items()));
 
-        return view('seccionk.admin.eventos.index', compact('eventos'));
+        return view('seccionk.admin.eventos.index', compact('eventos', 'resumenPorEvento'));
     }
 
     public function create()
@@ -46,8 +53,15 @@ class AdminEventoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0',
             'tipo' => 'required|in:evento,cuota_mensual',
-            'mes_cuota' => 'nullable|string|max:20',
         ]);
+
+        if ($error = $this->validarMesUnico($data)) {
+            return back()->withInput()->withErrors($error);
+        }
+
+        $data['mes_cuota'] = $data['tipo'] === 'cuota_mensual'
+            ? SeccionKEvento::etiquetaDesdeFecha($data['fecha'])
+            : null;
 
         SeccionKEvento::create($data);
 
@@ -60,6 +74,11 @@ class AdminEventoController extends Controller
         return view('seccionk.admin.eventos.form', compact('evento'));
     }
 
+    public function show(SeccionKEvento $evento)
+    {
+        return redirect()->route('seccionk.admin.eventos.participantes', $evento);
+    }
+
     public function update(Request $request, SeccionKEvento $evento)
     {
         $data = $request->validate([
@@ -68,9 +87,16 @@ class AdminEventoController extends Controller
             'fecha' => 'required|date',
             'monto' => 'required|numeric|min:0',
             'tipo' => 'required|in:evento,cuota_mensual',
-            'mes_cuota' => 'nullable|string|max:20',
             'activo' => 'boolean',
         ]);
+
+        if ($error = $this->validarMesUnico($data, $evento)) {
+            return back()->withInput()->withErrors($error);
+        }
+
+        $data['mes_cuota'] = $data['tipo'] === 'cuota_mensual'
+            ? SeccionKEvento::etiquetaDesdeFecha($data['fecha'])
+            : null;
 
         $evento->update($data);
 
@@ -86,15 +112,53 @@ class AdminEventoController extends Controller
             ->with('success', 'Evento ocultado exitosamente.');
     }
 
+    public function cerrar(Request $request, SeccionKEvento $evento)
+    {
+        SeccionKEsquema::asegurarDeclaraciones();
+
+        $data = $request->validate([
+            'monto_utilizado' => 'required|numeric|min:0',
+            'observaciones' => 'nullable|string|max:1000',
+        ]);
+
+        SeccionKDeclaracion::registrarCierre(
+            $evento,
+            (float) $data['monto_utilizado'],
+            $data['observaciones'] ?? null
+        );
+
+        $destino = $request->input('volver') === 'declaracion'
+            ? route('seccionk.admin.declaracion')
+            : route('seccionk.admin.eventos.detalle', $evento);
+
+        $tipo = $evento->esCuotaMensual() ? 'cuota' : 'evento';
+
+        return redirect($destino)
+            ->with('success', ucfirst($tipo).' cerrado. Se registró el monto utilizado sin cambiar los aportes.');
+    }
+
+    public function detalle(SeccionKEvento $evento)
+    {
+        SeccionKEsquema::asegurarDeclaraciones();
+        $evento->load('declaracion');
+
+        return view('seccionk.admin.eventos.detalle', SeccionKEstadisticas::detalleEvento($evento));
+    }
+
     public function participantes(SeccionKEvento $evento)
     {
-        $promociones = SeccionKPromocion::activos()->orderBy('apellido_paterno')->get();
-        
-        $participaciones = SeccionKParticipacion::where('evento_id', $evento->id)
+        $detalle = SeccionKEstadisticas::detalleEvento($evento);
+        $promociones = $detalle['filas']->pluck('promocion');
+        $participaciones = SeccionKParticipacion::query()
+            ->dePromocionesActivas()
+            ->where('evento_id', $evento->id)
             ->get()
             ->keyBy('promocion_id');
 
-        return view('seccionk.admin.eventos.participantes', compact('evento', 'promociones', 'participaciones'));
+        return view('seccionk.admin.eventos.participantes', array_merge($detalle, [
+            'promociones' => $promociones,
+            'participaciones' => $participaciones,
+        ]));
     }
 
     public function guardarParticipantes(Request $request, SeccionKEvento $evento)
@@ -108,16 +172,20 @@ class AdminEventoController extends Controller
             'participantes.*.numero_transaccion' => 'nullable|string|max:100',
             'participantes.*.fecha_pago' => 'nullable|date',
             'participantes.*.observaciones' => 'nullable|string',
+            'participantes.*.imagen_sustento' => 'nullable|image|mimes:jpg,jpeg,png,webp|max:8192',
         ]);
 
         DB::transaction(function () use ($evento, $data, $request) {
             foreach ($data['participantes'] as $promocionId => $participanteData) {
                 $imagenSustento = null;
-                
-                // Manejar la imagen si fue subida
+
                 if ($request->hasFile("participantes.{$promocionId}.imagen_sustento")) {
+                    $directorio = public_path('uploads/seccionk');
+                    File::ensureDirectoryExists($directorio);
                     $imagen = $request->file("participantes.{$promocionId}.imagen_sustento");
-                    $imagenSustento = $imagen->store('seccionk/sustentos', 'public');
+                    $nombre = $promocionId.'_'.$evento->id.'_'.Str::random(8).'.'.$imagen->getClientOriginalExtension();
+                    $imagen->move($directorio, $nombre);
+                    $imagenSustento = $nombre;
                 }
 
                 $existente = SeccionKParticipacion::where('evento_id', $evento->id)
@@ -149,5 +217,24 @@ class AdminEventoController extends Controller
 
         return redirect()->route('seccionk.admin.eventos.participantes', $evento)
             ->with('success', 'Participantes actualizados exitosamente.');
+    }
+
+    private function validarMesUnico(array $data, ?SeccionKEvento $evento = null): ?array
+    {
+        if (($data['tipo'] ?? '') !== 'cuota_mensual') {
+            return null;
+        }
+
+        $mes = SeccionKEvento::etiquetaDesdeFecha($data['fecha']);
+        $existe = SeccionKEvento::cuotasMensuales()
+            ->where('mes_cuota', $mes)
+            ->when($evento, fn ($query) => $query->where('id', '!=', $evento->id))
+            ->exists();
+
+        if ($existe) {
+            return ['fecha' => 'Ya existe la cuota de '.$mes.'. No se puede repetir el mes.'];
+        }
+
+        return null;
     }
 }

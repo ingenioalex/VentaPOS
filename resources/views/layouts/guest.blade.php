@@ -18,7 +18,8 @@
         'seoPath' => $seoPath,
         'jsonLd' => $jsonLd ?? null,
     ])
-    @include('partials.brand-icons')
+    <link rel="icon" href="{{ asset('brand/icon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ asset('brand/icon.svg') }}">
     <style>
         :root {
             --primary: #0f766e;

@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('titulo', 'Admin') — VentasÁgil</title>
-    @include('partials.brand-icons')
+    <title>@yield('titulo', 'Admin') — VentaPOS</title>
     <style>
         :root { --primary: #7c3aed; --sidebar: #1e1b4b; }
         * { box-sizing: border-box; margin: 0; padding: 0; }

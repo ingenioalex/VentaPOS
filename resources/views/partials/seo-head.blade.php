@@ -2,7 +2,7 @@
     $seoTitle = trim($seoTitle ?? '');
     $seoDescription = trim($seoDescription ?? config('seo.default_description'));
     $seoPath = $seoPath ?? '/';
-    $seoImage = $seoImage ?? asset('brand/og-image.png');
+    $seoImage = $seoImage ?? asset('brand/logo.svg');
     $canonical = rtrim(config('app.url'), '/').($seoPath === '/' ? '' : $seoPath);
     if (! str_starts_with($seoPath, '/')) {
         $canonical = rtrim(config('app.url'), '/').'/'.ltrim($seoPath, '/');

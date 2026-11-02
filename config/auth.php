@@ -1,4 +1,4 @@
-﻿<?php
+<?php
 
 use App\Models\Usuario;
 
@@ -41,7 +41,8 @@ return [
         'web' => [
             'driver' => 'session',
             'provider' => 'users',
-        ],        
+        ],
+        
         'seccionk' => [
             'driver' => 'session',
             'provider' => 'seccionk',
@@ -69,7 +70,8 @@ return [
         'users' => [
             'driver' => 'eloquent',
             'model' => env('AUTH_MODEL', Usuario::class),
-        ],        
+        ],
+        
         'seccionk' => [
             'driver' => 'eloquent',
             'model' => App\Models\SeccionKUsuario::class,
@@ -123,4 +125,3 @@ return [
     'password_timeout' => env('AUTH_PASSWORD_TIMEOUT', 10800),
 
 ];
-

@@ -7,7 +7,7 @@
 
 @section('content')
 <div class="max-w-3xl">
-    <form action="{{ $editando ? route('seccionk.admin.promociones.update', $promocion) : route('seccionk.admin.promociones.store') }}" method="POST" class="bg-white rounded-xl shadow-lg p-8 space-y-6">
+    <form action="{{ $editando ? route('seccionk.admin.promociones.update', $promocion) : route('seccionk.admin.promociones.store') }}" method="POST" class="bg-white rounded-xl shadow-lg p-4 sm:p-8 space-y-6">
         @csrf
         @if($editando)
             @method('PUT')
@@ -49,7 +49,8 @@
 
         <div>
             <label class="block text-sm font-semibold text-gray-700 mb-2">Referencias</label>
-            <textarea name="referencias" rows="3" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('referencias', $promocion->referencias ?? '') }}</textarea>
+            <textarea name="referencias" rows="3" placeholder="Ej: Manuel Llauce Pizarro celular 909090678" class="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-purple-500">{{ old('referencias', $promocion->referencias ?? '') }}</textarea>
+            <p class="text-xs text-gray-500 mt-1">Nombres o celulares de otras promociones que esta persona conoce.</p>
         </div>
 
         <label class="flex items-center space-x-2">
@@ -66,9 +67,9 @@
         </label>
         @endif
 
-        <div class="flex justify-end space-x-3">
-            <a href="{{ route('seccionk.admin.promociones.index') }}" class="px-6 py-2 rounded-lg border text-gray-700 hover:bg-gray-50">Cancelar</a>
-            <button type="submit" class="bg-purple-600 text-white px-6 py-2 rounded-lg hover:bg-purple-700">Guardar</button>
+        <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
+            <a href="{{ route('seccionk.admin.promociones.index') }}" class="px-6 py-3 sm:py-2 rounded-lg border text-gray-700 hover:bg-gray-50 text-center">Cancelar</a>
+            <button type="submit" class="bg-purple-600 text-white px-6 py-3 sm:py-2 rounded-lg hover:bg-purple-700">Guardar</button>
         </div>
     </form>
 </div>

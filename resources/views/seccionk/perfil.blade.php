@@ -217,6 +217,9 @@
                             <p class="text-sm text-gray-600 mb-3">
                                 <i class="fas fa-calendar mr-2"></i>{{ $evento['evento']->fecha->format('d/m/Y') }}
                             </p>
+                            @if($evento['evento']->fechaYaPaso())
+                                <p class="text-xs font-semibold text-slate-600 mb-2">Solo referencia · evento ya realizado</p>
+                            @endif
                             
                             <div class="flex items-center justify-between">
                                 <div class="space-y-1">

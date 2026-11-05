@@ -11,6 +11,11 @@
             · Sugerido: <span class="font-semibold">S/ {{ number_format($evento->monto, 2) }}</span>
         </p>
         <p class="text-sm text-gray-500 mt-1">Consulta de aportes. No modifica la información registrada.</p>
+        @include('seccionk.admin.partials.evento-referencia', [
+            'evento' => $evento,
+            'admin' => true,
+            'volver' => 'detalle',
+        ])
     </div>
     <div class="flex flex-wrap gap-3">
         <a href="{{ route('seccionk.admin.declaracion') }}" class="text-amber-700 hover:text-amber-900 font-semibold">

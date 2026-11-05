@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
+use App\Support\SeccionKEsquema;
 use App\Support\SeccionKExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
@@ -235,6 +236,7 @@ class AdminPromocionController extends Controller
 
     public function show(SeccionKPromocion $promocion)
     {
+        SeccionKEsquema::asegurarEdicionEventos();
         $promocion->load('participaciones.evento');
         $participaciones = $promocion->participaciones->keyBy('evento_id');
 
@@ -252,7 +254,7 @@ class AdminPromocionController extends Controller
             ];
         });
 
-        $eventos = SeccionKEvento::eventos()->activos()->orderBy('fecha', 'desc')->get()->map(function ($evento) use ($participaciones) {
+        $eventos = SeccionKEvento::eventos()->activos()->with('edicion')->orderBy('fecha', 'desc')->get()->map(function ($evento) use ($participaciones) {
             $part = $participaciones->get($evento->id);
 
             return [
@@ -308,6 +310,15 @@ class AdminPromocionController extends Controller
 
     public function registrarPago(Request $request, SeccionKPromocion $promocion, SeccionKEvento $evento)
     {
+        SeccionKEsquema::asegurarEdicionEventos();
+        $evento->loadMissing('edicion');
+
+        if ($evento->esSoloReferencia()) {
+            return redirect()
+                ->route('seccionk.admin.promociones.show', $promocion)
+                ->with('error', 'Este evento ya pasó. Actívalo para modificarlo.');
+        }
+
         $data = $request->validate([
             'monto_aportado' => 'required|numeric|min:0',
             'numero_transaccion' => 'nullable|string|max:100',

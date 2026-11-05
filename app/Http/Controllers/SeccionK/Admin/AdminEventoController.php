@@ -5,6 +5,7 @@ namespace App\Http\Controllers\SeccionK\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
+use App\Models\SeccionKEventoEdicion;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use App\Support\SeccionKEsquema;
@@ -19,6 +20,7 @@ class AdminEventoController extends Controller
     public function index(Request $request)
     {
         SeccionKEsquema::asegurarDeclaraciones();
+        SeccionKEsquema::asegurarEdicionEventos();
 
         $query = SeccionKEvento::query();
 
@@ -34,7 +36,7 @@ class AdminEventoController extends Controller
             $query->where('activo', true);
         }
 
-        $eventos = $query->with('declaracion')->orderBy('fecha', 'desc')->paginate(20);
+        $eventos = $query->with(['declaracion', 'edicion'])->orderBy('fecha', 'desc')->paginate(20);
         $resumenPorEvento = SeccionKEstadisticas::resumenPorEventos(collect($eventos->items()));
 
         return view('seccionk.admin.eventos.index', compact('eventos', 'resumenPorEvento'));
@@ -71,6 +73,9 @@ class AdminEventoController extends Controller
 
     public function edit(SeccionKEvento $evento)
     {
+        SeccionKEsquema::asegurarEdicionEventos();
+        $evento->loadMissing('edicion');
+
         return view('seccionk.admin.eventos.form', compact('evento'));
     }
 
@@ -81,6 +86,10 @@ class AdminEventoController extends Controller
 
     public function update(Request $request, SeccionKEvento $evento)
     {
+        if ($respuesta = $this->rechazarSiSoloReferencia($evento)) {
+            return $respuesta;
+        }
+
         $data = $request->validate([
             'nombre' => 'required|string|max:200',
             'descripcion' => 'nullable|string',
@@ -140,13 +149,16 @@ class AdminEventoController extends Controller
     public function detalle(SeccionKEvento $evento)
     {
         SeccionKEsquema::asegurarDeclaraciones();
-        $evento->load('declaracion');
+        SeccionKEsquema::asegurarEdicionEventos();
+        $evento->load(['declaracion', 'edicion']);
 
         return view('seccionk.admin.eventos.detalle', SeccionKEstadisticas::detalleEvento($evento));
     }
 
     public function participantes(SeccionKEvento $evento)
     {
+        SeccionKEsquema::asegurarEdicionEventos();
+        $evento->loadMissing('edicion');
         $detalle = SeccionKEstadisticas::detalleEvento($evento);
         $promociones = $detalle['filas']->pluck('promocion');
         $participaciones = SeccionKParticipacion::query()
@@ -163,6 +175,10 @@ class AdminEventoController extends Controller
 
     public function guardarParticipantes(Request $request, SeccionKEvento $evento)
     {
+        if ($respuesta = $this->rechazarSiSoloReferencia($evento)) {
+            return $respuesta;
+        }
+
         $data = $request->validate([
             'participantes' => 'required|array',
             'participantes.*' => 'array',
@@ -236,5 +252,55 @@ class AdminEventoController extends Controller
         }
 
         return null;
+    }
+
+    public function edicion(Request $request, SeccionKEvento $evento)
+    {
+        SeccionKEsquema::asegurarEdicionEventos();
+
+        $request->validate([
+            'abierto' => 'required|boolean',
+            'volver' => 'nullable|in:promocion,participantes,detalle,form,eventos',
+            'promocion' => 'nullable|integer',
+        ]);
+
+        if (! $evento->fechaYaPaso()) {
+            return redirect($this->destinoEdicion($request, $evento))
+                ->with('error', 'Este evento todavía está vigente y se puede modificar sin activarlo.');
+        }
+
+        $abierto = $request->boolean('abierto');
+        SeccionKEventoEdicion::marcar($evento, $abierto);
+
+        $mensaje = $abierto
+            ? 'Evento activado para modificar. Recuerda volverlo a referencia al terminar.'
+            : 'El evento volvió a mostrarse solo como referencia.';
+
+        return redirect($this->destinoEdicion($request, $evento))->with('success', $mensaje);
+    }
+
+    private function rechazarSiSoloReferencia(SeccionKEvento $evento)
+    {
+        SeccionKEsquema::asegurarEdicionEventos();
+        $evento->loadMissing('edicion');
+
+        if (! $evento->esSoloReferencia()) {
+            return null;
+        }
+
+        return back()->with('error', 'Este evento ya pasó. Actívalo para modificarlo.');
+    }
+
+    private function destinoEdicion(Request $request, SeccionKEvento $evento): string
+    {
+        return match ($request->input('volver')) {
+            'promocion' => $request->filled('promocion')
+                ? route('seccionk.admin.promociones.show', $request->integer('promocion'))
+                : route('seccionk.admin.eventos.index'),
+            'participantes' => route('seccionk.admin.eventos.participantes', $evento),
+            'detalle' => route('seccionk.admin.eventos.detalle', $evento),
+            'form' => route('seccionk.admin.eventos.edit', $evento),
+            default => route('seccionk.admin.eventos.index'),
+        };
     }
 }

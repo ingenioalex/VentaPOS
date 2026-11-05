@@ -36,6 +36,32 @@ class SeccionKEvento extends Model
         return $this->hasOne(SeccionKDeclaracion::class, 'evento_id');
     }
 
+    public function edicion(): HasOne
+    {
+        return $this->hasOne(SeccionKEventoEdicion::class, 'evento_id');
+    }
+
+    public function fechaYaPaso(): bool
+    {
+        if ($this->tipo !== 'evento' || ! $this->fecha) {
+            return false;
+        }
+
+        $hoy = now()->timezone('America/Lima')->toDateString();
+
+        return $this->fecha->toDateString() < $hoy;
+    }
+
+    public function permiteEditar(): bool
+    {
+        return ! $this->fechaYaPaso() || (bool) $this->edicion?->abierto;
+    }
+
+    public function esSoloReferencia(): bool
+    {
+        return $this->fechaYaPaso() && ! $this->permiteEditar();
+    }
+
     public function estaCerrado(): bool
     {
         return (bool) $this->declaracion?->cerrado;

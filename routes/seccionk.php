@@ -69,4 +69,6 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
         ->name('eventos.participantes.store');
     Route::post('eventos/{evento}/cerrar', [AdminEventoController::class, 'cerrar'])
         ->name('eventos.cerrar');
+    Route::post('eventos/{evento}/edicion', [AdminEventoController::class, 'edicion'])
+        ->name('eventos.edicion');
 });

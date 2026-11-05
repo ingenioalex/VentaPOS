@@ -35,6 +35,11 @@
                 @else
                     <span class="px-2 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold flex-shrink-0">Evento</span>
                 @endif
+                @if($evento->esSoloReferencia())
+                    <span class="px-2 py-1 rounded-full bg-slate-100 text-slate-700 text-xs font-semibold flex-shrink-0">Referencia</span>
+                @elseif($evento->fechaYaPaso())
+                    <span class="px-2 py-1 rounded-full bg-amber-100 text-amber-800 text-xs font-semibold flex-shrink-0">Editable</span>
+                @endif
             </div>
             <div class="grid grid-cols-3 gap-2 mt-3 text-sm">
                 <div>
@@ -54,6 +59,15 @@
                 <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-700 font-semibold">Detalle</a>
                 <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-700 font-semibold">Participantes</a>
                 <a href="{{ route('seccionk.admin.eventos.edit', $evento) }}" class="text-blue-700 font-semibold">Editar</a>
+                @if($evento->fechaYaPaso())
+                    <form method="POST" action="{{ route('seccionk.admin.eventos.edicion', $evento) }}" class="inline">
+                        @csrf
+                        <input type="hidden" name="abierto" value="{{ $evento->esSoloReferencia() ? 1 : 0 }}">
+                        <button type="submit" class="text-slate-700 font-semibold">
+                            {{ $evento->esSoloReferencia() ? 'Activar para modificar' : 'Volver a referencia' }}
+                        </button>
+                    </form>
+                @endif
                 <button
                     type="button"
                     class="text-amber-700 font-semibold"
@@ -102,6 +116,11 @@
                     @else
                         <span class="px-3 py-1 rounded-full bg-blue-100 text-blue-800 text-xs font-semibold">Evento</span>
                     @endif
+                    @if($evento->esSoloReferencia())
+                        <div class="text-xs text-slate-500 mt-1">Solo referencia</div>
+                    @elseif($evento->fechaYaPaso())
+                        <div class="text-xs text-amber-700 mt-1">Activado para modificar</div>
+                    @endif
                 </td>
                 <td class="px-6 py-4 text-right font-semibold">S/ {{ number_format($evento->monto, 2) }}</td>
                 <td class="px-6 py-4 text-right font-semibold text-green-700">S/ {{ number_format($resumenPorEvento[$evento->id]['recaudado'] ?? 0, 2) }}</td>
@@ -141,6 +160,15 @@
                     <a href="{{ route('seccionk.admin.eventos.edit', $evento) }}" class="text-blue-600 hover:text-blue-800" title="Editar">
                         <i class="fas fa-edit"></i>
                     </a>
+                    @if($evento->fechaYaPaso())
+                        <form action="{{ route('seccionk.admin.eventos.edicion', $evento) }}" method="POST" class="inline">
+                            @csrf
+                            <input type="hidden" name="abierto" value="{{ $evento->esSoloReferencia() ? 1 : 0 }}">
+                            <button type="submit" class="text-slate-600 hover:text-slate-800" title="{{ $evento->esSoloReferencia() ? 'Activar para modificar' : 'Volver a referencia' }}">
+                                <i class="fas {{ $evento->esSoloReferencia() ? 'fa-unlock' : 'fa-lock' }}"></i>
+                            </button>
+                        </form>
+                    @endif
                     <form action="{{ route('seccionk.admin.eventos.destroy', $evento) }}" method="POST" class="inline" onsubmit="return confirm('¿Ocultar este evento?')">
                         @csrf
                         @method('DELETE')

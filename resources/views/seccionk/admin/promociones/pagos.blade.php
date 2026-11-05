@@ -126,6 +126,14 @@
                         <a href="{{ asset('uploads/seccionk/'.$evento['imagen']) }}" target="_blank" class="text-xs text-purple-600">Ver imagen</a>
                     @endif
 
+                    @include('seccionk.admin.partials.evento-referencia', [
+                        'evento' => $evento['evento'],
+                        'admin' => true,
+                        'volver' => 'promocion',
+                        'promocion' => $promocion,
+                    ])
+
+                    @if($evento['evento']->permiteEditar())
                     <form action="{{ route('seccionk.admin.promociones.pagos.store', ['promocion' => $promocion->getKey(), 'evento' => $evento['evento']->getKey()]) }}" method="POST" enctype="multipart/form-data" class="mt-3 grid grid-cols-1 sm:grid-cols-2 gap-2">
                         @csrf
                         <input type="number" name="monto_aportado" step="0.01" min="0" required value="{{ old('monto_aportado', $evento['pago'] ? $evento['monto_aportado'] : $evento['evento']->monto) }}" class="px-3 py-2 border rounded-lg text-sm" placeholder="Monto">
@@ -140,6 +148,7 @@
                             {{ $evento['pago'] ? 'Actualizar pago' : 'Registrar pago' }}
                         </button>
                     </form>
+                    @endif
                 </div>
             @empty
                 <p class="px-6 py-8 text-center text-gray-500">No hay eventos registrados</p>

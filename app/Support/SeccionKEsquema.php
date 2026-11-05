@@ -24,4 +24,19 @@ class SeccionKEsquema
             $table->unique('evento_id');
         });
     }
+
+    public static function asegurarEdicionEventos(): void
+    {
+        if (! Schema::hasTable('seccionk_eventos') || Schema::hasTable('seccionk_eventos_edicion')) {
+            return;
+        }
+
+        Schema::create('seccionk_eventos_edicion', function (Blueprint $table) {
+            $table->id();
+            $table->foreignId('evento_id')->constrained('seccionk_eventos')->cascadeOnDelete();
+            $table->boolean('abierto')->default(false);
+            $table->timestamps();
+            $table->unique('evento_id');
+        });
+    }
 }

@@ -15,6 +15,11 @@
             {{ $aportantes }} aportaron ·
             Total recaudado <span class="font-semibold text-green-700">S/ {{ number_format($recaudado, 2) }}</span>
         </p>
+        @include('seccionk.admin.partials.evento-referencia', [
+            'evento' => $evento,
+            'admin' => true,
+            'volver' => 'participantes',
+        ])
     </div>
     <div class="flex flex-wrap gap-3">
         <a href="{{ route('seccionk.admin.eventos.detalle', $evento) }}" class="text-green-700 hover:text-green-900 font-semibold">
@@ -39,25 +44,25 @@
                 <div class="flex flex-wrap gap-4">
                     <label class="inline-flex items-center gap-2 text-sm">
                         <input type="hidden" name="participantes[{{ $promo->id }}][participo]" value="0">
-                        <input type="checkbox" class="w-5 h-5" name="participantes[{{ $promo->id }}][participo]" value="1" {{ old("participantes.{$promo->id}.participo", $part?->participo) ? 'checked' : '' }}>
+                        <input type="checkbox" class="w-5 h-5" name="participantes[{{ $promo->id }}][participo]" value="1" {{ old("participantes.{$promo->id}.participo", $part?->participo) ? 'checked' : '' }} @disabled($evento->esSoloReferencia())>
                         Participó
                     </label>
                     <label class="inline-flex items-center gap-2 text-sm">
                         <input type="hidden" name="participantes[{{ $promo->id }}][pago]" value="0">
-                        <input type="checkbox" class="w-5 h-5" name="participantes[{{ $promo->id }}][pago]" value="1" {{ old("participantes.{$promo->id}.pago", $part?->pago) ? 'checked' : '' }}>
+                        <input type="checkbox" class="w-5 h-5" name="participantes[{{ $promo->id }}][pago]" value="1" {{ old("participantes.{$promo->id}.pago", $part?->pago) ? 'checked' : '' }} @disabled($evento->esSoloReferencia())>
                         Pagó
                     </label>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                    <input type="number" step="0.01" min="0" name="participantes[{{ $promo->id }}][monto_aportado]" value="{{ old("participantes.{$promo->id}.monto_aportado", $part->monto_aportado ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="Monto S/">
-                    <input type="text" name="participantes[{{ $promo->id }}][numero_transaccion]" value="{{ old("participantes.{$promo->id}.numero_transaccion", $part->numero_transaccion ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="N° transacción">
-                    <input type="date" name="participantes[{{ $promo->id }}][fecha_pago]" value="{{ old("participantes.{$promo->id}.fecha_pago", $part?->fecha_pago?->format('Y-m-d')) }}" class="w-full px-3 py-2 border rounded-lg">
-                    <input type="text" name="participantes[{{ $promo->id }}][observaciones]" value="{{ old("participantes.{$promo->id}.observaciones", $part->observaciones ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="Comentario">
+                    <input type="number" step="0.01" min="0" name="participantes[{{ $promo->id }}][monto_aportado]" value="{{ old("participantes.{$promo->id}.monto_aportado", $part->monto_aportado ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="Monto S/" @disabled($evento->esSoloReferencia())>
+                    <input type="text" name="participantes[{{ $promo->id }}][numero_transaccion]" value="{{ old("participantes.{$promo->id}.numero_transaccion", $part->numero_transaccion ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="N° transacción" @disabled($evento->esSoloReferencia())>
+                    <input type="date" name="participantes[{{ $promo->id }}][fecha_pago]" value="{{ old("participantes.{$promo->id}.fecha_pago", $part?->fecha_pago?->format('Y-m-d')) }}" class="w-full px-3 py-2 border rounded-lg" @disabled($evento->esSoloReferencia())>
+                    <input type="text" name="participantes[{{ $promo->id }}][observaciones]" value="{{ old("participantes.{$promo->id}.observaciones", $part->observaciones ?? '') }}" class="w-full px-3 py-2 border rounded-lg" placeholder="Comentario" @disabled($evento->esSoloReferencia())>
                     <div class="sm:col-span-2">
                         @if($part?->imagen_sustento)
                             <a href="{{ asset('uploads/seccionk/'.$part->imagen_sustento) }}" target="_blank" class="text-purple-600 text-xs block mb-1">Ver imagen</a>
                         @endif
-                        <input type="file" name="participantes[{{ $promo->id }}][imagen_sustento]" accept="image/jpeg,image/png,image/webp,image/*" class="text-xs w-full">
+                        <input type="file" name="participantes[{{ $promo->id }}][imagen_sustento]" accept="image/jpeg,image/png,image/webp,image/*" class="text-xs w-full" @disabled($evento->esSoloReferencia())>
                         <p class="nombre-archivo text-xs text-gray-500 mt-1">Foto opcional. Si pesa mucho, se omite y el resto se guarda.</p>
                     </div>
                 </div>
@@ -74,11 +79,13 @@
             </p>
             <p class="text-lg font-bold text-green-700">Total recaudado: S/ {{ number_format($recaudado, 2) }}</p>
         </div>
+        @if($evento->permiteEditar())
         <div class="mt-6">
             <button type="submit" class="w-full sm:w-auto bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700">
                 <i class="fas fa-save mr-2"></i>Guardar participantes
             </button>
         </div>
+        @endif
     @endif
 </form>
 @endsection

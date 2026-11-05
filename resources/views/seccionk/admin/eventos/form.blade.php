@@ -7,6 +7,15 @@
 
 @section('content')
 <div class="max-w-3xl">
+    @if($editando)
+        <div class="mb-4">
+            @include('seccionk.admin.partials.evento-referencia', [
+                'evento' => $evento,
+                'admin' => true,
+                'volver' => 'form',
+            ])
+        </div>
+    @endif
     <form action="{{ $editando ? route('seccionk.admin.eventos.update', $evento) : route('seccionk.admin.eventos.store') }}" method="POST" class="bg-white rounded-xl shadow-lg p-4 sm:p-8 space-y-6">
         @csrf
         @if($editando)
@@ -60,7 +69,9 @@
 
         <div class="flex flex-col-reverse sm:flex-row sm:justify-end gap-3">
             <a href="{{ route('seccionk.admin.eventos.index') }}" class="px-6 py-3 sm:py-2 rounded-lg border text-gray-700 hover:bg-gray-50 text-center">Cancelar</a>
+            @if(!$editando || $evento->permiteEditar())
             <button type="submit" class="bg-purple-600 text-white px-6 py-3 sm:py-2 rounded-lg hover:bg-purple-700">Guardar</button>
+            @endif
         </div>
     </form>
 </div>

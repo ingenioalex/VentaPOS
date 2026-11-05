@@ -64,6 +64,7 @@ copy_path app/Models/SeccionKEvento.php
 copy_path app/Models/SeccionKParticipacion.php
 copy_path app/Models/SeccionKUsuario.php
 copy_path app/Models/SeccionKDeclaracion.php
+copy_path app/Models/SeccionKEventoEdicion.php
 copy_path app/Support
 copy_path app/Console/Commands/SeccionKLimpiarCuotasCommand.php
 copy_path app/Console/Commands/SeccionKAsegurarEsquemaCommand.php
@@ -71,9 +72,11 @@ copy_path resources/views/seccionk
 copy_path routes/seccionk.php
 copy_path database/migrations/2026_10_11_000001_crear_tablas_seccionk.php
 copy_path database/migrations/2026_10_22_000001_seccionk_cierre_eventos.php
+copy_path database/migrations/2026_11_04_000001_seccionk_eventos_edicion.php
 copy_path database/seeders/SeccionKSeeder.php
 copy_path database/sql/seccionk_instalar.sql
 copy_path database/sql/seccionk_declaraciones.sql
+copy_path database/sql/seccionk_eventos_edicion.sql
 copy_path public/uploads/seccionk
 copy_path public/.user.ini
 copy_path bootstrap/app.php
@@ -88,6 +91,7 @@ fi
 
 SQL_FILE="$APP/database/sql/seccionk_instalar.sql"
 DECL_SQL="$APP/database/sql/seccionk_declaraciones.sql"
+EDICION_SQL="$APP/database/sql/seccionk_eventos_edicion.sql"
 if [ -f "$SQL_FILE" ]; then
     DB_HOST=$(env_get DB_HOST)
     DB_NAME=$(env_get DB_DATABASE)
@@ -103,6 +107,10 @@ if [ -f "$SQL_FILE" ]; then
         if [ -f "$DECL_SQL" ]; then
             mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$DECL_SQL"
             echo "Tabla seccionk_declaraciones verificada (CREATE TABLE IF NOT EXISTS)"
+        fi
+        if [ -f "$EDICION_SQL" ]; then
+            mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$EDICION_SQL"
+            echo "Tabla seccionk_eventos_edicion verificada (CREATE TABLE IF NOT EXISTS)"
         fi
     else
         mysql -h"$DB_HOST" -u"$DB_USER" "$DB_NAME" < "$SQL_FILE"

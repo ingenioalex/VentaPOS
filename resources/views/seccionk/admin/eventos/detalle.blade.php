@@ -18,6 +18,9 @@
         ])
     </div>
     <div class="flex flex-wrap gap-3">
+        <a href="{{ route('seccionk.admin.fondo') }}" class="text-teal-700 hover:text-teal-900 font-semibold">
+            <i class="fas fa-exchange-alt mr-2"></i>Ingresos / egresos
+        </a>
         <a href="{{ route('seccionk.admin.declaracion') }}" class="text-amber-700 hover:text-amber-900 font-semibold">
             <i class="fas fa-balance-scale mr-2"></i>Declaración de fondos
         </a>
@@ -63,6 +66,12 @@
     </p>
     @include('seccionk.admin.partials.cerrar-evento', ['evento' => $evento, 'recaudado' => $recaudado, 'volver' => 'detalle'])
 </div>
+
+@include('seccionk.admin.partials.fondo-movimientos', [
+    'volver' => 'detalle',
+    'eventoDestino' => $evento->getKey(),
+    'mostrarHistorial' => true,
+])
 
 <div class="space-y-3 lg:hidden mb-4">
     @forelse($filas as $fila)

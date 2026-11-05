@@ -15,8 +15,10 @@ class SeccionKAsegurarEsquemaCommand extends Command
     {
         SeccionKEsquema::asegurarDeclaraciones();
         SeccionKEsquema::asegurarEdicionEventos();
+        SeccionKEsquema::asegurarMovimientos();
         $this->info('Tabla seccionk_declaraciones lista. No se modificó la data existente.');
         $this->info('Tabla seccionk_eventos_edicion lista. No se modificó la data existente.');
+        $this->info('Tabla seccionk_movimientos lista. No se modificó la data existente.');
 
         return self::SUCCESS;
     }

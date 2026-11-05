@@ -56,6 +56,42 @@
     </div>
 </div>
 
+@if($prestamosPendientes->isNotEmpty())
+<div class="bg-rose-50 border border-rose-200 rounded-xl shadow-lg p-4 sm:p-6 mb-8">
+    <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+        <div>
+            <p class="text-sm font-semibold text-rose-800">Préstamos pendientes</p>
+            <p class="text-3xl font-bold text-rose-700 mt-1">S/ {{ number_format($totalPrestamosPendientes, 2) }}</p>
+            <p class="text-xs text-rose-600 mt-1">Se restan del fondo total hasta que los devuelvan. Cuando paguen, dejan de verse aquí.</p>
+            <ul class="mt-3 space-y-1 text-sm text-rose-800">
+                @foreach($prestamosPendientes as $prestamo)
+                    <li>
+                        {{ $prestamo->persona ?: 'Sin nombre' }}
+                        · {{ $prestamo->fecha->format('d/m/Y') }}
+                        · Debe S/ {{ number_format($prestamo->saldoPendiente(), 2) }}
+                        @if($prestamo->comentario)
+                            · {{ $prestamo->comentario }}
+                        @endif
+                    </li>
+                @endforeach
+            </ul>
+        </div>
+        <div class="lg:text-right">
+            <p class="text-sm font-semibold text-gray-700">Fondo total disponible</p>
+            <p class="text-3xl font-bold {{ $fondoDisponible >= 0 ? 'text-blue-700' : 'text-red-700' }}">S/ {{ number_format($fondoDisponible, 2) }}</p>
+            <p class="text-xs text-gray-500 mt-1">
+                Cuotas S/ {{ number_format($montoRecaudadoCuotas, 2) }}
+                + eventos S/ {{ number_format($montoSaldoEventos, 2) }}
+                − préstamos S/ {{ number_format($totalPrestamosPendientes, 2) }}
+            </p>
+            <a href="{{ route('seccionk.admin.fondo') }}" class="inline-block mt-3 text-sm font-semibold text-teal-700 hover:text-teal-900">
+                Registrar devolución
+            </a>
+        </div>
+    </div>
+</div>
+@endif
+
 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
     <div class="lg:col-span-2 bg-white rounded-xl shadow-lg p-4 sm:p-6">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 mb-4">
@@ -102,6 +138,11 @@
             <p class="text-sm uppercase tracking-wide text-amber-100">Acceso directo</p>
             <p class="text-xl font-bold mt-1">Declaración de fondos</p>
             <p class="text-sm text-amber-100 mt-2">Recaudado vs utilizado en cuotas y eventos</p>
+        </a>
+        <a href="{{ route('seccionk.admin.fondo') }}" class="block p-5 bg-gradient-to-r from-teal-600 to-cyan-600 rounded-xl shadow-lg text-white hover:shadow-xl transition">
+            <p class="text-sm uppercase tracking-wide text-teal-100">Acceso directo</p>
+            <p class="text-xl font-bold mt-1">Ingresos / egresos</p>
+            <p class="text-sm text-teal-100 mt-2">Préstamos y devoluciones del fondo</p>
         </a>
         <div class="bg-white rounded-xl shadow-lg p-4 sm:p-6">
             <p class="text-gray-500 text-sm font-semibold">Participantes en eventos</p>

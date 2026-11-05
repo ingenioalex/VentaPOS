@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\SeccionKDeclaracion;
 use App\Models\SeccionKEvento;
 use App\Models\SeccionKEventoEdicion;
+use App\Models\SeccionKMovimiento;
 use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use App\Support\SeccionKEsquema;
@@ -150,9 +151,13 @@ class AdminEventoController extends Controller
     {
         SeccionKEsquema::asegurarDeclaraciones();
         SeccionKEsquema::asegurarEdicionEventos();
+        SeccionKEsquema::asegurarMovimientos();
         $evento->load(['declaracion', 'edicion']);
 
-        return view('seccionk.admin.eventos.detalle', SeccionKEstadisticas::detalleEvento($evento));
+        return view('seccionk.admin.eventos.detalle', array_merge(
+            SeccionKEstadisticas::detalleEvento($evento),
+            SeccionKMovimiento::resumenFondo()
+        ));
     }
 
     public function participantes(SeccionKEvento $evento)

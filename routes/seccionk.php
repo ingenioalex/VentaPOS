@@ -6,6 +6,7 @@ use App\Http\Controllers\SeccionK\Admin\AdminDashboardController;
 use App\Http\Controllers\SeccionK\Admin\AdminPromocionController;
 use App\Http\Controllers\SeccionK\Admin\AdminEventoController;
 use App\Http\Controllers\SeccionK\Admin\AdminDeclaracionController;
+use App\Http\Controllers\SeccionK\Admin\AdminMovimientoController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -42,6 +43,8 @@ Route::middleware('seccionk.auth')->prefix('admin')->name('admin.')->group(funct
     Route::get('/resumen-cuotas', [AdminDashboardController::class, 'resumenCuotas'])->name('resumen.cuotas');
     Route::get('/resumen-cuotas/exportar', [AdminDashboardController::class, 'exportarResumen'])->name('resumen.cuotas.exportar');
     Route::get('/declaracion', [AdminDeclaracionController::class, 'index'])->name('declaracion');
+    Route::get('/fondo', [AdminMovimientoController::class, 'index'])->name('fondo');
+    Route::post('/fondo', [AdminMovimientoController::class, 'store'])->name('fondo.store');
     Route::get('/referencias', [AdminPromocionController::class, 'referencias'])->name('referencias');
     Route::get('/referencias/exportar', [AdminPromocionController::class, 'exportarReferencias'])->name('referencias.exportar');
     

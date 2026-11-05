@@ -32,6 +32,11 @@
     </div>
 </div>
 
+@include('seccionk.admin.partials.fondo-movimientos', [
+    'volver' => 'declaracion',
+    'mostrarHistorial' => false,
+])
+
 @foreach([
     ['titulo' => 'Cuotas pagadas', 'filas' => $filas_cuotas, 'icono' => 'fa-calendar-check', 'totales' => $cuotas],
     ['titulo' => 'Eventos', 'filas' => $filas_eventos, 'icono' => 'fa-star', 'totales' => $eventos],

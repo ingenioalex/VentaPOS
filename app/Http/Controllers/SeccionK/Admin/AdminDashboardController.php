@@ -4,6 +4,7 @@ namespace App\Http\Controllers\SeccionK\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\SeccionKEvento;
+use App\Models\SeccionKMovimiento;
 use App\Models\SeccionKPromocion;
 use App\Models\SeccionKParticipacion;
 use App\Support\SeccionKEsquema;
@@ -16,6 +17,7 @@ class AdminDashboardController extends Controller
     public function index()
     {
         SeccionKEsquema::asegurarDeclaraciones();
+        SeccionKEsquema::asegurarMovimientos();
 
         $totalPromociones = SeccionKPromocion::activos()->count();
         $participanCuotas = SeccionKPromocion::activos()->where('participa_cuotas', true)->count();
@@ -40,6 +42,10 @@ class AdminDashboardController extends Controller
         $montoSaldoEventos = $montoRecaudadoEventos - $montoUtilizadoEventos;
         $participantesEventos = $resumenEventos->sum('participantes');
         $aportantesEventos = SeccionKEstadisticas::comunidad()['aportando_eventos'];
+
+        $prestamosPendientes = SeccionKMovimiento::prestamosPendientes();
+        $totalPrestamosPendientes = (float) $prestamosPendientes->sum(fn ($prestamo) => $prestamo->saldoPendiente());
+        $fondoDisponible = $montoRecaudadoCuotas + $montoSaldoEventos - $totalPrestamosPendientes;
 
         $resumenMeses = SeccionKEvento::cuotasMensuales()
             ->activos()
@@ -74,7 +80,10 @@ class AdminDashboardController extends Controller
             'promocionesQuePagaron',
             'esperadosCuotas',
             'resumenEventos',
-            'resumenMeses'
+            'resumenMeses',
+            'prestamosPendientes',
+            'totalPrestamosPendientes',
+            'fondoDisponible'
         ));
     }
 
@@ -325,6 +334,8 @@ class AdminDashboardController extends Controller
             'total_recaudado_eventos' => (float) $eventos->sum('recaudado'),
             'total_utilizado_eventos' => (float) $eventos->sum('utilizado'),
             'total_saldo_eventos' => (float) $eventos->sum('saldo'),
+            'prestamos_pendientes' => SeccionKMovimiento::prestamosPendientes(),
+            'total_prestamos_pendientes' => SeccionKMovimiento::totalPrestamosPendientes(),
         ];
     }
 
@@ -402,6 +413,20 @@ class AdminDashboardController extends Controller
         $lineas[] = '*Total eventos: Recaudado S/ '.number_format($datos['total_recaudado_eventos'], 2)
             .' − Declarado S/ '.number_format($datos['total_utilizado_eventos'], 2)
             .' = Saldo S/ '.number_format($datos['total_saldo_eventos'], 2).'*';
+
+        $pendientes = $datos['prestamos_pendientes'] ?? collect();
+        if ($pendientes->isNotEmpty()) {
+            $lineas[] = '';
+            $lineas[] = '💸 *PRÉSTAMOS PENDIENTES*';
+            foreach ($pendientes as $prestamo) {
+                $lineas[] = $prestamo->fecha->format('d/m/Y').' · *'.($prestamo->persona ?: 'Sin nombre').'* · Debe S/ '.number_format($prestamo->saldoPendiente(), 2);
+            }
+            $lineas[] = '*Total préstamos: S/ '.number_format($datos['total_prestamos_pendientes'] ?? 0, 2).'*';
+            $lineas[] = '*Fondo disponible: S/ '.number_format(
+                ($datos['total_cuotas'] ?? 0) + ($datos['total_saldo_eventos'] ?? 0) - ($datos['total_prestamos_pendientes'] ?? 0),
+                2
+            ).'*';
+        }
 
         return implode("\n", $lineas);
     }

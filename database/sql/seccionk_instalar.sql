@@ -91,6 +91,21 @@ CREATE TABLE IF NOT EXISTS `seccionk_eventos_edicion` (
     FOREIGN KEY (`evento_id`) REFERENCES `seccionk_eventos` (`id`) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
+CREATE TABLE IF NOT EXISTS `seccionk_movimientos` (
+  `id` bigint unsigned NOT NULL AUTO_INCREMENT,
+  `tipo` varchar(20) NOT NULL,
+  `persona` varchar(150) DEFAULT NULL,
+  `monto` decimal(10,2) NOT NULL,
+  `fecha` date NOT NULL,
+  `comentario` text DEFAULT NULL,
+  `prestamo_id` bigint unsigned DEFAULT NULL,
+  `created_at` timestamp NULL DEFAULT NULL,
+  `updated_at` timestamp NULL DEFAULT NULL,
+  PRIMARY KEY (`id`),
+  KEY `seccionk_movimientos_tipo_index` (`tipo`),
+  KEY `seccionk_movimientos_prestamo_id_index` (`prestamo_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
+
 CREATE TABLE IF NOT EXISTS `seccionk_usuarios` (
   `id` bigint unsigned NOT NULL AUTO_INCREMENT,
   `usuario` varchar(60) NOT NULL,

@@ -69,7 +69,7 @@
                 <strong>Top productos (hoy)</strong>
                 <ul class="insight-list">
                     @forelse($kpi['top_hoy'] as $p)
-                    <li><span>{{ $p->nombre }}</span><span>{{ $p->unidades }} u.</span></li>
+                    <li><span>{{ $p->nombre }}</span><span>{{ number_format((float) $p->unidades, 2) }} {{ abs((float) $p->unidades - 1) < 0.001 ? 'UN' : 'UND' }}</span></li>
                     @empty
                     <li><span>—</span><span>—</span></li>
                     @endforelse

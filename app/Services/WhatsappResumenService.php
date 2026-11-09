@@ -59,7 +59,9 @@ class WhatsappResumenService
             $lineas[] = '';
             $lineas[] = '*Top productos:*';
             foreach ($top as $i => $p) {
-                $lineas[] = ($i + 1).". {$p->nombre} ({$p->unidades} u.)";
+                $cant = (float) $p->unidades;
+                $und = abs($cant - 1) < 0.001 ? 'UN' : 'UND';
+                $lineas[] = ($i + 1).". {$p->nombre} (".number_format($cant, 2)." {$und})";
             }
         }
 

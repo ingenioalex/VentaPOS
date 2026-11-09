@@ -73,6 +73,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-11-09 | Cantidades del panel de ventas: dos decimales y unidad UND o UN | Este índice |
 | 2026-11-09 | Dashboards: tarjetas en dos columnas, con color suave, en los paneles de administración | Este índice |
 | 2026-11-09 | Tarjetas con color, zoom y lectura en celular en reportes y módulos que aún usaban cifras planas | Este índice |
 | 2026-11-09 | Compra duplicada: si la factura ya existe, abre la registrada y no muestra el error SQL | CASOS_DE_USO.md, Este índice |

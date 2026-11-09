@@ -6,7 +6,10 @@
 @include('app.compras._nav')
 
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h1 style="margin:0">Compras a proveedor</h1>
+    <div>
+        <h1 style="margin:0">Compras a proveedor</h1>
+        <p class="dyn-lead">Documentos del periodo. Recibidas ya ingresaron stock; borrador todavía no.</p>
+    </div>
     @if(auth()->user()->puedeGestionar() && auth()->user()->tieneModulo('reportes'))
     <div>
         <a href="{{ route('reportes.compras') }}" class="btn" style="background:#e2e8f0;color:#334155">R. Compras</a>

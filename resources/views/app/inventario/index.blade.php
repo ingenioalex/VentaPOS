@@ -4,7 +4,10 @@
 
 @section('contenido')
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h1>Inventario</h1>
+    <div>
+        <h1 style="margin:0">Inventario</h1>
+        <p class="dyn-lead">Arriba está el stock de ahora. La tabla lista los movimientos entre las fechas del filtro.</p>
+    </div>
     <div>
         <a href="{{ route('inventario.exportar') }}" class="btn" style="background:#64748b;color:#fff;margin-right:.35rem">CSV stock</a>
         <a href="{{ route('inventario.exportar-excel') }}" class="btn" style="background:#0f766e;color:#fff;margin-right:.35rem">Excel stock</a>

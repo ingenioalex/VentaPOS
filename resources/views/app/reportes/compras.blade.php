@@ -4,7 +4,10 @@
 
 @section('contenido')
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h1>Reporte de compras</h1>
+    <div>
+        <h1 style="margin:0">Compras</h1>
+        <p class="dyn-lead">Compras del periodo según el estado elegido. El total incluye IGV.</p>
+    </div>
     <div>
         <a href="{{ route('reportes.exportar-compras', request()->only(['desde','hasta','estado'])) }}" class="btn" style="background:#64748b;color:#fff">CSV</a>
         <a href="{{ route('reportes.exportar-compras-excel', request()->only(['desde','hasta','estado'])) }}" class="btn btn-primary" style="margin-left:.35rem">Excel</a>

@@ -135,6 +135,7 @@
     mq.addEventListener('change', e => { if (!e.matches) setOpen(false); });
 })();
 </script>
+@include('partials.dinamico')
 @stack('scripts')
 </body>
 </html>

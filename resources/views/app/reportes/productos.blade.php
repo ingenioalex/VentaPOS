@@ -3,7 +3,8 @@
 @section('titulo', 'Reporte productos')
 
 @section('contenido')
-<h1 style="margin-bottom:1rem">Productos más vendidos</h1>
+<h1 style="margin:0">Productos más vendidos</h1>
+<p class="dyn-lead" style="margin-bottom:1rem">Ranking del periodo. El porcentaje es sobre el monto vendido de ese rango.</p>
 
 @include('app.reportes._nav')
 

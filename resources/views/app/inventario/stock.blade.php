@@ -4,7 +4,8 @@
 
 @section('contenido')
 <div class="inv-page">
-<h1 style="margin-bottom:1rem">Stock actual</h1>
+<h1 style="margin:0">Stock actual</h1>
+<p class="dyn-lead" style="margin-bottom:1rem">Lo que hay hoy en almacén, con su valor a costo y a precio de venta.</p>
 
 @include('app.inventario._nav')
 

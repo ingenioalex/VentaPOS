@@ -4,7 +4,10 @@
 
 @section('contenido')
 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h1>Reportes</h1>
+    <div>
+        <h1 style="margin:0">Ventas</h1>
+        <p class="dyn-lead">Cifras del periodo elegido: tickets, medios de pago, productos y cajeros.</p>
+    </div>
     <div>
         <a href="{{ route('reportes.exportar', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn" style="background:#64748b;color:#fff">CSV</a>
         <a href="{{ route('reportes.exportar-excel', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn btn-primary" style="margin-left:.35rem">Excel</a>

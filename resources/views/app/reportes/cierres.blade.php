@@ -3,7 +3,8 @@
 @section('titulo', 'Reporte cierres')
 
 @section('contenido')
-<h1 style="margin-bottom:1rem">Reporte de cierres de caja</h1>
+<h1 style="margin:0">Cierres de caja</h1>
+<p class="dyn-lead" style="margin-bottom:1rem">Cierres X y Z del periodo. La diferencia es el valor absoluto, no el faltante neto.</p>
 
 @include('app.reportes._nav')
 

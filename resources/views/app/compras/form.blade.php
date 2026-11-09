@@ -94,7 +94,6 @@
         </div>
 
         <h3 style="margin:1.25rem 0 .75rem">Detalle de productos</h3>
-        @error('lineas')<p style="color:#991b1b;margin-bottom:.75rem">{{ $message }}</p>@enderror
 
         <div class="buscar-producto-wrap">
             <label style="font-weight:600;display:block;margin-bottom:.35rem">Buscar producto</label>
@@ -325,11 +324,18 @@ document.addEventListener('click', e => {
     if (!e.target.closest('.buscar-producto-wrap')) ocultarResultados();
 });
 
+let enviandoCompra = false;
 document.getElementById('form-compra')?.addEventListener('submit', e => {
     if (!tbody.querySelector('tr[data-idx]')) {
         e.preventDefault();
         alert('Agregue al menos un producto.');
+        return;
     }
+    if (enviandoCompra) {
+        e.preventDefault();
+        return;
+    }
+    enviandoCompra = true;
 });
 
 @foreach(old('lineas', []) as $linea)

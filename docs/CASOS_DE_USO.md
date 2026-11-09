@@ -144,7 +144,7 @@ Ver [IMPRESORAS.md](IMPRESORAS.md) para hardware recomendado.
 |-------|-------|
 | Actor | Digitador, Supervisor, Dueño |
 | Módulo | `proveedores`, `compras` |
-| Flujo | 1. Registrar proveedor → 2. Nueva compra (búsqueda productos) → 3. Recibir stock |
+| Flujo | 1. Registrar proveedor → 2. Nueva compra (búsqueda productos) → 3. Recibir stock. Si la serie y el número ya existen para ese proveedor, se abre la compra guardada y no se ingresa el stock otra vez |
 | Postcondición | Stock y costo actualizados, movimiento inventario |
 | Implementación | `CompraService`, `CompraController` |
 

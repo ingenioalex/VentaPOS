@@ -6,8 +6,12 @@ use App\Models\Compra;
 use App\Models\Producto;
 use App\Models\Proveedor;
 use App\Services\CompraService;
+use Illuminate\Database\QueryException;
+use Illuminate\Database\UniqueConstraintViolationException;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use RuntimeException;
 
 class CompraController extends Controller
 {
@@ -80,6 +84,14 @@ class CompraController extends Controller
         $datos = $this->validarCabecera($request);
         $lineas = $this->validarLineas($request);
         $recibir = $request->boolean('recibir');
+        $datos['serie'] = trim((string) ($datos['serie'] ?? ''));
+        $datos['serie'] = $datos['serie'] !== '' ? $datos['serie'] : null;
+        $datos['numero_documento'] = trim($datos['numero_documento']);
+
+        $existente = $this->compraConMismoDocumento($datos);
+        if ($existente) {
+            return $this->redirigirCompraYaRegistrada($existente);
+        }
 
         try {
             $compra = $this->compras->registrar(Auth::user(), $datos, $lineas, $recibir);
@@ -89,8 +101,26 @@ class CompraController extends Controller
                 : 'Compra guardada en borrador.';
 
             return redirect()->route('compras.detalle', $compra)->with('ok', $msg);
-        } catch (\Throwable $e) {
+        } catch (UniqueConstraintViolationException) {
+            return $this->responderDocumentoDuplicado($datos);
+        } catch (QueryException $e) {
+            if ($this->esDocumentoDuplicado($e)) {
+                return $this->responderDocumentoDuplicado($datos);
+            }
+
+            report($e);
+
+            return back()->withInput()->withErrors([
+                'lineas' => 'No se pudo guardar la compra. Intente de nuevo.',
+            ]);
+        } catch (RuntimeException $e) {
             return back()->withInput()->withErrors(['lineas' => $e->getMessage()]);
+        } catch (\Throwable $e) {
+            report($e);
+
+            return back()->withInput()->withErrors([
+                'lineas' => 'No se pudo guardar la compra. Intente de nuevo.',
+            ]);
         }
     }
 
@@ -209,5 +239,49 @@ class CompraController extends Controller
         if ($compra->empresa_id !== Auth::user()->empresa_id) {
             abort(404);
         }
+    }
+
+    /** @param  array<string, mixed>  $datos */
+    private function compraConMismoDocumento(array $datos): ?Compra
+    {
+        return $this->compras->buscarPorDocumento(
+            (int) Auth::user()->empresa_id,
+            (int) $datos['proveedor_id'],
+            (string) $datos['tipo_documento'],
+            $datos['serie'] ?? null,
+            (string) $datos['numero_documento'],
+        );
+    }
+
+    /** @param  array<string, mixed>  $datos */
+    private function responderDocumentoDuplicado(array $datos): RedirectResponse
+    {
+        $existente = $this->compraConMismoDocumento($datos);
+        if ($existente) {
+            return $this->redirigirCompraYaRegistrada($existente);
+        }
+
+        return back()->withInput()->withErrors([
+            'numero_documento' => 'Ese documento ya está registrado para este proveedor.',
+        ]);
+    }
+
+    private function redirigirCompraYaRegistrada(Compra $compra): RedirectResponse
+    {
+        $estado = match ($compra->estado) {
+            'recibido' => 'recibida',
+            'anulado' => 'anulada',
+            default => 'en borrador',
+        };
+
+        return redirect()
+            ->route('compras.detalle', $compra)
+            ->with('ok', 'La '.$compra->etiquetaDocumento().' de este proveedor ya está registrada ('.$estado.'). No se creó otra, para no duplicar el stock.');
+    }
+
+    private function esDocumentoDuplicado(QueryException $e): bool
+    {
+        return (string) $e->getCode() === '23000'
+            && str_contains($e->getMessage(), 'compras_doc_unique');
     }
 }

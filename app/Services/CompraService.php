@@ -72,6 +72,21 @@ class CompraService
         });
     }
 
+    public function buscarPorDocumento(int $empresaId, int $proveedorId, string $tipo, ?string $serie, string $numero): ?Compra
+    {
+        return Compra::query()
+            ->where('empresa_id', $empresaId)
+            ->where('proveedor_id', $proveedorId)
+            ->where('tipo_documento', $tipo)
+            ->where('numero_documento', $numero)
+            ->when(
+                $serie !== null && $serie !== '',
+                fn ($q) => $q->where('serie', $serie),
+                fn ($q) => $q->whereNull('serie'),
+            )
+            ->first();
+    }
+
     public function recibir(Compra $compra, Usuario $usuario): Compra
     {
         return DB::transaction(function () use ($compra, $usuario) {

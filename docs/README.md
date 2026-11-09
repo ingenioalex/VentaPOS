@@ -73,6 +73,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-11-09 | Compra duplicada: si la factura ya existe, abre la registrada y no muestra el error SQL | CASOS_DE_USO.md, Este índice |
 | 2026-11-09 | Reporte de inventario: tarjetas con color, zoom al pasar el mouse y lectura en celular | Este índice |
 | 2026-11-01 | Código de producción del VPS incorporado a `main` (Sección K cierre y rutas). La base del VPS no se migró | NOMENCLATURA_BD.md, Este índice |
 | 2026-11-01 | Continuación del chat y acuerdo de trabajo (local, GitHub, VPS sin cambios de BD) | ventasagil/CONTEXTO-TRABAJO.md, ventasagil/CHAT-CURSOR-2026-11-01.md, Este índice |

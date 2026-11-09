@@ -3,108 +3,178 @@
 @section('titulo', 'Reporte de inventario')
 
 @section('contenido')
-<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;flex-wrap:wrap;gap:.5rem">
-    <h1>Reportes</h1>
-    <div>
-        <a href="{{ route('reportes.exportar-stock') }}" class="btn" style="background:#64748b;color:#fff">Stock CSV</a>
-        <a href="{{ route('reportes.exportar-stock-excel') }}" class="btn" style="background:#0f766e;color:#fff;margin-left:.35rem">Stock Excel</a>
-        <a href="{{ route('inventario.exportar-movimientos', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn" style="background:#64748b;color:#fff;margin-left:.35rem">Mov. CSV</a>
-        <a href="{{ route('inventario.exportar-movimientos-excel', ['desde' => $desde, 'hasta' => $hasta]) }}" class="btn" style="background:#2563eb;color:#fff;margin-left:.35rem">Mov. Excel</a>
+@include('app.reportes._inventario-styles')
+@php
+    $nombreTipo = [
+        'entrada' => 'Entrada',
+        'salida' => 'Salida',
+        'venta' => 'Venta',
+        'ajuste' => 'Ajuste',
+        'compra' => 'Compra',
+        'devolucion' => 'Devolución',
+    ];
+@endphp
+<div class="rep-inv">
+    <div class="rep-head">
+        <div>
+            <h1>Inventario</h1>
+            <p class="rep-lead">Arriba está el stock de hoy. El filtro de fechas solo cambia los movimientos del periodo y no el valor del almacén.</p>
+        </div>
+        <div class="rep-exports">
+            <a href="{{ route('reportes.exportar-stock') }}" class="rep-chip slate">Stock CSV</a>
+            <a href="{{ route('reportes.exportar-stock-excel') }}" class="rep-chip teal">Stock Excel</a>
+            <a href="{{ route('inventario.exportar-movimientos', ['desde' => $desde, 'hasta' => $hasta]) }}" class="rep-chip slate">Mov. CSV</a>
+            <a href="{{ route('inventario.exportar-movimientos-excel', ['desde' => $desde, 'hasta' => $hasta]) }}" class="rep-chip blue">Mov. Excel</a>
+        </div>
     </div>
-</div>
 
-@include('app.reportes._nav')
+    @include('app.reportes._nav')
 
-<div class="stats" style="margin-bottom:1rem">
-    <div class="stat"><span>Productos activos</span><strong>{{ $resumen['productos'] }}</strong></div>
-    <div class="stat"><span>Unidades en stock</span><strong>{{ number_format($resumen['unidades'], 0) }}</strong></div>
-    <div class="stat"><span>Valor a costo</span><strong>S/ {{ number_format($resumen['valor_costo'], 2) }}</strong></div>
-    <div class="stat"><span>Valor a venta</span><strong>S/ {{ number_format($resumen['valor_venta'], 2) }}</strong></div>
-    <div class="stat" style="border-left-color:{{ $resumen['stock_bajo'] > 0 ? '#d97706' : 'var(--primary)' }}">
-        <span>Stock bajo</span>
-        <strong style="color:{{ $resumen['stock_bajo'] > 0 ? '#d97706' : 'inherit' }}">{{ $resumen['stock_bajo'] }}</strong>
+    <div class="rep-section">
+        <h2>Stock de hoy</h2>
+        <p>Lo que hay ahora en almacén, sin importar las fechas.</p>
     </div>
-    <div class="stat"><span>Sin stock</span><strong>{{ $resumen['sin_stock'] }}</strong></div>
-</div>
+    <div class="rep-kpis">
+        <article class="rep-kpi tone-indigo">
+            <span>Productos activos</span>
+            <strong>{{ number_format($resumen['productos']) }}</strong>
+            <small>Con venta habilitada</small>
+        </article>
+        <article class="rep-kpi tone-sky">
+            <span>Unidades</span>
+            <strong>{{ number_format($resumen['unidades'], 0) }}</strong>
+            <small>Suma de todo el stock</small>
+        </article>
+        <article class="rep-kpi tone-teal">
+            <span>Valor a costo</span>
+            <strong>S/ {{ number_format($resumen['valor_costo'], 2) }}</strong>
+            <small>Lo que costó comprarlo</small>
+        </article>
+        <article class="rep-kpi tone-green">
+            <span>Valor a venta</span>
+            <strong>S/ {{ number_format($resumen['valor_venta'], 2) }}</strong>
+            <small>Si se vende al precio actual</small>
+        </article>
+        <article class="rep-kpi tone-amber {{ $resumen['stock_bajo'] > 0 ? 'alerta' : '' }}">
+            <span>Stock bajo</span>
+            <strong>{{ number_format($resumen['stock_bajo']) }}</strong>
+            <small>En el mínimo o por debajo</small>
+        </article>
+        <article class="rep-kpi tone-red {{ $resumen['sin_stock'] > 0 ? 'alerta' : '' }}">
+            <span>Sin stock</span>
+            <strong>{{ number_format($resumen['sin_stock']) }}</strong>
+            <small>En cero o en negativo</small>
+        </article>
+    </div>
 
-<div class="stats" style="margin-bottom:1.5rem">
-    <div class="stat"><span>Entradas (mes)</span><strong>{{ number_format($resumen['entradas_mes'], 0) }}</strong></div>
-    <div class="stat"><span>Salidas (mes)</span><strong>{{ number_format($resumen['salidas_mes'], 0) }}</strong></div>
-    <div class="stat"><span>Ventas stock (mes)</span><strong>{{ number_format($resumen['ventas_mes'], 0) }}</strong></div>
-    <div class="stat"><span>Ajustes (mes)</span><strong>{{ $resumen['ajustes_mes'] }}</strong></div>
-</div>
+    <div class="rep-section">
+        <h2>Movimientos de este mes</h2>
+        <p>Desde el día 1 hasta hoy. No usa el filtro de abajo.</p>
+    </div>
+    <div class="rep-kpis">
+        <article class="rep-kpi tone-green">
+            <span>Entradas</span>
+            <strong>{{ number_format($resumen['entradas_mes'], 0) }}</strong>
+            <small>Unidades que ingresaron</small>
+        </article>
+        <article class="rep-kpi tone-orange">
+            <span>Salidas</span>
+            <strong>{{ number_format($resumen['salidas_mes'], 0) }}</strong>
+            <small>Unidades que salieron</small>
+        </article>
+        <article class="rep-kpi tone-blue">
+            <span>Ventas</span>
+            <strong>{{ number_format($resumen['ventas_mes'], 0) }}</strong>
+            <small>Unidades vendidas</small>
+        </article>
+        <article class="rep-kpi tone-violet">
+            <span>Ajustes</span>
+            <strong>{{ number_format($resumen['ajustes_mes']) }}</strong>
+            <small>Correcciones registradas</small>
+        </article>
+    </div>
 
-<form class="filtros card" method="get">
-    <div>
-        <label>Desde</label>
-        <input type="date" name="desde" value="{{ $desde }}">
-    </div>
-    <div>
-        <label>Hasta</label>
-        <input type="date" name="hasta" value="{{ $hasta }}">
-    </div>
-    <div style="flex:1">
-        <label>Buscar producto</label>
-        <input type="text" name="q" value="{{ $q }}" placeholder="Nombre, SKU o barra">
-    </div>
-    <div>
-        <label>Alertas</label>
-        <select name="stock_bajo">
-            <option value="0" @selected(! request()->boolean('stock_bajo'))>Todos</option>
-            <option value="1" @selected(request()->boolean('stock_bajo'))>Solo stock bajo</option>
-        </select>
-    </div>
-    <button type="submit" class="btn btn-primary">Filtrar</button>
-</form>
+    <form class="rep-filtros" method="get">
+        <div>
+            <label for="desde">Desde</label>
+            <input id="desde" type="date" name="desde" value="{{ $desde }}">
+        </div>
+        <div>
+            <label for="hasta">Hasta</label>
+            <input id="hasta" type="date" name="hasta" value="{{ $hasta }}">
+        </div>
+        <div>
+            <label for="q">Buscar producto</label>
+            <input id="q" type="text" name="q" value="{{ $q }}" placeholder="Nombre, SKU o código">
+        </div>
+        <div>
+            <label for="stock_bajo">Qué productos ver</label>
+            <select id="stock_bajo" name="stock_bajo">
+                <option value="0" @selected(! request()->boolean('stock_bajo'))>Todos</option>
+                <option value="1" @selected(request()->boolean('stock_bajo'))>Solo stock bajo</option>
+            </select>
+        </div>
+        <button type="submit" class="btn btn-primary">Filtrar</button>
+    </form>
 
-<div style="display:grid;grid-template-columns:280px 1fr;gap:1rem;align-items:start">
-    <div class="card" style="margin:0">
-        <h3 style="margin-bottom:1rem">Movimientos por tipo</h3>
-        <table class="data">
-            <thead><tr><th>Tipo</th><th>Movs.</th><th>Unid.</th></tr></thead>
-            <tbody>
+    <div class="rep-layout">
+        <section class="rep-panel">
+            <h3>Movimientos del periodo</h3>
+            <p class="hint">{{ \Illuminate\Support\Carbon::parse($desde)->format('d/m/Y') }} al {{ \Illuminate\Support\Carbon::parse($hasta)->format('d/m/Y') }}</p>
+            <div class="rep-tipos">
                 @forelse($porTipo as $t)
-                <tr>
-                    <td>{{ ucfirst($t->tipo_movimiento) }}</td>
-                    <td>{{ $t->movimientos }}</td>
-                    <td>{{ number_format($t->unidades, 0) }}</td>
-                </tr>
+                <div class="rep-tipo">
+                    <b>{{ $nombreTipo[$t->tipo_movimiento] ?? ucfirst($t->tipo_movimiento) }}</b>
+                    <span>{{ number_format($t->movimientos) }} movimientos</span>
+                    <strong>{{ number_format($t->unidades, 0) }}</strong>
+                </div>
                 @empty
-                <tr><td colspan="3" style="color:#64748b">Sin movimientos</td></tr>
+                <p class="vacio">No hay movimientos en estas fechas.</p>
                 @endforelse
-            </tbody>
-        </table>
-        <p style="margin-top:.75rem;font-size:.85rem;color:#64748b">
-            Total valorizado: S/ {{ number_format($totalesStock['valor_costo'], 2) }} (costo) ·
-            S/ {{ number_format($totalesStock['valor_venta'], 2) }} (venta)
-        </p>
-    </div>
+            </div>
+            <p class="rep-total">
+                Lista de abajo: costo S/ {{ number_format($totalesStock['valor_costo'], 2) }}
+                · venta S/ {{ number_format($totalesStock['valor_venta'], 2) }}
+            </p>
+        </section>
 
-    <div class="card" style="margin:0;overflow:auto">
-        <h3 style="margin-bottom:1rem">Stock valorizado</h3>
-        <table class="data">
-            <thead>
-                <tr>
-                    <th>SKU</th><th>Producto</th><th>Stock</th><th>Valor costo</th><th>Valor venta</th>
-                </tr>
-            </thead>
-            <tbody>
-                @forelse($stock as $i)
-                <tr>
-                    <td style="font-family:monospace;font-size:.82rem">{{ $i->sku }}</td>
-                    <td>
-                        <a href="{{ route('inventario.kardex', $i->id) }}">{{ $i->nombre }}</a>
-                        @if($i->bajo)<span style="color:#d97706;font-size:.75rem;margin-left:.25rem">bajo</span>@endif
-                    </td>
-                    <td>{{ $i->stock }}</td>
-                    <td>S/ {{ number_format($i->valor_costo, 2) }}</td>
-                    <td>S/ {{ number_format($i->valor_venta, 2) }}</td>
-                </tr>
-                @empty
-                <tr><td colspan="5" style="color:#64748b">Sin productos.</td></tr>
-                @endforelse
-            </tbody>
-        </table>
+        <section class="rep-panel">
+            <h3>Productos y su valor</h3>
+            <p class="hint">Toca el nombre para ver el kardex. El valor es stock × precio.</p>
+            <div class="rep-table-wrap">
+                <table class="rep-table">
+                    <thead>
+                        <tr>
+                            <th>SKU</th>
+                            <th>Producto</th>
+                            <th>Stock</th>
+                            <th>Valor costo</th>
+                            <th>Valor venta</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @forelse($stock as $i)
+                        <tr>
+                            <td class="sku" data-label="SKU">{{ $i->sku }}</td>
+                            <td data-label="Producto">
+                                <a class="prod-link" href="{{ route('inventario.kardex', $i->id) }}">{{ $i->nombre }}</a>
+                                @if($i->stock <= 0)
+                                    <span class="badge cero">Sin stock</span>
+                                @elseif($i->bajo)
+                                    <span class="badge bajo">Bajo</span>
+                                @endif
+                            </td>
+                            <td class="num" data-label="Stock">{{ number_format($i->stock, 0) }}</td>
+                            <td class="num" data-label="Valor costo">S/ {{ number_format($i->valor_costo, 2) }}</td>
+                            <td class="num" data-label="Valor venta">S/ {{ number_format($i->valor_venta, 2) }}</td>
+                        </tr>
+                        @empty
+                        <tr><td colspan="5" class="vacio">Ningún producto coincide con el filtro.</td></tr>
+                        @endforelse
+                    </tbody>
+                </table>
+            </div>
+        </section>
     </div>
 </div>
 @endsection

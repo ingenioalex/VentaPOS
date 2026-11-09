@@ -73,6 +73,7 @@
 
 | Fecha | Cambio | Documentos actualizados |
 |-------|--------|------------------------|
+| 2026-11-09 | Reporte de inventario: tarjetas con color, zoom al pasar el mouse y lectura en celular | Este índice |
 | 2026-11-01 | Código de producción del VPS incorporado a `main` (Sección K cierre y rutas). La base del VPS no se migró | NOMENCLATURA_BD.md, Este índice |
 | 2026-11-01 | Continuación del chat y acuerdo de trabajo (local, GitHub, VPS sin cambios de BD) | ventasagil/CONTEXTO-TRABAJO.md, ventasagil/CHAT-CURSOR-2026-11-01.md, Este índice |
 | 2026-11-01 | Exportación del chat Cursor a `docs/ventasagil/` y copia en GitHub | ventasagil/README.md, Este índice |

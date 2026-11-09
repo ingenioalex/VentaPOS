@@ -17,8 +17,8 @@
         --dyn: #0f766e;
         position: relative;
         margin: 0;
-        background: #fff;
-        border: 1px solid #e2e8f0;
+        background: linear-gradient(180deg, color-mix(in srgb, var(--dyn) 16%, #fff), #fff 70%);
+        border: 1px solid color-mix(in srgb, var(--dyn) 32%, #fff);
         border-radius: 1rem;
         box-shadow: 0 1px 3px rgba(15, 23, 42, .06);
         transition: transform .16s ease, box-shadow .16s ease;
@@ -54,16 +54,106 @@
         line-height: 1.15;
         color: #0f172a;
     }
+    main .kpi-grid,
+    main .inv-kpi-grid,
+    main .periodo-stats,
+    main .acciones-grid {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: .65rem;
+    }
+    main .kpi-grid > .kpi-card,
+    main .kpi-grid > .kpi,
+    main .inv-kpi-grid > .inv-kpi,
+    main .periodo-stats > .periodo-stat,
+    main .acciones-grid > .accion-card {
+        --dyn: #4f46e5;
+        position: relative;
+        overflow: hidden;
+        min-width: 0;
+        background: linear-gradient(180deg, color-mix(in srgb, var(--dyn) 18%, #fff), #fff 68%);
+        border: 1px solid color-mix(in srgb, var(--dyn) 28%, #fff);
+        border-radius: 1rem;
+        box-shadow: 0 1px 2px rgba(15, 23, 42, .05);
+    }
+    main .kpi-grid > :nth-child(6n+1),
+    main .inv-kpi-grid > :nth-child(6n+1),
+    main .periodo-stats > :nth-child(6n+1),
+    main .acciones-grid > :nth-child(6n+1) { --dyn: #059669; }
+    main .kpi-grid > :nth-child(6n+2),
+    main .inv-kpi-grid > :nth-child(6n+2),
+    main .periodo-stats > :nth-child(6n+2),
+    main .acciones-grid > :nth-child(6n+2) { --dyn: #4f46e5; }
+    main .kpi-grid > :nth-child(6n+3),
+    main .inv-kpi-grid > :nth-child(6n+3),
+    main .periodo-stats > :nth-child(6n+3),
+    main .acciones-grid > :nth-child(6n+3) { --dyn: #2563eb; }
+    main .kpi-grid > :nth-child(6n+4),
+    main .inv-kpi-grid > :nth-child(6n+4),
+    main .periodo-stats > :nth-child(6n+4),
+    main .acciones-grid > :nth-child(6n+4) { --dyn: #0f766e; }
+    main .kpi-grid > :nth-child(6n+5),
+    main .inv-kpi-grid > :nth-child(6n+5),
+    main .periodo-stats > :nth-child(6n+5),
+    main .acciones-grid > :nth-child(6n+5) { --dyn: #7c3aed; }
+    main .kpi-grid > :nth-child(6n+6),
+    main .inv-kpi-grid > :nth-child(6n+6),
+    main .periodo-stats > :nth-child(6n+6),
+    main .acciones-grid > :nth-child(6n+6) { --dyn: #d97706; }
+    main .kpi-grid > .kpi-card.kpi-highlight,
+    main .kpi-grid > .kpi-card.kpi-sales { --dyn: #059669; }
+    main .kpi-grid > .kpi-card.kpi-warn,
+    main .kpi-grid > .kpi.kpi--warn { --dyn: #d97706; }
+    main .kpi-grid > .kpi.kpi--danger { --dyn: #dc2626; }
+    main .kpi-grid > .kpi-card::before,
+    main .kpi-grid > .kpi::before,
+    main .inv-kpi-grid > .inv-kpi::before,
+    main .periodo-stats > .periodo-stat::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 4px;
+        background: var(--dyn);
+        opacity: 1;
+    }
+    main .kpi-value,
+    main .inv-kpi-value {
+        font-size: 1.2rem;
+        overflow-wrap: anywhere;
+    }
     main .kpi-card,
+    main .kpi-grid > .kpi,
+    main .inv-kpi,
+    main .periodo-stat,
+    main .accion-card,
     .glosario-item,
     .resumen-dual__ventas,
     .resumen-dual__arqueo {
         transition: transform .16s ease, box-shadow .16s ease;
     }
+    @media (min-width: 960px) {
+        main .kpi-grid,
+        main .inv-kpi-grid,
+        main .periodo-stats {
+            grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+        }
+        main .acciones-grid {
+            grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
+        }
+    }
+    @media (max-width: 700px) {
+        main .panel { padding: .85rem; }
+        main .kpi-value,
+        main .inv-kpi-value { font-size: 1.05rem; }
+    }
     @media (hover: hover) and (prefers-reduced-motion: no-preference) {
         .stats > .stat:hover,
         .stats > .card:hover,
         main .kpi-card:hover,
+        main .kpi-grid > .kpi:hover,
+        main .inv-kpi:hover,
+        main .periodo-stat:hover,
+        main .accion-card:hover,
         .glosario-item:hover,
         .resumen-dual__ventas:hover,
         .resumen-dual__arqueo:hover {

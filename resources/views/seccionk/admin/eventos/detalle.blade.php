@@ -24,6 +24,9 @@
         <a href="{{ route('seccionk.admin.declaracion') }}" class="text-amber-700 hover:text-amber-900 font-semibold">
             <i class="fas fa-balance-scale mr-2"></i>Declaración de fondos
         </a>
+        <a href="{{ route('seccionk.admin.eventos.detalle.exportar', $evento) }}" class="text-green-700 hover:text-green-900 font-semibold">
+            <i class="fab fa-whatsapp mr-2"></i>WhatsApp de quienes pagaron
+        </a>
         <a href="{{ route('seccionk.admin.eventos.participantes', $evento) }}" class="text-purple-600 hover:text-purple-800 font-semibold">
             <i class="fas fa-edit mr-2"></i>Editar participantes
         </a>
@@ -72,6 +75,13 @@
     'eventoDestino' => $evento->getKey(),
     'mostrarHistorial' => true,
 ])
+
+<div class="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+    <p class="text-sm text-gray-600">Lista de aportes. El WhatsApp incluye <span class="font-semibold">solo a quienes ya pagaron</span>.</p>
+    <a href="{{ route('seccionk.admin.eventos.detalle.exportar', $evento) }}" class="inline-flex items-center justify-center bg-green-600 text-white px-4 py-2 rounded-lg hover:bg-green-700 font-semibold">
+        <i class="fab fa-whatsapp mr-2"></i>WhatsApp de quienes pagaron
+    </a>
+</div>
 
 <div class="space-y-3 lg:hidden mb-4">
     @forelse($filas as $fila)

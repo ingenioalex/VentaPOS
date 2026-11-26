@@ -159,7 +159,50 @@ class SeccionKEstadisticasEventosTest extends TestCase
         $respuesta->assertSee('S/ 5.00');
         $respuesta->assertSee('Total del evento');
         $respuesta->assertSee('Cerrar evento y declarar el dinero usado');
+        $respuesta->assertSee('WhatsApp de quienes pagaron');
+        $respuesta->assertSee(route('seccionk.admin.eventos.detalle.exportar', $evento), false);
         $respuesta->assertDontSee('Elías Oculto Pérez');
+    }
+
+    public function test_el_whatsapp_del_detalle_lista_solo_a_quien_pago(): void
+    {
+        $evento = $this->datosDemo();
+        $admin = $this->admin();
+        $antes = SeccionKParticipacion::orderBy('id')->get(['id', 'promocion_id', 'evento_id', 'pago', 'monto_aportado'])->toArray();
+
+        $texto = $this->actingAs($admin, 'seccionk')
+            ->get(route('seccionk.admin.eventos.detalle.exportar', $evento))
+            ->assertOk()
+            ->assertSee('Pagaron · Partido de Fútbol')
+            ->assertSee('Copiar texto')
+            ->getContent();
+
+        $this->assertStringContainsString('Yuri Vargas Lazo', $texto);
+        $this->assertStringContainsString('S/ 5.00', $texto);
+        $this->assertStringContainsString('Pagaron: 1', $texto);
+        $this->assertStringContainsString('Recaudado S/ 5.00', $texto);
+        $this->assertStringNotContainsString('Ana López Díaz', $texto);
+        $this->assertStringNotContainsString('Elías Oculto Pérez', $texto);
+        $this->assertStringNotContainsString('42867691', $texto);
+        $this->assertStringNotContainsString('DNI', $texto);
+
+        $this->actingAs($admin, 'seccionk')
+            ->get(route('seccionk.admin.eventos.detalle.exportar', [$evento, 'formato' => 'descargar']))
+            ->assertOk()
+            ->assertHeader('content-type', 'text/plain; charset=UTF-8');
+
+        $this->assertSame(
+            $antes,
+            SeccionKParticipacion::orderBy('id')->get(['id', 'promocion_id', 'evento_id', 'pago', 'monto_aportado'])->toArray()
+        );
+    }
+
+    public function test_invitado_no_exporta_los_pagos_del_evento(): void
+    {
+        $evento = $this->datosDemo();
+
+        $this->get(route('seccionk.admin.eventos.detalle.exportar', $evento))
+            ->assertRedirect(route('seccionk.admin.login'));
     }
 
     public function test_el_dashboard_no_borra_cuotas_duplicadas(): void

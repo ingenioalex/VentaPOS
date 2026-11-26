@@ -11,6 +11,7 @@ use App\Models\SeccionKParticipacion;
 use App\Models\SeccionKPromocion;
 use App\Support\SeccionKEsquema;
 use App\Support\SeccionKEstadisticas;
+use App\Support\SeccionKExport;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\File;
@@ -158,6 +159,60 @@ class AdminEventoController extends Controller
             SeccionKEstadisticas::detalleEvento($evento),
             SeccionKMovimiento::resumenFondo()
         ));
+    }
+
+    public function exportarPagos(Request $request, SeccionKEvento $evento)
+    {
+        $detalle = SeccionKEstadisticas::detalleEvento($evento);
+        $texto = $this->textoWhatsappPagados($evento, $detalle);
+
+        if ($request->get('formato') === 'descargar') {
+            return SeccionKExport::texto($texto, 'seccionk-'.$evento->id.'-pagaron-whatsapp');
+        }
+
+        return view('seccionk.admin.exportar-whatsapp', [
+            'titulo' => 'Pagaron · '.$evento->nombre,
+            'texto' => $texto,
+            'volver' => route('seccionk.admin.eventos.detalle', $evento),
+            'descargar' => route('seccionk.admin.eventos.detalle.exportar', [$evento, 'formato' => 'descargar']),
+        ]);
+    }
+
+    private function textoWhatsappPagados(SeccionKEvento $evento, array $detalle): string
+    {
+        $pagaron = collect($detalle['filas'])->where('pago', true)->values();
+        $lineas = [
+            '📋 *SECCIÓN K 2001*',
+            '⭐ *'.$evento->nombre.'*',
+            '📅 '.$evento->fecha->format('d/m/Y').' · Sugerido S/ '.number_format((float) $evento->monto, 2),
+            '',
+            'Pagaron: '.$pagaron->count().' · Recaudado S/ '.number_format((float) $detalle['recaudado'], 2),
+            '',
+        ];
+
+        if ($pagaron->isEmpty()) {
+            $lineas[] = 'Aún no hay pagos registrados.';
+
+            return implode("\n", $lineas);
+        }
+
+        foreach ($pagaron as $fila) {
+            $lineas[] = '👤 *'.$fila['promocion']->nombreCompleto().'*';
+            $detallePago = 'S/ '.number_format((float) $fila['monto'], 2);
+            if ($fila['fecha_pago']) {
+                $detallePago .= ' · '.$fila['fecha_pago']->format('d/m/Y');
+            }
+            if ($fila['transaccion']) {
+                $detallePago .= ' · '.$fila['transaccion'];
+            }
+            $lineas[] = $detallePago;
+            if ($fila['observaciones']) {
+                $lineas[] = $fila['observaciones'];
+            }
+            $lineas[] = '';
+        }
+
+        return rtrim(implode("\n", $lineas));
     }
 
     public function participantes(SeccionKEvento $evento)
